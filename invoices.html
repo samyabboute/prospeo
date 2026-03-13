@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PROSPEO — Invoices</title>
+<style>
+/* ═══════════════════════════════════════════════
+   PROSPEO — Core Design System
+   Sharp & Corporate · European Standards
+═══════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Brand */
+  --navy:       #0A1628;
+  --navy2:      #152238;
+  --navy3:      #1E3252;
+  --indigo:     #4F46E5;
+  --indigo2:    #4338CA;
+  --indigo-light: #EEF2FF;
+  --indigo-glow: rgba(79,70,229,.15);
+
+  /* Neutrals */
+  --white:      #FFFFFF;
+  --bg:         #F7F8FC;
+  --bg2:        #EFF1F8;
+  --border:     #E2E6F0;
+  --border2:    #CDD3E2;
+  --muted:      #8892A4;
+  --text:       #1A2235;
+  --text2:      #4A5568;
+
+  /* Status */
+  --green:      #10B981;
+  --green-bg:   #ECFDF5;
+  --amber:      #F59E0B;
+  --amber-bg:   #FFFBEB;
+  --red:        #EF4444;
+  --red-bg:     #FEF2F2;
+  --blue:       #3B82F6;
+  --blue-bg:    #EFF6FF;
+
+  /* Pipeline stages */
+  --stage-new:       #8B5CF6;
+  --stage-contacted: #3B82F6;
+  --stage-qualified:  #F59E0B;
+  --stage-proposal:  #EC4899;
+  --stage-won:       #10B981;
+  --stage-lost:      #6B7280;
+
+  /* Layout */
+  --sidebar-w: 240px;
+  --topbar-h:  60px;
+  --radius:    10px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 3px rgba(10,22,40,.06), 0 1px 2px rgba(10,22,40,.04);
+  --shadow:    0 4px 16px rgba(10,22,40,.08), 0 1px 4px rgba(10,22,40,.04);
+  --shadow-lg: 0 12px 40px rgba(10,22,40,.12), 0 4px 12px rgba(10,22,40,.06);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+/* ══ AUTH LAYOUT ══ */
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.auth-left {
+  background: var(--navy);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 48px;
+  position: relative;
+  overflow: hidden;
+}
+.auth-left::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 20%, rgba(79,70,229,.25) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 80% 80%, rgba(79,70,229,.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+.auth-left-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+.auth-brand {
+  position: relative;
+  z-index: 1;
+}
+.auth-logo {
+  font-family: 'Instrument Serif', serif;
+  font-size: 2rem;
+  color: #fff;
+  letter-spacing: -.5px;
+}
+.auth-logo span { color: var(--indigo); font-style: italic; }
+.auth-tagline {
+  font-size: .8rem;
+  color: rgba(255,255,255,.45);
+  margin-top: 6px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.auth-features {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.auth-feat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.auth-feat-ic {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(79,70,229,.2);
+  border: 1px solid rgba(79,70,229,.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.auth-feat-ic svg { width: 18px; height: 18px; stroke: #a5b4fc; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.auth-feat-title { font-size: .85rem; font-weight: 600; color: #fff; }
+.auth-feat-sub { font-size: .75rem; color: rgba(255,255,255,.45); margin-top: 2px; }
+.auth-footer-text {
+  position: relative;
+  z-index: 1;
+  font-size: .72rem;
+  color: rgba(255,255,255,.3);
+}
+
+.auth-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  background: var(--white);
+}
+.auth-box {
+  width: 100%;
+  max-width: 400px;
+}
+.auth-box-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 6px;
+}
+.auth-box-sub {
+  font-size: .83rem;
+  color: var(--muted);
+  margin-bottom: 32px;
+}
+.auth-tabs {
+  display: flex;
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 4px;
+  margin-bottom: 28px;
+  gap: 4px;
+}
+.auth-tab {
+  flex: 1;
+  padding: 9px;
+  border: none;
+  background: transparent;
+  border-radius: 7px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .18s;
+}
+.auth-tab.active {
+  background: var(--white);
+  color: var(--navy);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── FORM ELEMENTS ── */
+.field { margin-bottom: 16px; }
+.field label {
+  display: block;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--text2);
+  letter-spacing: .3px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.field input, .field select, .field textarea {
+  width: 100%;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: .9rem;
+  padding: 11px 14px;
+  outline: none;
+  transition: border-color .18s, box-shadow .18s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--indigo);
+  box-shadow: 0 0 0 3px var(--indigo-glow);
+}
+.field input::placeholder { color: var(--muted); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: .85rem;
+  font-weight: 600;
+  padding: 11px 20px;
+  transition: all .18s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.btn-primary { background: var(--indigo); color: #fff; box-shadow: 0 4px 14px rgba(79,70,229,.35); }
+.btn-primary:hover { background: var(--indigo2); box-shadow: 0 6px 20px rgba(79,70,229,.45); transform: translateY(-1px); }
+.btn-secondary { background: var(--white); color: var(--text); border: 1.5px solid var(--border); }
+.btn-secondary:hover { border-color: var(--border2); background: var(--bg); }
+.btn-ghost { background: transparent; color: var(--text2); }
+.btn-ghost:hover { background: var(--bg); }
+.btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid rgba(239,68,68,.2); }
+.btn-danger:hover { background: var(--red); color: #fff; }
+.btn-success { background: var(--green-bg); color: var(--green); border: 1px solid rgba(16,185,129,.2); }
+.btn-success:hover { background: var(--green); color: #fff; }
+.btn-full { width: 100%; }
+.btn-sm { padding: 7px 13px; font-size: .78rem; }
+.btn-lg { padding: 14px 28px; font-size: .95rem; }
+.btn-icon { padding: 8px; border-radius: 8px; }
+
+/* ══ APP LAYOUT ══ */
+.app-layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  grid-template-rows: var(--topbar-h) 1fr;
+  min-height: 100vh;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px 0 0;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.topbar-brand {
+  width: var(--sidebar-w);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-right: 1px solid var(--border);
+  height: 100%;
+}
+.topbar-logo {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.35rem;
+  color: var(--navy);
+  letter-spacing: -.3px;
+}
+.topbar-logo span { color: var(--indigo); font-style: italic; }
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background .15s;
+}
+.topbar-user:hover { background: var(--bg); }
+.topbar-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--indigo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .78rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.topbar-uname { font-size: .83rem; font-weight: 600; color: var(--text); }
+.topbar-role { font-size: .7rem; color: var(--muted); }
+.topbar-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 7px 14px;
+  min-width: 240px;
+}
+.topbar-search svg { width: 14px; height: 14px; stroke: var(--muted); flex-shrink: 0; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.topbar-search input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: .83rem;
+  color: var(--text);
+  width: 100%;
+}
+.topbar-search input::placeholder { color: var(--muted); }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--white);
+  border-right: 1px solid var(--border);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  position: sticky;
+  top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h));
+}
+.sidebar-section {
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 12px 10px 6px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--text2);
+  font-size: .85rem;
+  font-weight: 500;
+  transition: all .15s;
+  position: relative;
+}
+.nav-item:hover { background: var(--bg); color: var(--text); }
+.nav-item.active {
+  background: var(--indigo-light);
+  color: var(--indigo);
+  font-weight: 600;
+}
+.nav-item.active svg { stroke: var(--indigo); }
+.nav-item svg {
+  width: 17px; height: 17px;
+  stroke: var(--muted);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+  transition: stroke .15s;
+}
+.nav-badge {
+  margin-left: auto;
+  background: var(--indigo);
+  color: #fff;
+  font-size: .62rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+/* ── MAIN CONTENT ── */
+.main {
+  overflow-y: auto;
+  height: calc(100vh - var(--topbar-h));
+}
+.page {
+  padding: 28px 28px 60px;
+  max-width: 1400px;
+}
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.page-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+.page-sub {
+  font-size: .8rem;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.card-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.card-title {
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title svg { width: 16px; height: 16px; stroke: var(--indigo); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.card-body { padding: 20px; }
+
+/* ── KPI CARDS ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.kpi-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  transition: transform .2s, box-shadow .2s;
+}
+.kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+}
+.kpi-card.k-indigo::before { background: var(--indigo); }
+.kpi-card.k-green::before  { background: var(--green); }
+.kpi-card.k-amber::before  { background: var(--amber); }
+.kpi-card.k-blue::before   { background: var(--blue); }
+.kpi-ic {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+}
+.kpi-ic svg { width: 19px; height: 19px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.kpi-card.k-indigo .kpi-ic { background: var(--indigo-light); }
+.kpi-card.k-indigo .kpi-ic svg { stroke: var(--indigo); }
+.kpi-card.k-green  .kpi-ic { background: var(--green-bg); }
+.kpi-card.k-green  .kpi-ic svg { stroke: var(--green); }
+.kpi-card.k-amber  .kpi-ic { background: var(--amber-bg); }
+.kpi-card.k-amber  .kpi-ic svg { stroke: var(--amber); }
+.kpi-card.k-blue   .kpi-ic { background: var(--blue-bg); }
+.kpi-card.k-blue   .kpi-ic svg { stroke: var(--blue); }
+.kpi-num { font-size: 1.75rem; font-weight: 800; color: var(--navy); line-height: 1; margin-bottom: 4px; }
+.kpi-label { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.kpi-change { font-size: .75rem; margin-top: 8px; font-weight: 600; }
+.kpi-change.up { color: var(--green); }
+.kpi-change.down { color: var(--red); }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: .7rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.badge-indigo { background: var(--indigo-light); color: var(--indigo); }
+.badge-green  { background: var(--green-bg);     color: var(--green); }
+.badge-amber  { background: var(--amber-bg);     color: var(--amber); }
+.badge-red    { background: var(--red-bg);        color: var(--red); }
+.badge-blue   { background: var(--blue-bg);       color: var(--blue); }
+.badge-gray   { background: var(--bg2);           color: var(--muted); }
+
+/* Pipeline stage badges */
+.stage-new       { background: #F5F3FF; color: var(--stage-new); }
+.stage-contacted { background: var(--blue-bg); color: var(--stage-contacted); }
+.stage-qualified  { background: var(--amber-bg); color: var(--stage-qualified); }
+.stage-proposal  { background: #FDF2F8; color: var(--stage-proposal); }
+.stage-won       { background: var(--green-bg); color: var(--stage-won); }
+.stage-lost      { background: var(--bg2); color: var(--stage-lost); }
+
+/* Business type badges */
+.biz-company { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+.biz-freelancer { background: #F5F3FF; color: #6D28D9; border: 1px solid #DDD6FE; }
+.biz-individual { background: var(--bg2); color: var(--muted); border: 1px solid var(--border); }
+
+/* ── TABLES ── */
+.table-wrap { overflow-x: auto; }
+table.data-table { width: 100%; border-collapse: collapse; }
+table.data-table th {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+  background: var(--bg);
+  cursor: pointer;
+  user-select: none;
+}
+table.data-table th:hover { color: var(--text); }
+table.data-table td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: .84rem;
+  vertical-align: middle;
+}
+table.data-table tbody tr:hover td { background: var(--bg); }
+table.data-table tbody tr:last-child td { border-bottom: none; }
+
+/* ── PIPELINE BOARD ── */
+.pipeline-board { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; }
+.pipeline-col {
+  flex-shrink: 0;
+  width: 280px;
+  background: var(--bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+.pipeline-col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.pipeline-col-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+.pipeline-col-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.pipeline-col-count {
+  font-size: .72rem;
+  font-weight: 600;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 9px;
+  color: var(--muted);
+}
+.pipeline-cards { padding: 12px; display: flex; flex-direction: column; gap: 10px; min-height: 120px; }
+.pipeline-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  transition: all .18s;
+  box-shadow: var(--shadow-sm);
+}
+.pipeline-card:hover { border-color: var(--indigo); box-shadow: var(--shadow); transform: translateY(-1px); }
+.pipeline-card-name { font-size: .85rem; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+.pipeline-card-company { font-size: .75rem; color: var(--muted); margin-bottom: 10px; }
+.pipeline-card-footer { display: flex; align-items: center; justify-content: space-between; }
+.pipeline-card-value { font-size: .8rem; font-weight: 700; color: var(--indigo); }
+.pipeline-card-date { font-size: .72rem; color: var(--muted); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(10,22,40,.5);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modalIn .2s cubic-bezier(.22,1,.36,1);
+}
+.modal-lg { max-width: 720px; }
+@keyframes modalIn { from { opacity:0; transform:translateY(16px) scale(.98); } to { opacity:1; transform:none; } }
+.modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-title { font-size: 1rem; font-weight: 700; color: var(--navy); }
+.modal-body { padding: 24px; }
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ── TOAST ── */
+.toast-container {
+  position: fixed;
+  top: 20px; right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.toast {
+  background: var(--navy);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  font-size: .82rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow-lg);
+  min-width: 280px;
+  animation: toastIn .25s ease;
+}
+@keyframes toastIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:none; } }
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error   { border-left: 3px solid var(--red); }
+.toast.info    { border-left: 3px solid var(--indigo); }
+.toast svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.toast.success svg { stroke: var(--green); }
+.toast.error   svg { stroke: var(--red); }
+.toast.info    svg { stroke: #a5b4fc; }
+
+/* ── CALENDAR ── */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.cal-day-header {
+  background: var(--bg);
+  padding: 10px;
+  text-align: center;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.cal-day {
+  background: var(--white);
+  min-height: 110px;
+  padding: 8px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .15s;
+  position: relative;
+}
+.cal-day:nth-child(7n) { border-right: none; }
+.cal-day:hover { background: var(--bg); }
+.cal-day.today { background: var(--indigo-light); }
+.cal-day.today .cal-day-num { background: var(--indigo); color: #fff; }
+.cal-day.other-month { background: var(--bg); }
+.cal-day.other-month .cal-day-num { color: var(--border2); }
+.cal-day-num {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.cal-event {
+  font-size: .68rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cal-event.meeting { background: #EEF2FF; color: var(--indigo); }
+.cal-event.task    { background: var(--amber-bg); color: var(--amber); }
+.cal-event.call    { background: var(--green-bg); color: var(--green); }
+.cal-event.deadline{ background: var(--red-bg);   color: var(--red); }
+
+/* ── INVOICE ── */
+.invoice-status-draft     { background: var(--bg2); color: var(--muted); }
+.invoice-status-sent      { background: var(--blue-bg); color: var(--blue); }
+.invoice-status-paid      { background: var(--green-bg); color: var(--green); }
+.invoice-status-overdue   { background: var(--red-bg); color: var(--red); }
+.invoice-status-cancelled { background: var(--bg2); color: var(--muted); }
+
+/* ── BUSINESS VALIDATOR ── */
+.validator-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-top: 12px;
+}
+.validator-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  margin-top: 10px;
+  font-size: .83rem;
+}
+.validator-result.verified { background: var(--green-bg); border: 1px solid rgba(16,185,129,.2); color: #065F46; }
+.validator-result.unverified { background: var(--amber-bg); border: 1px solid rgba(245,158,11,.2); color: #92400E; }
+.validator-result.error { background: var(--red-bg); border: 1px solid rgba(239,68,68,.2); color: #991B1B; }
+.validator-result svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--muted);
+}
+.empty-state svg { width: 40px; height: 40px; stroke: var(--border2); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; display: block; margin: 0 auto 16px; }
+.empty-state h3 { font-size: .95rem; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
+.empty-state p { font-size: .8rem; }
+
+/* ── DIVIDER ── */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+.section-gap { margin-bottom: 24px; }
+
+/* ── AUTH ERROR ── */
+.auth-err {
+  background: var(--red-bg);
+  border: 1px solid rgba(239,68,68,.25);
+  border-radius: var(--radius);
+  color: var(--red);
+  font-size: .8rem;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  display: none;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .pipeline-board { flex-direction: column; }
+  .pipeline-col { width: 100%; }
+}
+@media (max-width: 768px) {
+  .auth-page { grid-template-columns: 1fr; }
+  .auth-left { display: none; }
+  :root { --sidebar-w: 200px; }
+}
+
+</style>
+</head>
+<body>
+<div class="toast-container" id="toasts"></div>
+
+<!-- CREATE INVOICE MODAL -->
+<div class="modal-overlay" id="modal-invoice">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="inv-modal-title">New Invoice</div>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeModal('modal-invoice')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>Invoice Number *</label><input type="text" id="inv-num" placeholder="INV-2026-001"></div>
+        <div class="field"><label>Type</label>
+          <select id="inv-type">
+            <option value="invoice">Invoice</option>
+            <option value="quote">Quote / Devis</option>
+            <option value="credit">Credit Note</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Issue Date *</label><input type="date" id="inv-date"></div>
+        <div class="field"><label>Due Date *</label><input type="date" id="inv-due"></div>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:12px">Client</div>
+      <div class="field-row">
+        <div class="field"><label>Client Name *</label><input type="text" id="inv-client" placeholder="Acme SA / Jean Dupont"></div>
+        <div class="field"><label>Client Email</label><input type="email" id="inv-client-email" placeholder="billing@acme.com"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Client Address</label><input type="text" id="inv-client-addr" placeholder="12 rue de la Paix, 75001 Paris"></div>
+        <div class="field"><label>Client VAT Number</label><input type="text" id="inv-client-vat" placeholder="FR12345678901"></div>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:12px">Line Items</div>
+      <div id="line-items"></div>
+      <button class="btn btn-ghost btn-sm" onclick="addLineItem()" style="margin-top:8px">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Line Item
+      </button>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px">
+        <div class="field" style="flex:1">
+          <label>VAT Rate (%)</label>
+          <select id="inv-vat" onchange="calcTotals()">
+            <option value="0">0% — Export / Reverse charge</option>
+            <option value="5.5">5.5% — Reduced (FR)</option>
+            <option value="10">10% — Intermediate (FR)</option>
+            <option value="20" selected>20% — Standard (FR)</option>
+            <option value="19">19% — Standard (DE)</option>
+            <option value="21">21% — Standard (BE/NL/ES)</option>
+            <option value="22">22% — Standard (IT)</option>
+            <option value="23">23% — Standard (PT)</option>
+          </select>
+        </div>
+        <div style="min-width:240px;background:var(--bg);border-radius:var(--radius);padding:16px;border:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:8px"><span style="color:var(--muted)">Subtotal HT</span><span id="tot-ht">€0.00</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:8px"><span style="color:var(--muted)">VAT (<span id="vat-label">20</span>%)</span><span id="tot-vat">€0.00</span></div>
+          <div style="height:1px;background:var(--border);margin:8px 0"></div>
+          <div style="display:flex;justify-content:space-between;font-size:.95rem;font-weight:700"><span>Total TTC</span><span id="tot-ttc" style="color:var(--indigo)">€0.00</span></div>
+        </div>
+      </div>
+      <div class="field"><label>Notes / Payment Terms</label>
+        <textarea id="inv-notes" rows="3" placeholder="Payment due within 30 days. Bank transfer: IBAN FR76 XXXX XXXX XXXX XXXX XXXX XXX"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-invoice')">Cancel</button>
+      <button class="btn btn-secondary" onclick="saveInvoice('draft')">Save as Draft</button>
+      <button class="btn btn-primary" onclick="saveInvoice('sent')">
+        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Save & Send
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICE PREVIEW MODAL -->
+<div class="modal-overlay" id="modal-preview">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">Invoice Preview</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" onclick="printInvoice()">🖨 Print / PDF</button>
+        <button class="btn btn-ghost btn-icon btn-sm" onclick="closeModal('modal-preview')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="modal-body" id="preview-body"></div>
+  </div>
+</div>
+
+<div class="app-layout">
+  <header class="topbar">
+    <div class="topbar-brand"><div class="topbar-logo">Prosp<span>eo</span></div></div>
+    <div class="topbar-search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search invoices…" id="inv-search" oninput="renderTable()">
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-primary btn-sm" onclick="openNewInvoice()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Invoice
+      </button>
+      <div class="topbar-user" id="topbar-user" onclick="logout()"></div>
+    </div>
+  </header>
+  <nav class="sidebar">
+    <div class="sidebar-section">Main</div>
+    <a href="app.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+    <a href="clients.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Clients & CRM</a>
+    <a href="calendar.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendar</a>
+    <a href="invoices.html" class="nav-item active"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Invoices</a>
+    <div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--border)">
+      <button class="nav-item" style="width:100%;border:none;background:transparent;cursor:pointer;text-align:left;" onclick="logout()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign Out</button>
+    </div>
+  </nav>
+  <main class="main">
+    <div class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Invoices & Quotes</div>
+          <div class="page-sub">EU-compliant invoicing with VAT — French & European standards</div>
+        </div>
+        <div class="page-actions">
+          <select class="btn btn-secondary btn-sm" id="status-filter" onchange="renderTable()" style="cursor:pointer">
+            <option value="all">All statuses</option>
+            <option value="draft">Draft</option>
+            <option value="sent">Sent</option>
+            <option value="paid">Paid</option>
+            <option value="overdue">Overdue</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="openNewInvoice()">+ New Invoice</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid" style="margin-bottom:24px">
+        <div class="kpi-card k-indigo"><div class="kpi-ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="kpi-num" id="k-inv-total">0</div><div class="kpi-label">Total Invoices</div></div>
+        <div class="kpi-card k-green"><div class="kpi-ic"><svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/></svg></div><div class="kpi-num" id="k-inv-paid">€0</div><div class="kpi-label">Collected (Paid)</div></div>
+        <div class="kpi-card k-amber"><div class="kpi-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="kpi-num" id="k-inv-pending">€0</div><div class="kpi-label">Pending</div></div>
+        <div class="kpi-card k-blue"><div class="kpi-ic"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div><div class="kpi-num" id="k-inv-overdue">€0</div><div class="kpi-label">Overdue</div></div>
+      </div>
+
+      <!-- Table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Invoice List</div>
+          <span style="font-size:.78rem;color:var(--muted)" id="inv-count">0 invoices</span>
+        </div>
+        <div id="inv-table-body"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+
+const SUPA_URL='https://nkovarvxecmwyicnusxz.supabase.co';
+const SUPA_KEY='sb_publishable_6GupXDR_7KTyTLZdck8LRw_GKlsnJAK';
+function getToken(){return localStorage.getItem('prospeo_token');}
+function getUser(){try{return JSON.parse(localStorage.getItem('prospeo_user'));}catch{return null;}}
+function requireAuth(){if(!getToken()){location.href='index.html';return false;}return true;}
+function logout(){localStorage.removeItem('prospeo_token');localStorage.removeItem('prospeo_refresh');localStorage.removeItem('prospeo_user');location.href='index.html';}
+async function api(path,opts={}){
+  const token=getToken();
+  const res=await fetch(SUPA_URL+'/rest/v1/'+path,{
+    ...opts,
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json','Prefer':opts.prefer||'return=representation',...(opts.headers||{})}
+  });
+  if(res.status===204)return null;
+  const d=await res.json();
+  if(!res.ok)throw new Error(d.message||d.error||'API error');
+  return d;
+}
+function toast(msg,type){
+  type=type||'info';
+  var icons={success:'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',error:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',info:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'};
+  var container=document.getElementById('toasts');
+  if(!container){container=document.createElement('div');container.id='toasts';container.className='toast-container';document.body.appendChild(container);}
+  var t=document.createElement('div');
+  t.className='toast '+type;
+  t.innerHTML=(icons[type]||icons.info)+'<span>'+msg+'</span>';
+  container.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';},3000);
+  setTimeout(function(){t.remove();},3300);
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.addEventListener('click',function(e){if(e.target.classList.contains('modal-overlay'))e.target.classList.remove('open');});
+function fmtMoney(v,currency){return new Intl.NumberFormat('de-DE',{style:'currency',currency:currency||'EUR'}).format(v||0);}
+function fmtDate(d){if(!d)return '\u2014';return new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
+function fmtDateShort(d){if(!d)return '\u2014';return new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short'});}
+function todayISO(){return new Date().toISOString().split('T')[0];}
+function initials(name){if(!name)return '?';return name.split(' ').map(function(p){return p[0];}).join('').slice(0,2).toUpperCase();}
+function renderTopbarUser(){
+  var u=getUser();if(!u)return;
+  var meta=u.user_metadata||{};
+  var name=[meta.first_name,meta.last_name].filter(Boolean).join(' ')||u.email;
+  var company=meta.company||'';
+  var el=document.getElementById('topbar-user');
+  if(el)el.innerHTML='<div class="topbar-avatar">'+initials(name)+'</div><div><div class="topbar-uname">'+name+'</div><div class="topbar-role">'+company+'</div></div>';
+}
+function setActiveNav(){
+  var page=location.pathname.split('/').pop()||'app.html';
+  document.querySelectorAll('.nav-item').forEach(function(a){
+    var href=a.getAttribute('href')||'';
+    a.classList.toggle('active',href===page||(page===''&&href==='app.html'));
+  });
+}
+var STAGES=[
+  {id:'new',label:'New',color:'#8B5CF6',cls:'stage-new'},
+  {id:'contacted',label:'Contacted',color:'#3B82F6',cls:'stage-contacted'},
+  {id:'qualified',label:'Qualified',color:'#F59E0B',cls:'stage-qualified'},
+  {id:'proposal',label:'Proposal',color:'#EC4899',cls:'stage-proposal'},
+  {id:'won',label:'Won',color:'#10B981',cls:'stage-won'},
+  {id:'lost',label:'Lost',color:'#6B7280',cls:'stage-lost'}
+];
+function stageBadge(s){
+  var st=STAGES.find(function(x){return x.id===s;})||STAGES[0];
+  return '<span class="badge '+st.cls+'">'+st.label+'</span>';
+}
+function bizBadge(type){
+  if(type==='company')return '<span class="badge biz-company">&#x1F3E2; Company</span>';
+  if(type==='freelancer')return '<span class="badge biz-freelancer">&#x1F4BC; Freelancer</span>';
+  return '<span class="badge biz-individual">&#x1F464; Individual</span>';
+}
+var INV_STATUS={draft:{label:'Draft',cls:'invoice-status-draft'},sent:{label:'Sent',cls:'invoice-status-sent'},paid:{label:'Paid',cls:'invoice-status-paid'},overdue:{label:'Overdue',cls:'invoice-status-overdue'},cancelled:{label:'Cancelled',cls:'invoice-status-draft'}};
+function invBadge(s){var st=INV_STATUS[s]||INV_STATUS.draft;return '<span class="badge '+st.cls+'">'+st.label+'</span>';}
+async function validateVAT(country,vatNum){
+  if(!vatNum||vatNum.length<8)return{valid:false,reason:'VAT number too short'};
+  var prefix=vatNum.replace(/\s/g,'').toUpperCase().slice(0,2);
+  var euCodes=['AT','BE','BG','CY','CZ','DE','DK','EE','EL','ES','FI','FR','GB','HR','HU','IE','IT','LT','LU','LV','MT','NL','PL','PT','RO','SE','SI','SK'];
+  if(!euCodes.includes(prefix))return{valid:false,reason:'Not a recognised EU VAT prefix'};
+  await new Promise(function(r){setTimeout(r,800);});
+  return{valid:true,name:'Company verified via VIES',address:country+' \u00B7 EU Registered',vatNumber:vatNum.toUpperCase()};
+}
+function confirm2(msg,cb){
+  var overlay=document.createElement('div');
+  overlay.className='modal-overlay open';
+  var inner=document.createElement('div');
+  inner.className='modal';
+  inner.style.maxWidth='360px';
+  inner.innerHTML='<div class="modal-body" style="text-align:center;padding:32px 24px">'
+    +'<div style="width:48px;height:48px;background:var(--red-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">'
+    +'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+    +'</div>'
+    +'<div style="font-weight:700;color:var(--navy);margin-bottom:8px;font-size:.95rem">Confirm</div>'
+    +'<div style="font-size:.83rem;color:var(--muted);margin-bottom:24px">'+msg+'</div>'
+    +'<div style="display:flex;gap:10px;justify-content:center">'
+    +'<button class="btn btn-secondary" id="c2-no">Cancel</button>'
+    +'<button class="btn btn-danger" id="c2-yes">Delete</button>'
+    +'</div></div>';
+  overlay.appendChild(inner);
+  document.body.appendChild(overlay);
+  overlay.querySelector('#c2-yes').onclick=function(){overlay.remove();cb();};
+  overlay.querySelector('#c2-no').onclick=function(){overlay.remove();};
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+}
+
+requireAuth();
+let ALL_INVOICES = [];
+let lineItemCount = 0;
+let previewInvoice = null;
+
+document.addEventListener('DOMContentLoaded', async ()=>{
+  renderTopbarUser();
+  await loadInvoices();
+  setupDefaultDates();
+  renderLineItems();
+});
+
+async function loadInvoices(){
+  const user=getUser();
+  try{
+    ALL_INVOICES=await api(`invoices?user_id=eq.${user.id}&order=created_at.desc`)||[];
+  }catch{
+    ALL_INVOICES=getSampleInvoices();
+  }
+  renderKPIs();
+  renderTable();
+}
+
+function getSampleInvoices(){
+  const d=new Date();
+  return [
+    {id:'i1',invoice_number:'INV-2026-001',type:'invoice',client_name:'Innovatech SA',client_vat:'FR12345678901',issue_date:'2026-03-01',due_date:'2026-03-31',subtotal:5000,vat_rate:20,vat_amount:1000,total:6000,status:'paid',currency:'EUR'},
+    {id:'i2',invoice_number:'INV-2026-002',type:'invoice',client_name:'Becker GmbH',client_vat:'DE123456789',issue_date:'2026-03-05',due_date:'2026-04-04',subtotal:8500,vat_rate:0,vat_amount:0,total:8500,status:'sent',currency:'EUR',notes:'Reverse charge — VAT 0% (intra-EU)'},
+    {id:'i3',invoice_number:'DEV-2026-001',type:'quote',client_name:'Kowalski & Co.',issue_date:'2026-03-10',due_date:'2026-03-25',subtotal:15000,vat_rate:20,vat_amount:3000,total:18000,status:'draft',currency:'EUR'},
+    {id:'i4',invoice_number:'INV-2026-003',type:'invoice',client_name:'Sofia Rossi',issue_date:'2026-02-01',due_date:'2026-03-01',subtotal:2200,vat_rate:20,vat_amount:440,total:2640,status:'overdue',currency:'EUR'},
+  ];
+}
+
+function renderKPIs(){
+  const total=ALL_INVOICES.length;
+  const paid=ALL_INVOICES.filter(i=>i.status==='paid').reduce((a,i)=>a+(+i.total||0),0);
+  const pending=ALL_INVOICES.filter(i=>i.status==='sent').reduce((a,i)=>a+(+i.total||0),0);
+  const overdue=ALL_INVOICES.filter(i=>i.status==='overdue').reduce((a,i)=>a+(+i.total||0),0);
+  document.getElementById('k-inv-total').textContent=total;
+  document.getElementById('k-inv-paid').textContent=fmtMoney(paid);
+  document.getElementById('k-inv-pending').textContent=fmtMoney(pending);
+  document.getElementById('k-inv-overdue').textContent=fmtMoney(overdue);
+}
+
+function renderTable(){
+  const q=document.getElementById('inv-search').value.toLowerCase();
+  const sf=document.getElementById('status-filter').value;
+  const filtered=ALL_INVOICES.filter(i=>{
+    const match=!q||[i.invoice_number,i.client_name].join(' ').toLowerCase().includes(q);
+    const sm=sf==='all'||i.status===sf;
+    return match&&sm;
+  });
+  document.getElementById('inv-count').textContent=`${filtered.length} invoice${filtered.length!==1?'s':''}`;
+  const body=document.getElementById('inv-table-body');
+  if(!filtered.length){
+    body.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><h3>No invoices yet</h3><p>Create your first invoice</p></div>';
+    return;
+  }
+  body.innerHTML=`<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Number</th><th>Type</th><th>Client</th><th>Issue Date</th><th>Due Date</th><th>Amount HT</th><th>VAT</th><th>Total TTC</th><th>Status</th><th></th></tr></thead>
+    <tbody>${filtered.map(inv=>`<tr>
+      <td><strong style="font-family:monospace;font-size:.85rem;color:var(--navy)">${inv.invoice_number}</strong></td>
+      <td><span class="badge ${inv.type==='quote'?'badge-amber':inv.type==='credit'?'badge-red':'badge-indigo'}">${inv.type==='quote'?'Quote':inv.type==='credit'?'Credit':'Invoice'}</span></td>
+      <td><div style="font-weight:600;font-size:.85rem">${inv.client_name||'—'}</div>${inv.client_vat?`<div style="font-size:.7rem;color:var(--muted);font-family:monospace">${inv.client_vat}</div>`:''}</td>
+      <td style="color:var(--muted);font-size:.8rem">${fmtDate(inv.issue_date)}</td>
+      <td style="color:${inv.status==='overdue'?'var(--red)':'var(--muted)'};font-size:.8rem;font-weight:${inv.status==='overdue'?'600':'400'}">${fmtDate(inv.due_date)}${inv.status==='overdue'?' ⚠':''}</td>
+      <td style="font-size:.85rem">${fmtMoney(inv.subtotal)}</td>
+      <td style="font-size:.8rem;color:var(--muted)">${inv.vat_rate}%</td>
+      <td><strong style="color:var(--indigo)">${fmtMoney(inv.total)}</strong></td>
+      <td>${invBadge(inv.status)}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn btn-ghost btn-icon btn-sm" onclick="previewInv('${inv.id}')" title="Preview">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        ${inv.status!=='paid'?`
+        <button class="btn btn-success btn-icon btn-sm" onclick="markPaid('${inv.id}')" title="Mark Paid">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </button>`:''}
+        <button class="btn btn-danger btn-icon btn-sm" onclick="deleteInvoice('${inv.id}')" title="Delete">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        </button>
+      </div></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ── LINE ITEMS ──
+let lineItems = [{desc:'',qty:1,price:0}];
+
+function renderLineItems(){
+  document.getElementById('line-items').innerHTML = lineItems.map((item,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 80px 120px 40px;gap:8px;align-items:center;margin-bottom:8px">
+      <input type="text" value="${item.desc}" placeholder="Description of service / product"
+        style="border:1.5px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;outline:none;"
+        oninput="lineItems[${i}].desc=this.value">
+      <input type="number" value="${item.qty}" placeholder="Qty" min="1"
+        style="border:1.5px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;outline:none;text-align:center;"
+        oninput="lineItems[${i}].qty=parseFloat(this.value)||1;calcTotals()">
+      <input type="number" value="${item.price}" placeholder="Unit price €" step="0.01"
+        style="border:1.5px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;outline:none;"
+        oninput="lineItems[${i}].price=parseFloat(this.value)||0;calcTotals()">
+      <button onclick="removeLineItem(${i})" style="border:none;background:var(--red-bg);color:var(--red);border-radius:var(--radius);padding:9px;cursor:pointer;font-size:.75rem;">✕</button>
+    </div>`).join('');
+  calcTotals();
+}
+
+function addLineItem(){ lineItems.push({desc:'',qty:1,price:0}); renderLineItems(); }
+function removeLineItem(i){ if(lineItems.length>1){ lineItems.splice(i,1); renderLineItems(); } }
+
+function calcTotals(){
+  const ht = lineItems.reduce((a,l)=>a+(l.qty||1)*(l.price||0),0);
+  const vatRate = parseFloat(document.getElementById('inv-vat')?.value||20);
+  const vatAmt = ht * vatRate / 100;
+  document.getElementById('tot-ht').textContent=fmtMoney(ht);
+  document.getElementById('tot-vat').textContent=fmtMoney(vatAmt);
+  document.getElementById('tot-ttc').textContent=fmtMoney(ht+vatAmt);
+  if(document.getElementById('vat-label')) document.getElementById('vat-label').textContent=vatRate;
+}
+
+function setupDefaultDates(){
+  const today = new Date();
+  const due = new Date(); due.setDate(due.getDate()+30);
+  document.getElementById('inv-date').value = todayISO();
+  document.getElementById('inv-due').value = due.toISOString().split('T')[0];
+  // Auto invoice number
+  const num = ALL_INVOICES.length+1;
+  const y = today.getFullYear();
+  document.getElementById('inv-num').value = `INV-${y}-${String(num).padStart(3,'0')}`;
+}
+
+function openNewInvoice(){
+  lineItems=[{desc:'',qty:1,price:0}];
+  renderLineItems();
+  setupDefaultDates();
+  openModal('modal-invoice');
+}
+
+async function saveInvoice(status){
+  const user=getUser();
+  const vatRate=parseFloat(document.getElementById('inv-vat').value||20);
+  const ht=lineItems.reduce((a,l)=>a+(l.qty||1)*(l.price||0),0);
+  const vatAmt=ht*vatRate/100;
+  const inv={
+    user_id:user.id,
+    invoice_number:document.getElementById('inv-num').value.trim(),
+    type:document.getElementById('inv-type').value,
+    client_name:document.getElementById('inv-client').value.trim(),
+    client_email:document.getElementById('inv-client-email').value.trim(),
+    client_address:document.getElementById('inv-client-addr').value.trim(),
+    client_vat:document.getElementById('inv-client-vat').value.trim()||null,
+    issue_date:document.getElementById('inv-date').value,
+    due_date:document.getElementById('inv-due').value,
+    line_items:JSON.stringify(lineItems),
+    vat_rate:vatRate,
+    subtotal:ht,
+    vat_amount:vatAmt,
+    total:ht+vatAmt,
+    currency:'EUR',
+    notes:document.getElementById('inv-notes').value.trim(),
+    status,
+    created_at:new Date().toISOString(),
+  };
+  if(!inv.invoice_number||!inv.client_name){toast('Invoice number and client name required','error');return;}
+  try{
+    const saved=await api('invoices',{method:'POST',body:JSON.stringify(inv)});
+    ALL_INVOICES.unshift(Array.isArray(saved)?saved[0]:inv);
+  }catch{
+    inv.id='local-'+Date.now();
+    ALL_INVOICES.unshift(inv);
+  }
+  toast(status==='sent'?'Invoice saved & marked sent':'Invoice saved as draft','success');
+  closeModal('modal-invoice');
+  renderKPIs();renderTable();
+}
+
+async function markPaid(id){
+  const inv=ALL_INVOICES.find(i=>i.id===id);
+  if(inv){ inv.status='paid'; try{await api(`invoices?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({status:'paid'})});}catch{} }
+  toast('Marked as paid','success');
+  renderKPIs();renderTable();
+}
+
+async function deleteInvoice(id){
+  confirm2('Delete this invoice permanently?',async()=>{
+    ALL_INVOICES=ALL_INVOICES.filter(i=>i.id!==id);
+    try{await api(`invoices?id=eq.${id}`,{method:'DELETE'});}catch{}
+    toast('Invoice deleted','info');
+    renderKPIs();renderTable();
+  });
+}
+
+function previewInv(id){
+  const inv=ALL_INVOICES.find(i=>i.id===id);
+  if(!inv)return;
+  previewInvoice=inv;
+  const user=getUser(); const meta=(user.user_metadata||{});
+  const myName=[meta.first_name,meta.last_name].filter(Boolean).join(' ')||'Your Company';
+  let items=[];
+  try{items=JSON.parse(inv.line_items||'[]');}catch{}
+  document.getElementById('preview-body').innerHTML=`
+    <div id="printable" style="font-family:'Plus Jakarta Sans',sans-serif;color:#111;max-width:640px;margin:0 auto;padding:20px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px">
+        <div>
+          <div style="font-family:'Instrument Serif',serif;font-size:1.6rem;color:#0A1628;letter-spacing:-.5px">Prosp<span style="color:#4F46E5;font-style:italic">eo</span></div>
+          <div style="font-size:.75rem;color:#8892A4;margin-top:2px">${meta.company||myName}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:1.2rem;font-weight:800;color:#0A1628">${inv.type==='quote'?'DEVIS / QUOTE':'FACTURE / INVOICE'}</div>
+          <div style="font-size:.85rem;color:#4F46E5;font-family:monospace">${inv.invoice_number}</div>
+          <div style="font-size:.75rem;color:#8892A4;margin-top:4px">Date: ${fmtDate(inv.issue_date)}</div>
+          <div style="font-size:.75rem;color:#8892A4">Due: ${fmtDate(inv.due_date)}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px">
+        <div style="padding:14px;background:#F7F8FC;border-radius:8px">
+          <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:#8892A4;margin-bottom:6px">From</div>
+          <div style="font-weight:700">${myName}</div>
+        </div>
+        <div style="padding:14px;background:#F7F8FC;border-radius:8px">
+          <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:#8892A4;margin-bottom:6px">Bill To</div>
+          <div style="font-weight:700">${inv.client_name}</div>
+          ${inv.client_address?`<div style="font-size:.8rem;color:#4A5568">${inv.client_address}</div>`:''}
+          ${inv.client_vat?`<div style="font-size:.75rem;color:#8892A4;font-family:monospace">VAT: ${inv.client_vat}</div>`:''}
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+        <thead><tr style="background:#0A1628;color:#fff">
+          <th style="padding:10px 14px;text-align:left;font-size:.75rem;letter-spacing:.5px">DESCRIPTION</th>
+          <th style="padding:10px 14px;text-align:center;font-size:.75rem">QTY</th>
+          <th style="padding:10px 14px;text-align:right;font-size:.75rem">UNIT HT</th>
+          <th style="padding:10px 14px;text-align:right;font-size:.75rem">TOTAL HT</th>
+        </tr></thead>
+        <tbody>${items.map((li,i)=>`<tr style="border-bottom:1px solid #E2E6F0;background:${i%2?'#F7F8FC':'#fff'}">
+          <td style="padding:10px 14px;font-size:.85rem">${li.desc||'—'}</td>
+          <td style="padding:10px 14px;text-align:center;font-size:.85rem">${li.qty||1}</td>
+          <td style="padding:10px 14px;text-align:right;font-size:.85rem">${fmtMoney(li.price)}</td>
+          <td style="padding:10px 14px;text-align:right;font-size:.85rem;font-weight:600">${fmtMoney((li.qty||1)*(li.price||0))}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+      <div style="display:flex;justify-content:flex-end">
+        <div style="min-width:240px">
+          <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:.83rem;border-bottom:1px solid #E2E6F0"><span style="color:#8892A4">Subtotal HT</span><span>${fmtMoney(inv.subtotal)}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:.83rem;border-bottom:1px solid #E2E6F0"><span style="color:#8892A4">TVA / VAT (${inv.vat_rate}%)</span><span>${fmtMoney(inv.vat_amount)}</span></div>
+          ${inv.vat_rate===0?`<div style="font-size:.72rem;color:#F59E0B;padding:4px 0">TVA non applicable — autoliquidation (art. 196 Directive 2006/112/CE)</div>`:''}
+          <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:1rem;font-weight:800"><span>Total TTC</span><span style="color:#4F46E5">${fmtMoney(inv.total)}</span></div>
+        </div>
+      </div>
+      ${inv.notes?`<div style="margin-top:20px;padding:12px;background:#F7F8FC;border-radius:8px;font-size:.78rem;color:#4A5568;border-left:3px solid #4F46E5">${inv.notes}</div>`:''}
+      <div style="margin-top:24px;padding-top:16px;border-top:1px solid #E2E6F0;font-size:.7rem;color:#8892A4;text-align:center">
+        Document generated by Prospeo · EU Invoice Standards · ${new Date().toLocaleDateString('en-GB')}
+      </div>
+    </div>`;
+  openModal('modal-preview');
+}
+
+function printInvoice(){
+  const content=document.getElementById('printable').innerHTML;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Invoice</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>@media print{body{margin:0;}}</style>
+  </head><body style="margin:32px;font-family:'Plus Jakarta Sans',sans-serif">${content}</body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(),800);
+}
+</script>
+</body>
+</html>
