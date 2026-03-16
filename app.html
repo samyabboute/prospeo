@@ -842,37 +842,28 @@ const ACT_ICON={
   await Auth.verifyPlan();
   Sidebar.init('dashboard');
 
-  // Load plan limits
-  await Limits.load(session.user.id);
-  var _planData = await Auth.verifyPlan();
-
-  // Show limit bars
-  Limits.showLimitBar('limit-leads-bar', 'leads', _planData);
-  Limits.showLimitBar('limit-clients-bar', 'clients', _planData);
-
-  // Revenue widget for Pro users
-  if (_planData && (_planData.plan === 'pro' || _planData.is_pro)) {
-    document.getElementById('revenue-widget-container') &&
-    (document.getElementById('revenue-widget-container').style.display = 'block');
-    loadRevenueStats(session.user.id);
-  }
-
-  // Check overdue invoices and notify
-  var invData = await DB.getInvoices();
-  if (invData && typeof Notifications !== 'undefined') {
-    Notifications.checkOverdueInvoices(invData);
-  }
-
-  // Check due tasks
-  var taskData = await _supa.from('events').select('*').eq('user_id', session.user.id).eq('completed', false);
-  if (taskData.data && typeof Notifications !== 'undefined') {
-    Notifications.checkUpcomingTasks(taskData.data);
-  }
-
-  // Track login count for feedback widget
+  // Track login count for feedback widget (fire and forget)
   FeedbackWidget.incrementAndCheck(session.user.id);
   // Init Hanna with plan and token
   AIAssistant.init(Auth._plan || 'free', session.access_token);
+  // Load limits + notifications in background (non-blocking)
+  var _planData = Auth._plan || {plan:'free', is_pro:false};
+  setTimeout(async function() {
+    try {
+      await Limits.load(session.user.id);
+      _planData = await Auth.verifyPlan();
+      Limits.showLimitBar('limit-leads-bar', 'leads', _planData);
+      Limits.showLimitBar('limit-clients-bar', 'clients', _planData);
+      if (_planData && (_planData.plan === 'pro' || _planData.is_pro)) {
+        var rw = document.getElementById('revenue-widget-container');
+        if (rw) rw.style.display = 'block';
+        loadRevenueStats(session.user.id);
+      }
+      // Check overdue invoices for notifications
+      var invData = await DB.getInvoices();
+      if (invData && typeof Notifications !== 'undefined') Notifications.checkOverdueInvoices(invData);
+    } catch(e) { console.error('[Background init]', e); }
+  }, 800);
 
   const [leads, acts, evts] = await Promise.all([
     DB.getLeads(),
@@ -892,34 +883,6 @@ const ACT_ICON={
 
   if(new URLSearchParams(location.search).get('upgrade')==='success'){
     await Auth.verifyPlan(true); Sidebar.init('dashboard');
-
-  // Load plan limits
-  await Limits.load(session.user.id);
-  var _planData = await Auth.verifyPlan();
-
-  // Show limit bars
-  Limits.showLimitBar('limit-leads-bar', 'leads', _planData);
-  Limits.showLimitBar('limit-clients-bar', 'clients', _planData);
-
-  // Revenue widget for Pro users
-  if (_planData && (_planData.plan === 'pro' || _planData.is_pro)) {
-    document.getElementById('revenue-widget-container') &&
-    (document.getElementById('revenue-widget-container').style.display = 'block');
-    loadRevenueStats(session.user.id);
-  }
-
-  // Check overdue invoices and notify
-  var invData = await DB.getInvoices();
-  if (invData && typeof Notifications !== 'undefined') {
-    Notifications.checkOverdueInvoices(invData);
-  }
-
-  // Check due tasks
-  var taskData = await _supa.from('events').select('*').eq('user_id', session.user.id).eq('completed', false);
-  if (taskData.data && typeof Notifications !== 'undefined') {
-    Notifications.checkUpcomingTasks(taskData.data);
-  }
-
     Toast.success('Welcome to Pro!','All features are now unlocked.');
     history.replaceState({},'','app.html');
   }
