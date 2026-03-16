@@ -39,10 +39,14 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Prospeo">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="shortcut icon" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <link rel="stylesheet" href="prospeo-animations.css">
 </head>
 <body>
 <div class="header">
-  <div class="logo" onclick="window.location.href='app.html'">prospe<span>o</span></div>
+  <div class="logo"><img src="prospeo-logo.svg" alt="Prospeo" style="height:28px;width:auto"></div>
   <h1>Simple, honest pricing</h1>
   <div class="sub">Start free. Upgrade when you're ready.</div>
 </div>
@@ -103,5 +107,7 @@
     alert('Stripe payments are being configured. Please contact hello@prospeo.app to upgrade to Pro manually. We will activate your account within 24 hours.');
   }
 </script>
+
+<script src="prospeo-animations.js"></script>
 </body>
 </html>

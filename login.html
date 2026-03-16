@@ -123,11 +123,15 @@ footer a:hover{color:var(--brand)}
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Prospeo">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="shortcut icon" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <link rel="stylesheet" href="prospeo-animations.css">
 </head>
 <body>
 
 <nav>
-  <a class="nav-logo" href="index.html">prospe<span>o</span></a>
+  <a href="index.html" class="nav-logo" style="display:flex;align-items:center"><img src="prospeo-logo.svg" alt="Prospeo" style="height:24px;width:auto;display:block;vertical-align:middle"></a>
   <a class="nav-back" href="index.html">Home</a>
 </nav>
 
@@ -136,15 +140,7 @@ footer a:hover{color:var(--brand)}
 
     <!-- Logo -->
     <div class="card-logo">
-      <div class="logo-mark">
-        <svg viewBox="0 0 24 24">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-      </div>
-      <div class="logo-name">prospe<span>o</span></div>
+      <div class="logo-mark"><img src="prospeo-logo-white.svg" alt="Prospeo" style="height:20px;width:auto;filter:brightness(10)"></div><div class="logo-name"><img src="prospeo-logo.svg" alt="Prospeo" style="height:18px;width:auto"></div>
     </div>
 
     <!-- Tabs -->
@@ -413,5 +409,7 @@ window.addEventListener('unhandledrejection', function(e) {
   console.error('[Login]', e.reason);
 });
 </script>
+
+<script src="prospeo-animations.js"></script>
 </body>
 </html>

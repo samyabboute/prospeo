@@ -32,10 +32,14 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Prospeo">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="shortcut icon" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <link rel="stylesheet" href="prospeo-animations.css">
 </head>
 <body>
 <div class="topbar">
-  <div class="logo" onclick="window.location.href='app.html'">prospe<span>o</span></div>
+  <div class="logo"><img src="prospeo-logo.svg" alt="Prospeo" style="height:28px;width:auto"></div>
   <div class="nav">
     <a href="app.html">Dashboard</a>
     <a href="clients.html">Clients</a>
@@ -85,5 +89,7 @@ function sanitize(s){var d=document.createElement('div');d.textContent=s;return 
     if(t){ t.textContent='An error occurred. Please refresh the page.'; t.className='toast toast-error show'; setTimeout(function(){t.className='toast';},4000); }
   });
 </script>
+
+<script src="prospeo-animations.js"></script>
 </body>
 </html>
