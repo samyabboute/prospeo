@@ -50,7 +50,7 @@ var _supa = supabase.createClient(SUPA_URL, ANON_KEY);
 
 (async function(){
   var s = await _supa.auth.getSession();
-  if(!s.data.session){ window.location.href='index.html'; return; }
+  if(!s.data.session){ window.location.href='login.html'; return; }
   var uid = s.data.session.user.id;
   var {data:clients,error} = await _supa.from('clients').select('*').eq('user_id',uid).order('created_at',{ascending:false});
   var el = document.getElementById('clients-body');
@@ -65,6 +65,13 @@ var _supa = supabase.createClient(SUPA_URL, ANON_KEY);
   el.innerHTML='<table><thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Phone</th></tr></thead><tbody>'+rows+'</tbody></table>';
 })();
 function sanitize(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+  // Global error handler - catches unhandled async errors
+  window.addEventListener('unhandledrejection', function(e) {
+    console.error('[Prospeo] Unhandled error:', e.reason);
+    var t = document.getElementById('toast');
+    if(t){ t.textContent='An error occurred. Please refresh the page.'; t.className='toast toast-error show'; setTimeout(function(){t.className='toast';},4000); }
+  });
 </script>
 </body>
 </html>

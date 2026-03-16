@@ -1,3 +1,462 @@
 <!DOCTYPE html>
-<html><head><meta http-equiv="refresh" content="0;url=index.html"></head>
-<body><a href="index.html">Click here</a></body></html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prospeo — The CRM that invoices. Built for European freelancers.</title>
+<meta name="description" content="Manage clients, track leads, send EU-compliant invoices — all in one clean tool. Made for European freelancers and small businesses.">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --brand:#0066FF;
+  --brand-dark:#0052CC;
+  --text:#0D0D0D;
+  --text2:#6E6E73;
+  --text3:#AEAEB2;
+  --bg:#FBFBFD;
+  --white:#FFFFFF;
+  --border:rgba(0,0,0,.08);
+  --border-strong:rgba(0,0,0,.14);
+  --glass:rgba(255,255,255,.72);
+  --r:18px;
+  --rmd:12px;
+  --rsm:8px;
+}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+
+/* ── NAV ─────────────────────────────────────────────────────── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);background:rgba(251,251,253,.82);border-bottom:0.5px solid var(--border);transition:background .3s}
+.nav-logo{font-size:20px;font-weight:700;color:var(--text);letter-spacing:-.5px;text-decoration:none}
+.nav-logo span{color:var(--brand)}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{font-size:14px;color:var(--text2);text-decoration:none;font-weight:400;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-ctas{display:flex;align-items:center;gap:10px}
+.btn-nav-ghost{font-size:14px;color:var(--text);text-decoration:none;font-weight:500;padding:7px 14px;border-radius:980px;transition:background .2s}
+.btn-nav-ghost:hover{background:rgba(0,0,0,.06)}
+.btn-nav-solid{font-size:14px;color:#fff;background:var(--brand);text-decoration:none;font-weight:500;padding:7px 16px;border-radius:980px;transition:opacity .2s}
+.btn-nav-solid:hover{opacity:.85}
+
+/* ── HERO ─────────────────────────────────────────────────────── */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px;position:relative;overflow:hidden}
+.hero-glow{position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:900px;height:600px;background:radial-gradient(ellipse at 50% 40%,rgba(0,102,255,.12) 0%,transparent 70%);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(0,102,255,.08);border:1px solid rgba(0,102,255,.18);color:var(--brand);font-size:13px;font-weight:500;padding:6px 14px;border-radius:980px;margin-bottom:28px}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--brand);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hero h1{font-size:clamp(42px,7vw,88px);font-weight:700;line-height:1.05;letter-spacing:-2.5px;color:var(--text);max-width:820px;margin-bottom:24px}
+.hero h1 .accent{background:linear-gradient(135deg,var(--brand) 0%,#6366F1 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:clamp(17px,2.2vw,22px);color:var(--text2);line-height:1.55;max-width:540px;margin:0 auto 40px;font-weight:400}
+.hero-ctas{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.btn-hero-primary{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;font-size:17px;font-weight:600;padding:16px 32px;border-radius:980px;text-decoration:none;transition:all .2s;box-shadow:0 4px 20px rgba(0,102,255,.3)}
+.btn-hero-primary:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(0,102,255,.4);background:var(--brand-dark)}
+.btn-hero-ghost{display:inline-flex;align-items:center;gap:8px;color:var(--brand);font-size:17px;font-weight:500;padding:16px 24px;border-radius:980px;text-decoration:none;transition:all .2s}
+.btn-hero-ghost:hover{background:rgba(0,102,255,.07)}
+.btn-arrow{font-size:18px;transition:transform .2s}
+.btn-hero-primary:hover .btn-arrow{transform:translateX(4px)}
+.hero-note{font-size:13px;color:var(--text3);margin-top:4px}
+
+/* ── HERO VISUAL ─────────────────────────────────────────────── */
+.hero-visual{position:relative;max-width:900px;width:100%;margin:60px auto 0}
+.hero-visual-frame{background:var(--white);border-radius:20px;border:1px solid var(--border);overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.12),0 0 0 1px rgba(255,255,255,.5) inset}
+.hero-visual-bar{height:36px;background:#F5F5F7;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:6px}
+.wdot{width:11px;height:11px;border-radius:50%}
+.wd1{background:#FF5F57}.wd2{background:#FFBD2E}.wd3{background:#28C840}
+.waddr{flex:1;margin:0 12px;background:rgba(0,0,0,.06);border-radius:6px;height:18px;max-width:240px;margin-left:auto;margin-right:auto}
+.hero-dash{display:grid;grid-template-columns:220px 1fr;min-height:420px}
+.hdash-sidebar{background:#F5F5F7;border-right:1px solid var(--border);padding:20px 14px}
+.hds-logo{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.3px;margin-bottom:24px;padding:0 6px}
+.hds-logo span{color:var(--brand)}
+.hds-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;font-size:13px;color:var(--text2);margin-bottom:2px;cursor:default}
+.hds-item.active{background:var(--white);color:var(--text);font-weight:500;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.hds-icon{width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.ic-blue{background:#EEF4FF;color:var(--brand)}
+.ic-green{background:#ECFDF5;color:#059669}
+.ic-orange{background:#FFF7ED;color:#D97706}
+.ic-purple{background:#F5F3FF;color:#7C3AED}
+.hdash-main{padding:24px}
+.hdash-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.kpi{background:#F5F5F7;border-radius:10px;padding:14px}
+.kpi-val{font-size:22px;font-weight:700;color:var(--text);margin-bottom:2px}
+.kpi-lbl{font-size:11px;color:var(--text2)}
+.kpi-trend{font-size:11px;color:#059669;font-weight:500}
+.hdash-pipeline{background:#F5F5F7;border-radius:10px;padding:14px;margin-bottom:12px}
+.pipeline-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;justify-content:space-between}
+.pipeline-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pcol-head{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
+.pcard{background:var(--white);border-radius:6px;padding:8px 9px;margin-bottom:5px;border:1px solid var(--border)}
+.pcard-title{font-size:11px;font-weight:500;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard-val{font-size:10px;color:var(--text2)}
+.pcard-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px}
+.dot-blue{background:var(--brand)}.dot-green{background:#059669}.dot-orange{background:#D97706}.dot-gray{background:#9CA3AF}
+.hdash-inv{background:#F5F5F7;border-radius:10px;padding:14px}
+.inv-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:12px}
+.inv-row:last-child{border-bottom:none}
+.inv-name{font-weight:500;color:var(--text)}
+.inv-amt{font-weight:600;color:var(--text)}
+.inv-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
+.ib-paid{background:#ECFDF5;color:#059669}
+.ib-pend{background:#FFF7ED;color:#D97706}
+
+/* ── LOGOS ───────────────────────────────────────────────────── */
+.logos{padding:40px 24px;text-align:center;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.logos-label{font-size:13px;color:var(--text3);margin-bottom:20px;font-weight:500;text-transform:uppercase;letter-spacing:.08em}
+.logos-row{display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap}
+.logo-badge{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:600;color:var(--text2);opacity:.6}
+.logo-badge:hover{opacity:1;transition:opacity .2s}
+
+/* ── FEATURES ────────────────────────────────────────────────── */
+.section{padding:100px 24px;max-width:1080px;margin:0 auto}
+.section-eyebrow{font-size:13px;font-weight:600;color:var(--brand);text-transform:uppercase;letter-spacing:.08em;text-align:center;margin-bottom:14px}
+.section-title{font-size:clamp(32px,4vw,52px);font-weight:700;letter-spacing:-1.5px;text-align:center;color:var(--text);line-height:1.1;margin-bottom:16px}
+.section-sub{font-size:18px;color:var(--text2);text-align:center;max-width:520px;margin:0 auto 64px;line-height:1.6}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.feat{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:32px;transition:transform .2s,box-shadow .2s}
+.feat:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.08)}
+.feat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:18px}
+.fi-blue{background:#EEF4FF}.fi-green{background:#ECFDF5}.fi-orange{background:#FFF7ED}.fi-purple{background:#F5F3FF}.fi-red{background:#FEF2F2}.fi-teal{background:#F0FDFA}
+.feat-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px;letter-spacing:-.3px}
+.feat-desc{font-size:14px;color:var(--text2);line-height:1.6}
+.feat-tag{display:inline-block;margin-top:14px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:980px}
+.ft-pro{background:#EEF4FF;color:var(--brand)}
+.ft-free{background:#ECFDF5;color:#059669}
+
+/* ── BIG QUOTE ───────────────────────────────────────────────── */
+.quote-section{background:var(--text);padding:100px 24px;text-align:center}
+.quote-section blockquote{font-size:clamp(24px,4vw,42px);font-weight:700;color:var(--white);letter-spacing:-1px;line-height:1.2;max-width:740px;margin:0 auto 32px}
+.quote-section blockquote span{color:var(--brand)}
+.quote-author{font-size:14px;color:rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;gap:10px}
+.qa-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--brand),#6366F1);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff}
+
+/* ── PRICING ─────────────────────────────────────────────────── */
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:720px;margin:0 auto}
+@media(max-width:640px){.pricing-grid{grid-template-columns:1fr}}
+.plan{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:32px;position:relative}
+.plan.featured{border-color:var(--brand);border-width:2px;background:linear-gradient(180deg,rgba(0,102,255,.03) 0%,var(--white) 100%)}
+.plan-popular{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--brand);color:#fff;font-size:11px;font-weight:700;padding:4px 16px;border-radius:980px;white-space:nowrap;letter-spacing:.03em}
+.plan-name{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.plan-price{font-size:48px;font-weight:700;letter-spacing:-2px;color:var(--text);line-height:1;margin-bottom:4px}
+.plan-price sup{font-size:20px;font-weight:500;vertical-align:top;margin-top:12px}
+.plan-price sub{font-size:16px;font-weight:400;color:var(--text2);letter-spacing:0}
+.plan-desc{font-size:14px;color:var(--text2);margin-bottom:28px;margin-top:6px}
+.plan-features{list-style:none;margin-bottom:28px}
+.plan-features li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text);padding:6px 0;border-bottom:1px solid rgba(0,0,0,.04)}
+.plan-features li:last-child{border-bottom:none}
+.plan-features li::before{content:'';width:18px;height:18px;border-radius:50%;background:#ECFDF5;flex-shrink:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23059669' stroke-width='3' stroke-linecap='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");background-size:11px;background-repeat:no-repeat;background-position:center;margin-top:1px}
+.plan-features li.na{color:var(--text3)}
+.plan-features li.na::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23AEAEB2' stroke-width='2.5' stroke-linecap='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E");background-color:#F5F5F7}
+.btn-plan{display:block;width:100%;padding:14px;border-radius:980px;font-size:15px;font-weight:600;text-align:center;text-decoration:none;cursor:pointer;border:none;transition:all .2s}
+.btn-plan-primary{background:var(--brand);color:#fff;box-shadow:0 4px 16px rgba(0,102,255,.25)}
+.btn-plan-primary:hover{opacity:.88;transform:translateY(-1px)}
+.btn-plan-ghost{background:transparent;color:var(--text);border:1.5px solid var(--border-strong)}
+.btn-plan-ghost:hover{background:#F5F5F7}
+
+/* ── FINAL CTA ───────────────────────────────────────────────── */
+.final-cta{padding:120px 24px;text-align:center;position:relative;overflow:hidden}
+.final-cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(0,102,255,.1) 0%,transparent 70%);pointer-events:none}
+.final-cta h2{font-size:clamp(36px,5vw,64px);font-weight:700;letter-spacing:-2px;color:var(--text);line-height:1.05;max-width:640px;margin:0 auto 20px}
+.final-cta p{font-size:18px;color:var(--text2);max-width:440px;margin:0 auto 40px;line-height:1.6}
+
+/* ── FOOTER ──────────────────────────────────────────────────── */
+footer{border-top:1px solid var(--border);padding:40px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;max-width:1080px;margin:0 auto}
+.footer-logo{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.3px}
+.footer-logo span{color:var(--brand)}
+.footer-links{display:flex;gap:24px;flex-wrap:wrap}
+.footer-links a{font-size:13px;color:var(--text3);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--text)}
+.footer-copy{font-size:13px;color:var(--text3);width:100%;text-align:center;margin-top:8px}
+
+/* ── RESPONSIVE ──────────────────────────────────────────────── */
+@media(max-width:768px){
+  nav{padding:0 20px}
+  .nav-links{display:none}
+  .hero{padding:100px 20px 60px}
+  .hero-dash{grid-template-columns:1fr}
+  .hdash-sidebar{display:none}
+  .pipeline-cols{grid-template-columns:1fr 1fr}
+  .features-grid{grid-template-columns:1fr}
+  .section{padding:60px 20px}
+  footer{flex-direction:column;text-align:center}
+}
+
+/* ── ANIMATIONS ──────────────────────────────────────────────── */
+.fade-up{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.fade-up.visible{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="landing.html">prospe<span>o</span></a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="privacy.html">Privacy</a>
+  </div>
+  <div class="nav-ctas">
+    <a class="btn-nav-ghost" href="login.html">Sign in</a>
+    <a class="btn-nav-solid" href="index.html#register">Get started free</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    Built for European freelancers
+  </div>
+  <h1>The CRM that<br><span class="accent">actually invoices.</span></h1>
+  <p class="hero-sub">Manage your clients, close more deals, and send EU-compliant invoices — all in one tool. No spreadsheets. No complexity.</p>
+  <div class="hero-ctas">
+    <a class="btn-hero-primary" href="index.html#register">
+      Start for free
+      <span class="btn-arrow">&#8594;</span>
+    </a>
+    <a class="btn-hero-ghost" href="#features">See how it works</a>
+  </div>
+  <p class="hero-note">Free forever. No credit card required.</p>
+
+  <!-- App preview -->
+  <div class="hero-visual fade-up">
+    <div class="hero-visual-frame">
+      <div class="hero-visual-bar">
+        <div class="wdot wd1"></div>
+        <div class="wdot wd2"></div>
+        <div class="wdot wd3"></div>
+        <div class="waddr"></div>
+      </div>
+      <div class="hero-dash">
+        <div class="hdash-sidebar">
+          <div class="hds-logo">prospe<span>o</span></div>
+          <div class="hds-item active">
+            <div class="hds-icon ic-blue">&#9632;</div>
+            Dashboard
+          </div>
+          <div class="hds-item">
+            <div class="hds-icon ic-green">&#9632;</div>
+            Clients
+          </div>
+          <div class="hds-item">
+            <div class="hds-icon ic-orange">&#9632;</div>
+            Invoices
+          </div>
+          <div class="hds-item">
+            <div class="hds-icon ic-purple">&#9632;</div>
+            Calendar
+          </div>
+        </div>
+        <div class="hdash-main">
+          <div class="hdash-kpis">
+            <div class="kpi">
+              <div class="kpi-val">&#8364;12,840</div>
+              <div class="kpi-lbl">Revenue this month</div>
+              <div class="kpi-trend">&#8593; 18% vs last month</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-val">24</div>
+              <div class="kpi-lbl">Active clients</div>
+              <div class="kpi-trend">&#8593; 4 new this month</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-val">8</div>
+              <div class="kpi-lbl">Open deals</div>
+              <div class="kpi-trend">&#8364;34,200 pipeline</div>
+            </div>
+          </div>
+          <div class="hdash-pipeline">
+            <div class="pipeline-title">
+              <span>Pipeline</span>
+              <span style="font-size:11px;color:var(--text2);font-weight:400">8 deals</span>
+            </div>
+            <div class="pipeline-cols">
+              <div>
+                <div class="pcol-head">Lead</div>
+                <div class="pcard"><div class="pcard-title"><span class="pcard-dot dot-gray"></span>Agence Martin</div><div class="pcard-val">&#8364;3,200</div></div>
+                <div class="pcard"><div class="pcard-title"><span class="pcard-dot dot-gray"></span>Studio Nova</div><div class="pcard-val">&#8364;1,800</div></div>
+              </div>
+              <div>
+                <div class="pcol-head">Qualified</div>
+                <div class="pcard"><div class="pcard-title"><span class="pcard-dot dot-blue"></span>TechCorp SAS</div><div class="pcard-val">&#8364;8,500</div></div>
+              </div>
+              <div>
+                <div class="pcol-head">Proposal</div>
+                <div class="pcard"><div class="pcard-title"><span class="pcard-dot dot-orange"></span>Maison Dupont</div><div class="pcard-val">&#8364;12,000</div></div>
+              </div>
+              <div>
+                <div class="pcol-head">Won &#10003;</div>
+                <div class="pcard"><div class="pcard-title"><span class="pcard-dot dot-green"></span>Eurl Bernard</div><div class="pcard-val">&#8364;4,400</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="hdash-inv">
+            <div class="inv-row"><span class="inv-name">Agence Martin — Design</span><span><span class="inv-badge ib-paid">Paid</span></span><span class="inv-amt">&#8364;2,400</span></div>
+            <div class="inv-row"><span class="inv-name">TechCorp — Dev Sprint 4</span><span><span class="inv-badge ib-pend">Pending</span></span><span class="inv-amt">&#8364;4,800</span></div>
+            <div class="inv-row"><span class="inv-name">Studio Nova — Brand</span><span><span class="inv-badge ib-paid">Paid</span></span><span class="inv-amt">&#8364;1,800</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF LOGOS -->
+<div class="logos">
+  <div class="logos-label">Trusted by freelancers across Europe</div>
+  <div class="logos-row">
+    <div class="logo-badge">&#127467;&#127479; France</div>
+    <div class="logo-badge">&#127465;&#127466; Germany</div>
+    <div class="logo-badge">&#127470;&#127481; Italy</div>
+    <div class="logo-badge">&#127466;&#127480; Spain</div>
+    <div class="logo-badge">&#127477;&#127473; Poland</div>
+    <div class="logo-badge">&#127475;&#127473; Netherlands</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-eyebrow">Everything you need</div>
+  <h2 class="section-title fade-up">Your entire business.<br>One clean tool.</h2>
+  <p class="section-sub fade-up">Stop juggling spreadsheets, PDF invoices, and sticky notes. Prospeo brings everything together.</p>
+  <div class="features-grid">
+    <div class="feat fade-up">
+      <div class="feat-icon fi-blue">&#128202;</div>
+      <div class="feat-title">Pipeline CRM</div>
+      <div class="feat-desc">Drag leads through your pipeline from first contact to closed deal. See your entire sales funnel at a glance.</div>
+      <span class="feat-tag ft-free">Free</span>
+    </div>
+    <div class="feat fade-up">
+      <div class="feat-icon fi-green">&#128196;</div>
+      <div class="feat-title">EU-Compliant Invoicing</div>
+      <div class="feat-desc">Generate professional invoices with HT, TVA, and TTC automatically calculated. Send, track, and get paid faster.</div>
+      <span class="feat-tag ft-pro">Pro</span>
+    </div>
+    <div class="feat fade-up">
+      <div class="feat-icon fi-orange">&#128197;</div>
+      <div class="feat-title">Calendar & Tasks</div>
+      <div class="feat-desc">Never miss a follow-up or deadline. Manage your tasks, meetings, and deadlines in one place.</div>
+      <span class="feat-tag ft-free">Free</span>
+    </div>
+    <div class="feat fade-up">
+      <div class="feat-icon fi-purple">&#127760;</div>
+      <div class="feat-title">GDPR Native</div>
+      <div class="feat-desc">All your data stored in Frankfurt, EU. Full GDPR compliance built-in. Your clients' data never leaves Europe.</div>
+      <span class="feat-tag ft-free">Free</span>
+    </div>
+    <div class="feat fade-up">
+      <div class="feat-icon fi-teal">&#129302;</div>
+      <div class="feat-title">AI Business Assistant</div>
+      <div class="feat-desc">Ask anything about EU tax rules, invoice regulations, or business strategy. Your 24/7 expert advisor.</div>
+      <span class="feat-tag ft-pro">Pro</span>
+    </div>
+    <div class="feat fade-up">
+      <div class="feat-icon fi-red">&#128202;</div>
+      <div class="feat-title">5 Languages</div>
+      <div class="feat-desc">Full support for English, French, German, Spanish, and Italian. Built from day one for the European market.</div>
+      <span class="feat-tag ft-free">Free</span>
+    </div>
+  </div>
+</section>
+
+<!-- BIG QUOTE -->
+<div class="quote-section">
+  <blockquote class="fade-up">"Finally a CRM that understands how <span>European freelancers</span> actually work."</blockquote>
+  <div class="quote-author">
+    <div class="qa-avatar">S</div>
+    <span>Designed for freelancers who invoice in euros — not dollars</span>
+  </div>
+</div>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="section-eyebrow">Pricing</div>
+  <h2 class="section-title fade-up">Simple. Honest. No surprises.</h2>
+  <p class="section-sub fade-up">Start free and upgrade when you're ready to grow.</p>
+  <div class="pricing-grid">
+    <div class="plan fade-up">
+      <div class="plan-name">Free</div>
+      <div class="plan-price"><sup>&#8364;</sup>0<sub>/month</sub></div>
+      <div class="plan-desc">Everything you need to get started</div>
+      <ul class="plan-features">
+        <li>Up to 10 clients</li>
+        <li>Pipeline management</li>
+        <li>Task & calendar</li>
+        <li>3 invoices per month</li>
+        <li>GDPR compliant</li>
+        <li class="na">EU invoicing HT/TVA/TTC</li>
+        <li class="na">Unlimited invoices</li>
+        <li class="na">AI Business Assistant</li>
+      </ul>
+      <a class="btn-plan btn-plan-ghost" href="index.html#register">Get started free</a>
+    </div>
+    <div class="plan featured fade-up">
+      <div class="plan-popular">Most popular</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price"><sup>&#8364;</sup>12<sub>/month</sub></div>
+      <div class="plan-desc">For freelancers serious about growth</div>
+      <ul class="plan-features">
+        <li>Unlimited clients</li>
+        <li>Pipeline management</li>
+        <li>Task & calendar</li>
+        <li>Unlimited invoices</li>
+        <li>EU invoicing HT/TVA/TTC</li>
+        <li>PDF invoice export</li>
+        <li>AI Business Assistant</li>
+        <li>Priority support</li>
+      </ul>
+      <a class="btn-plan btn-plan-primary" href="index.html#register">Start Pro free trial</a>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="final-cta-glow"></div>
+  <h2 class="fade-up">Ready to replace<br>your spreadsheets?</h2>
+  <p class="fade-up">Join European freelancers who use Prospeo to manage clients, track deals, and get paid faster.</p>
+  <a class="btn-hero-primary fade-up" href="index.html#register">
+    Start for free — no card needed
+    <span class="btn-arrow">&#8594;</span>
+  </a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">prospe<span>o</span></div>
+  <div class="footer-links">
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+    <a href="login.html">Sign in</a>
+  </div>
+  <div class="footer-copy">&#169; 2026 Prospeo. All rights reserved. Data hosted in Frankfurt, EU.</div>
+</footer>
+
+<script>
+// Scroll animations
+var observer = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (e.isIntersecting) { e.target.classList.add('visible'); }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.fade-up').forEach(function(el) { observer.observe(el); });
+
+// Activate first visible elements immediately
+setTimeout(function() {
+  document.querySelectorAll('.hero .fade-up').forEach(function(el) { el.classList.add('visible'); });
+}, 100);
+
+// Nav active on scroll
+var nav = document.querySelector('nav');
+window.addEventListener('scroll', function() {
+  if (window.scrollY > 20) {
+    nav.style.background = 'rgba(251,251,253,.95)';
+  } else {
+    nav.style.background = 'rgba(251,251,253,.82)';
+  }
+}, { passive: true });
+</script>
+</body>
+</html>

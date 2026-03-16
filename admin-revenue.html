@@ -382,7 +382,7 @@ const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIs
 const EDGE_BASE = 'https://ferkzwzypmdtuypxribz.supabase.co/functions/v1';
 // Your Supabase user ID — only this user can access admin
 // Get it from Supabase Dashboard → Authentication → Users
-const ADMIN_USER_IDS = ['477c2407-f889-43ee-86fe-d8e873d2bb6f'];
+const ADMIN_USER_IDS = ['YOUR_SUPABASE_USER_ID'];
 
 const _supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
   auth: { storage: localStorage, autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
@@ -409,7 +409,7 @@ const AdminAuth = {
   },
   async requireAdmin() {
     const session = await this.init();
-    if (!session) { window.location.href = 'index.html'; return null; }
+    if (!session) { window.location.href = 'login.html'; return null; }
     // Check admin whitelist
     if (!ADMIN_USER_IDS.includes(session.user.id)) {
       // Log unauthorized access attempt
@@ -424,7 +424,7 @@ const AdminAuth = {
     return session;
   },
   getToken() { return this._session?.access_token ?? null; },
-  async signOut() { await _supa.auth.signOut(); localStorage.clear(); window.location.href = 'index.html'; }
+  async signOut() { await _supa.auth.signOut(); localStorage.clear(); window.location.href = 'login.html'; }
 };
 
 const Toast = (() => {
@@ -572,5 +572,12 @@ const AdminSidebar = {
     </tr>`;
   }).join(''):`<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">No paying subscribers yet. <a href="pricing.html" style="color:var(--brand)">Share your pricing page →</a></td></tr>`;
 })();
+
+  // Global error handler - catches unhandled async errors
+  window.addEventListener('unhandledrejection', function(e) {
+    console.error('[Prospeo] Unhandled error:', e.reason);
+    var t = document.getElementById('toast');
+    if(t){ t.textContent='An error occurred. Please refresh the page.'; t.className='toast toast-error show'; setTimeout(function(){t.className='toast';},4000); }
+  });
 </script>
 </body></html>

@@ -6,52 +6,464 @@
 <title>Calendar — Prospeo</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F8FAFF;min-height:100vh}
-  .topbar{background:#fff;border-bottom:1px solid #E5E7EB;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
-  .logo{font-size:22px;font-weight:800;color:#003399;cursor:pointer}
-  .logo span{color:#6366F1}
-  .nav a{color:#6B7280;text-decoration:none;margin-left:24px;font-size:14px;font-weight:500}
-  .nav a:hover{color:#003399}
-  .content{max-width:1100px;margin:32px auto;padding:0 24px}
-  h1{font-size:28px;font-weight:700;color:#0D1117;margin-bottom:24px}
-  .card{background:#fff;border-radius:12px;border:1px solid #E5E7EB;padding:24px}
-  .coming{text-align:center;padding:80px;color:#9CA3AF}
-  .coming-icon{font-size:56px;margin-bottom:16px}
-  .coming h2{font-size:20px;font-weight:600;color:#374151;margin-bottom:8px}
-  .coming p{font-size:14px}
-  .back{display:inline-block;margin-top:24px;color:#003399;text-decoration:none;font-size:14px;font-weight:500}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F8FAFF;min-height:100vh;color:#0D1117}
+.topbar{background:#fff;border-bottom:1px solid #E5E7EB;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:22px;font-weight:800;color:#003399;cursor:pointer;letter-spacing:-1px}
+.logo span{color:#6366F1}
+.nav-links a{color:#6B7280;text-decoration:none;margin-left:20px;font-size:14px;font-weight:500;transition:color .15s}
+.nav-links a:hover,.nav-links a.active{color:#003399}
+.content{max-width:1200px;margin:0 auto;padding:24px}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:gap}
+.page-title{font-size:26px;font-weight:700;color:#0D1117}
+.page-sub{font-size:14px;color:#6B7280;margin-top:2px}
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:#003399;color:#fff}.btn-primary:hover{opacity:.88}
+.btn-ghost{background:transparent;border:1px solid #E5E7EB;color:#374151}.btn-ghost:hover{background:#F3F4F6}
+.btn-sm{padding:6px 12px;font-size:12px}
+.layout{display:grid;grid-template-columns:1fr 300px;gap:20px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+
+/* Calendar */
+.cal-card{background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden}
+.cal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #E5E7EB}
+.cal-title{font-size:16px;font-weight:700;color:#0D1117}
+.cal-nav{display:flex;gap:4px}
+.cal-nav button{background:none;border:1px solid #E5E7EB;border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:14px;color:#374151;transition:all .15s}
+.cal-nav button:hover{background:#F3F4F6}
+.cal-grid{padding:16px}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px}
+.cal-day-label{text-align:center;font-size:11px;font-weight:600;color:#9CA3AF;padding:4px;text-transform:uppercase}
+.cal-cells{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-cell{min-height:70px;border-radius:8px;padding:4px;cursor:pointer;transition:background .1s;position:relative;border:1.5px solid transparent}
+.cal-cell:hover{background:#F8FAFF;border-color:#E5E7EB}
+.cal-cell.today{background:#EEF2FF;border-color:#003399}
+.cal-cell.other-month .cal-cell-num{color:#D1D5DB}
+.cal-cell.selected{border-color:#003399;background:#EEF2FF}
+.cal-cell-num{font-size:12px;font-weight:600;color:#374151;line-height:1}
+.cal-cell.today .cal-cell-num{color:#003399;background:#003399;color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px}
+.event-dot{font-size:10px;padding:1px 5px;border-radius:4px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;font-weight:500}
+.ev-task{background:#EEF2FF;color:#003399}
+.ev-meeting{background:#FEF3C7;color:#92400E}
+.ev-deadline{background:#FEF2F2;color:#DC2626}
+.ev-follow{background:#ECFDF5;color:#065F46}
+.more-events{font-size:9px;color:#6B7280;margin-top:1px}
+
+/* Sidebar */
+.sidebar-card{background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;margin-bottom:16px}
+.sidebar-header{padding:14px 16px;border-bottom:1px solid #E5E7EB;font-size:14px;font-weight:700;color:#0D1117;display:flex;justify-content:space-between;align-items:center}
+.task-list{max-height:340px;overflow-y:auto}
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid #F3F4F6;transition:background .1s;cursor:pointer}
+.task-item:hover{background:#F8FAFF}
+.task-item:last-child{border-bottom:none}
+.task-check{width:16px;height:16px;border-radius:4px;border:2px solid #D1D5DB;flex-shrink:0;margin-top:1px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.task-check.done{background:#003399;border-color:#003399;color:#fff;font-size:10px}
+.task-body{flex:1;min-width:0}
+.task-title{font-size:13px;font-weight:500;color:#0D1117;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task-title.done{text-decoration:line-through;color:#9CA3AF}
+.task-meta{font-size:11px;color:#9CA3AF;display:flex;gap:8px;align-items:center}
+.task-due{font-size:10px;padding:1px 6px;border-radius:4px}
+.due-today{background:#FEF3C7;color:#92400E}
+.due-overdue{background:#FEF2F2;color:#DC2626}
+.due-future{background:#F3F4F6;color:#6B7280}
+.priority-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.p-high{background:#DC2626}.p-med{background:#D97706}.p-low{background:#059669}
+
+/* Add task modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:#fff;border-radius:16px;padding:28px;width:460px;max-width:90vw;transform:translateY(12px);transition:transform .2s}
+.overlay.open .modal{transform:translateY(0)}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:20px;color:#0D1117}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;display:block}
+.form-input{width:100%;padding:9px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;color:#0D1117;font-family:inherit;transition:border-color .15s;background:#fff}
+.form-input:focus{outline:none;border-color:#003399}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#0D1117;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transition:all .25s;z-index:9999;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast-success{background:#059669}
+.toast-error{background:#DC2626}
+
+.empty-tasks{text-align:center;padding:32px 16px;color:#9CA3AF;font-size:13px}
+.loading{text-align:center;padding:24px;color:#9CA3AF;font-size:13px}
+.filter-tabs{display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid #F3F4F6}
+.filter-tab{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:none;background:transparent;color:#6B7280;transition:all .15s}
+.filter-tab.active{background:#EEF2FF;color:#003399}
 </style>
 </head>
 <body>
+
 <div class="topbar">
   <div class="logo" onclick="window.location.href='app.html'">prospe<span>o</span></div>
-  <div class="nav">
+  <div class="nav-links">
     <a href="app.html">Dashboard</a>
     <a href="clients.html">Clients</a>
     <a href="invoices.html">Invoices</a>
+    <a href="calendar.html" class="active">Calendar</a>
   </div>
+  <button class="btn btn-primary btn-sm" onclick="openAddTask()">+ Add task</button>
 </div>
+
 <div class="content">
-  <h1>Calendar & Tasks</h1>
-  <div class="card">
-    <div class="coming">
-      <div class="coming-icon">📅</div>
-      <h2>Calendar coming soon</h2>
-      <p>Task management and calendar view are being built. Check back in the next update.</p>
-      <a class="back" href="app.html">← Back to dashboard</a>
+  <div class="page-header">
+    <div>
+      <div class="page-title">Calendar & Tasks</div>
+      <div class="page-sub" id="selected-date-label">Select a day to see tasks</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- Calendar -->
+    <div class="cal-card">
+      <div class="cal-header">
+        <div class="cal-title" id="cal-month-label">March 2026</div>
+        <div class="cal-nav">
+          <button onclick="changeMonth(-1)">&#8249;</button>
+          <button onclick="changeMonth(0)">Today</button>
+          <button onclick="changeMonth(1)">&#8250;</button>
+        </div>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-days" id="cal-days"></div>
+        <div class="cal-cells" id="cal-cells"></div>
+      </div>
+    </div>
+
+    <!-- Tasks sidebar -->
+    <div>
+      <div class="sidebar-card">
+        <div class="sidebar-header">
+          <span>Tasks</span>
+          <button class="btn btn-ghost btn-sm" onclick="openAddTask()">+ Add</button>
+        </div>
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="filterTasks('all',this)">All</button>
+          <button class="filter-tab" onclick="filterTasks('today',this)">Today</button>
+          <button class="filter-tab" onclick="filterTasks('overdue',this)">Overdue</button>
+          <button class="filter-tab" onclick="filterTasks('done',this)">Done</button>
+        </div>
+        <div class="task-list" id="task-list"><div class="loading">Loading tasks...</div></div>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- Add Task Modal -->
+<div class="overlay" id="task-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Add Task</div>
+    <div class="form-group">
+      <label class="form-label">Title *</label>
+      <input class="form-input" id="task-title-input" placeholder="e.g. Follow up with client" maxlength="200">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Due date</label>
+        <input class="form-input" id="task-due-input" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Priority</label>
+        <select class="form-input" id="task-priority-input">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Type</label>
+      <select class="form-input" id="task-type-input">
+        <option value="task">Task</option>
+        <option value="meeting">Meeting</option>
+        <option value="deadline">Deadline</option>
+        <option value="follow-up">Follow-up</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes</label>
+      <textarea class="form-input" id="task-notes-input" rows="2" placeholder="Optional notes..." maxlength="500"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTask()">Save task</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-var _supa = supabase.createClient(
-  'https://ferkzwzypmdtuypxribz.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlcmt6d3p5cG1kdHV5cHhyaWJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjY4MjksImV4cCI6MjA4OTI0MjgyOX0.KbRa1t0VqrdURT0xbWLUXOZrf462wLNZaUgljk7h6eg'
-);
+var SUPA_URL='https://ferkzwzypmdtuypxribz.supabase.co';
+var ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlcmt6d3p5cG1kdHV5cHhyaWJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjY4MjksImV4cCI6MjA4OTI0MjgyOX0.KbRa1t0VqrdURT0xbWLUXOZrf462wLNZaUgljk7h6eg';
+var _supa=supabase.createClient(SUPA_URL,ANON_KEY);
+
+var _uid=null, _tasks=[], _currentFilter='all';
+var _today=new Date(); _today.setHours(0,0,0,0);
+var _viewYear=_today.getFullYear(), _viewMonth=_today.getMonth();
+var _selectedDate=null, _editingId=null;
+
+var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var TYPE_COLORS={task:'ev-task',meeting:'ev-meeting',deadline:'ev-deadline','follow-up':'ev-follow'};
+
+function sanitize(s){var d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
+function toast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast '+(type||'toast-success')+' show';setTimeout(function(){t.className='toast';},3000);}
+
+function formatDate(d){
+  if(!d)return'';
+  var dt=new Date(d+'T00:00:00');
+  return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+}
+function getDueClass(due,done){
+  if(done)return'';
+  if(!due)return'due-future';
+  var d=new Date(due+'T00:00:00');
+  if(d<_today)return'due-overdue';
+  if(d.getTime()===_today.getTime())return'due-today';
+  return'due-future';
+}
+function getDueLabel(due,done){
+  if(done)return'Done';
+  if(!due)return'No due date';
+  var d=new Date(due+'T00:00:00');
+  if(d<_today){var diff=Math.floor((_today-d)/86400000);return diff+'d overdue';}
+  if(d.getTime()===_today.getTime())return'Today';
+  var diff=Math.ceil((d-_today)/86400000);
+  return'In '+diff+'d';
+}
+
+// ── CALENDAR ──────────────────────────────────────────────────
+function renderCalendar(){
+  document.getElementById('cal-month-label').textContent=MONTHS[_viewMonth]+' '+_viewYear;
+  var daysEl=document.getElementById('cal-days');
+  var cellsEl=document.getElementById('cal-cells');
+  daysEl.innerHTML=DAYS.map(function(d){return'<div class="cal-day-label">'+d+'</div>';}).join('');
+
+  var first=new Date(_viewYear,_viewMonth,1);
+  var last=new Date(_viewYear,_viewMonth+1,0);
+  var startDay=first.getDay();
+  var cells=[];
+
+  // Prev month padding
+  for(var i=startDay-1;i>=0;i--){
+    var d=new Date(_viewYear,_viewMonth,- i);
+    cells.push({date:d,otherMonth:true});
+  }
+  // Current month
+  for(var i=1;i<=last.getDate();i++){
+    cells.push({date:new Date(_viewYear,_viewMonth,i),otherMonth:false});
+  }
+  // Next month padding
+  var remaining=42-cells.length;
+  for(var i=1;i<=remaining;i++){
+    cells.push({date:new Date(_viewYear,_viewMonth+1,i),otherMonth:true});
+  }
+
+  // Build task map by date
+  var taskMap={};
+  _tasks.forEach(function(t){
+    if(!t.due_date)return;
+    var k=t.due_date.slice(0,10);
+    if(!taskMap[k])taskMap[k]=[];
+    taskMap[k].push(t);
+  });
+
+  cellsEl.innerHTML=cells.map(function(c){
+    var dateStr=c.date.toISOString().slice(0,10);
+    var isToday=c.date.getTime()===_today.getTime();
+    var isSelected=_selectedDate===dateStr;
+    var dayTasks=taskMap[dateStr]||[];
+    var classes='cal-cell'+(c.otherMonth?' other-month':'')+(isToday?' today':'')+(isSelected?' selected':'');
+    var numHtml=isToday?'<div class="cal-cell-num">'+c.date.getDate()+'</div>':'<div class="cal-cell-num">'+c.date.getDate()+'</div>';
+    var evHtml=dayTasks.slice(0,2).map(function(t){
+      return'<div class="event-dot '+TYPE_COLORS[t.type||'task']+'" title="'+sanitize(t.title)+'">'+sanitize(t.title)+'</div>';
+    }).join('');
+    if(dayTasks.length>2)evHtml+='<div class="more-events">+'+( dayTasks.length-2)+' more</div>';
+    return'<div class="'+classes+'" onclick="selectDate(\''+dateStr+'\')">'+numHtml+evHtml+'</div>';
+  }).join('');
+}
+
+function selectDate(dateStr){
+  _selectedDate=dateStr;
+  var d=new Date(dateStr+'T00:00:00');
+  document.getElementById('selected-date-label').textContent=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('task-due-input').value=dateStr;
+  renderCalendar();
+  renderTasks();
+}
+
+function changeMonth(dir){
+  if(dir===0){_viewYear=_today.getFullYear();_viewMonth=_today.getMonth();}
+  else{_viewMonth+=dir;if(_viewMonth>11){_viewMonth=0;_viewYear++;}else if(_viewMonth<0){_viewMonth=11;_viewYear--;}}
+  renderCalendar();
+}
+
+// ── TASKS ─────────────────────────────────────────────────────
+function getFilteredTasks(){
+  var now=new Date(); now.setHours(0,0,0,0);
+  return _tasks.filter(function(t){
+    if(_currentFilter==='today'){
+      return t.due_date && t.due_date.slice(0,10)===_today.toISOString().slice(0,10) && !t.completed;
+    }
+    if(_currentFilter==='overdue'){
+      if(!t.due_date||t.completed)return false;
+      return new Date(t.due_date+'T00:00:00')<_today;
+    }
+    if(_currentFilter==='done') return t.completed;
+    // All: show date-filtered if date selected
+    if(_selectedDate) return !t.due_date || t.due_date.slice(0,10)===_selectedDate;
+    return true;
+  }).sort(function(a,b){
+    if(a.completed!==b.completed)return a.completed?1:-1;
+    if(!a.due_date)return 1; if(!b.due_date)return -1;
+    return a.due_date.localeCompare(b.due_date);
+  });
+}
+
+function renderTasks(){
+  var el=document.getElementById('task-list');
+  var filtered=getFilteredTasks();
+  if(!filtered.length){
+    el.innerHTML='<div class="empty-tasks">No tasks here. Add one above.</div>';
+    return;
+  }
+  el.innerHTML=filtered.map(function(t){
+    var dueClass=getDueClass(t.due_date,t.completed);
+    var dueLabel=getDueLabel(t.due_date,t.completed);
+    var pClass={high:'p-high',medium:'p-med',low:'p-low'}[t.priority||'medium'];
+    return'<div class="task-item" onclick="editTask(\''+t.id+'\')">' +
+      '<div class="task-check '+(t.completed?'done':'')+'" onclick="toggleTask(event,\''+t.id+'\')">'+( t.completed?'&#10003;':''  )+'</div>'+
+      '<div class="task-body">'+
+        '<div class="task-title '+(t.completed?'done':'')+'">'+sanitize(t.title)+'</div>'+
+        '<div class="task-meta">'+
+          '<span class="priority-dot '+pClass+'"></span>'+
+          '<span>'+sanitize(t.type||'task')+'</span>'+
+          (t.due_date?'<span class="task-due '+dueClass+'">'+dueLabel+'</span>':'')+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function filterTasks(f, el){
+  _currentFilter=f;
+  if(_currentFilter!=='all') _selectedDate=null;
+  document.querySelectorAll('.filter-tab').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+  renderCalendar();
+  renderTasks();
+}
+
+async function toggleTask(e,id){
+  e.stopPropagation();
+  var task=_tasks.find(function(t){return t.id===id;});
+  if(!task)return;
+  task.completed=!task.completed;
+  renderTasks();
+  try{
+    await _supa.from('events').update({completed:task.completed,updated_at:new Date().toISOString()}).eq('id',id);
+    toast(task.completed?'Task completed':'Task reopened');
+    renderCalendar();
+  }catch(err){task.completed=!task.completed;renderTasks();toast('Failed to update task','toast-error');}
+}
+
+// ── MODAL ─────────────────────────────────────────────────────
+function openAddTask(){
+  _editingId=null;
+  document.getElementById('modal-title').textContent='Add Task';
+  document.getElementById('task-title-input').value='';
+  document.getElementById('task-due-input').value=_selectedDate||'';
+  document.getElementById('task-priority-input').value='medium';
+  document.getElementById('task-type-input').value='task';
+  document.getElementById('task-notes-input').value='';
+  document.getElementById('task-modal').classList.add('open');
+  setTimeout(function(){document.getElementById('task-title-input').focus();},50);
+}
+
+function editTask(id){
+  var t=_tasks.find(function(x){return x.id===id;});
+  if(!t)return;
+  _editingId=id;
+  document.getElementById('modal-title').textContent='Edit Task';
+  document.getElementById('task-title-input').value=t.title||'';
+  document.getElementById('task-due-input').value=(t.due_date||'').slice(0,10);
+  document.getElementById('task-priority-input').value=t.priority||'medium';
+  document.getElementById('task-type-input').value=t.type||'task';
+  document.getElementById('task-notes-input').value=t.notes||'';
+  document.getElementById('task-modal').classList.add('open');
+}
+
+function closeModal(){document.getElementById('task-modal').classList.remove('open');}
+
+async function saveTask(){
+  var title=(document.getElementById('task-title-input').value||'').trim();
+  if(!title){toast('Please enter a task title','toast-error');return;}
+  var due=document.getElementById('task-due-input').value||null;
+  var priority=document.getElementById('task-priority-input').value;
+  var type=document.getElementById('task-type-input').value;
+  var notes=(document.getElementById('task-notes-input').value||'').trim()||null;
+
+  try{
+    if(_editingId){
+      var {error}=await _supa.from('events').update({
+        title:title,due_date:due,priority:priority,type:type,notes:notes,updated_at:new Date().toISOString()
+      }).eq('id',_editingId);
+      if(error)throw error;
+      var idx=_tasks.findIndex(function(t){return t.id===_editingId;});
+      if(idx>=0) Object.assign(_tasks[idx],{title:title,due_date:due,priority:priority,type:type,notes:notes});
+      toast('Task updated');
+    } else {
+      var {data,error}=await _supa.from('events').insert({
+        user_id:_uid,title:title,due_date:due,priority:priority,type:type,notes:notes,completed:false,event_date:due||new Date().toISOString().slice(0,10)
+      }).select().single();
+      if(error)throw error;
+      _tasks.unshift(data);
+      toast('Task added');
+    }
+    closeModal();
+    renderCalendar();
+    renderTasks();
+  }catch(err){
+    toast('Failed to save: '+(err.message||'unknown error'),'toast-error');
+  }
+}
+
+document.getElementById('task-modal').addEventListener('click',function(e){
+  if(e.target===this)closeModal();
+});
+
+// ── INIT ─────────────────────────────────────────────────────
 (async function(){
-  var s = await _supa.auth.getSession();
-  if(!s.data.session){ window.location.href='index.html'; }
+  try{
+    var s=await _supa.auth.getSession();
+    if(!s.data.session){window.location.href='login.html';return;}
+    _uid=s.data.session.user.id;
+
+    var today_str=_today.toISOString().slice(0,10);
+    _selectedDate=today_str;
+    document.getElementById('selected-date-label').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    document.getElementById('task-due-input').value=today_str;
+
+    var {data,error}=await _supa.from('events').select('*').eq('user_id',_uid).order('due_date',{ascending:true});
+    if(error)throw error;
+    _tasks=data||[];
+    renderCalendar();
+    renderTasks();
+  }catch(err){
+    document.getElementById('task-list').innerHTML='<div class="empty-tasks">Could not load tasks. Please refresh.</div>';
+    renderCalendar();
+    console.error('[Calendar]',err);
+  }
 })();
+
+window.addEventListener('unhandledrejection',function(e){
+  console.error('[Calendar] Unhandled error:',e.reason);
+  toast('An error occurred. Please refresh.','toast-error');
+});
 </script>
 </body>
 </html>

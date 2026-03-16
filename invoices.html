@@ -568,14 +568,14 @@ const Auth = {
     if(session) await this._loadProfile();
     _supa.auth.onAuthStateChange(async(ev,sess)=>{
       this._session=sess;
-      if(ev==='SIGNED_OUT'){this._plan=null;localStorage.clear();window.location.href='index.html';}
+      if(ev==='SIGNED_OUT'){this._plan=null;localStorage.clear();window.location.href='login.html';}
       else if(ev==='SIGNED_IN'&&sess){await this._loadProfile();}
     });
     return session;
   },
   async requireAuth() {
     const s=await this.init();
-    if(!s){window.location.href='index.html';return null;}
+    if(!s){window.location.href='login.html';return null;}
     return s;
   },
   async verifyPlan(force=false) {
@@ -602,7 +602,7 @@ const Auth = {
     return {id:u?.id??'',email:u?.email??'',name:p?`${sanitize(p.first_name??'')} ${sanitize(p.last_name??'')}`.trim():(u?.email??''),firstName:p?.first_name??'',company:p?.company??''};
   },
   getAccessToken(){return this._session?.access_token??null;},
-  async signOut(){await _supa.auth.signOut();localStorage.clear();window.location.href='index.html';},
+  async signOut(){await _supa.auth.signOut();localStorage.clear();window.location.href='login.html';},
   async _loadProfile(){
     if(!this._session) return;
     const {data}=await _supa.from('profiles').select('first_name,last_name,company,email').eq('id',this._session.user.id).single();

@@ -355,6 +355,32 @@
   .ai-suggestion:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-light)}
   @media(max-width:480px){.ai-panel{width:calc(100vw - 32px);right:16px;bottom:80px}}
 
+
+  .import-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+  .import-overlay.open{opacity:1;pointer-events:all}
+  .import-modal{background:var(--bg-raised);border-radius:var(--r-lg);width:680px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column;transform:translateY(16px);transition:transform .2s}
+  .import-overlay.open .import-modal{transform:translateY(0)}
+  .import-head{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .import-head h3{font-size:var(--text-lg);font-weight:700;color:var(--text-primary)}
+  .import-body{padding:24px;overflow-y:auto;flex:1}
+  .import-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+  .import-step{display:none}.import-step.active{display:block}
+  .drop-zone{border:2px dashed var(--border);border-radius:var(--r-md);padding:48px;text-align:center;cursor:pointer;transition:all var(--t-fast)}
+  .drop-zone:hover,.drop-zone.dragover{border-color:var(--brand);background:var(--brand-light)}
+  .drop-title{font-size:var(--text-md);font-weight:600;color:var(--text-primary);margin-bottom:4px}
+  .drop-sub{font-size:var(--text-sm);color:var(--text-secondary)}
+  .map-row{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-bottom:10px}
+  .map-label{font-size:var(--text-sm);font-weight:500;color:var(--text-secondary);background:var(--bg-subtle);padding:8px 12px;border-radius:var(--r-sm);border:1px solid var(--border)}
+  .map-select{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:var(--text-sm);font-family:inherit;color:var(--text-primary);background:var(--bg-input)}
+  .preview-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px}
+  .preview-table th{background:var(--brand);color:#fff;padding:8px 10px;text-align:left;font-weight:600;font-size:11px}
+  .preview-table td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)}
+  .import-stats{display:flex;gap:16px;margin-bottom:16px}
+  .stat-pill{background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--r-md);padding:8px 14px;text-align:center}
+  .stat-pill-num{font-size:20px;font-weight:700;color:var(--brand)}
+  .stat-pill-lbl{font-size:11px;color:var(--text-secondary)}
+  .progress-bar-wrap{background:var(--bg-subtle);border-radius:4px;height:8px;margin-top:12px;overflow:hidden}
+  .progress-bar-fill{height:100%;background:var(--brand);border-radius:4px;transition:width .3s}
 </style>
 </head>
 <body>
@@ -583,14 +609,14 @@ const Auth = {
     if(session) await this._loadProfile();
     _supa.auth.onAuthStateChange(async(ev,sess)=>{
       this._session=sess;
-      if(ev==='SIGNED_OUT'){this._plan=null;localStorage.clear();window.location.href='index.html';}
+      if(ev==='SIGNED_OUT'){this._plan=null;localStorage.clear();window.location.href='login.html';}
       else if(ev==='SIGNED_IN'&&sess){await this._loadProfile();}
     });
     return session;
   },
   async requireAuth() {
     const s=await this.init();
-    if(!s){window.location.href='index.html';return null;}
+    if(!s){window.location.href='login.html';return null;}
     return s;
   },
   async verifyPlan(force=false) {
@@ -617,7 +643,7 @@ const Auth = {
     return {id:u?.id??'',email:u?.email??'',name:p?`${sanitize(p.first_name??'')} ${sanitize(p.last_name??'')}`.trim():(u?.email??''),firstName:p?.first_name??'',company:p?.company??''};
   },
   getAccessToken(){return this._session?.access_token??null;},
-  async signOut(){await _supa.auth.signOut();localStorage.clear();window.location.href='index.html';},
+  async signOut(){await _supa.auth.signOut();localStorage.clear();window.location.href='login.html';},
   async _loadProfile(){
     if(!this._session) return;
     const {data}=await _supa.from('profiles').select('first_name,last_name,company,email').eq('id',this._session.user.id).single();
@@ -708,7 +734,7 @@ const ACT_ICON={
   Sidebar.init('dashboard');
   // Track login count for feedback widget
   FeedbackWidget.incrementAndCheck(session.user.id);
-  // Init AI assistant with plan and token
+  // Init Hanna with plan and token
   AIAssistant.init(Auth._plan || 'free', session.access_token);
 
   const [leads, acts, evts] = await Promise.all([
@@ -940,7 +966,7 @@ var AIAssistant = (function() {
   var _plan    = 'free';
   var _token   = null;
 
-  var SYSTEM_PROMPT = 'You are Prospeo Assistant, an expert business advisor built into Prospeo CRM. ' +
+  var SYSTEM_PROMPT = 'You are Hanna, an expert business advisor built into Prospeo CRM. ' +
     'You specialize in: EU accounting and invoicing rules (HT/TVA/TTC, reverse charge, VIES), ' +
     'French and European freelance taxation (auto-entrepreneur, micro-entreprise, SASU, SAS, SARL), ' +
     'business strategy for freelancers and small businesses, ' +
@@ -982,13 +1008,13 @@ var AIAssistant = (function() {
   }
 
   function showUpgradePrompt() {
-    Toast.info('Pro feature', 'Upgrade to Pro to access the AI Business Assistant.');
+    Toast.info('Pro feature', 'Upgrade to Pro to access the Hanna — AI Assistant.');
     if (typeof window.showUpgradeModal === 'function') { window.showUpgradeModal(); }
   }
 
   function addWelcomeMessage() {
     addMessage('assistant',
-      'Hi! I am your Prospeo Business Assistant. I can help you with:\n\n' +
+      'Hi, I am Hanna \u2014 your Prospeo business advisor. I can help you with:\n\n' +
       '- EU invoicing rules (TVA, reverse charge, VIES)\n' +
       '- French freelance taxation (auto-entrepreneur, SAS...)\n' +
       '- Pricing strategy and client negotiation\n' +
@@ -1095,13 +1121,217 @@ var AIAssistant = (function() {
   return { init: init, toggle: toggle, open: open, close: close, send: send, clearHistory: clearHistory, handleKeydown: handleKeydown };
 })();
 
+
+
+var CSVImport = (function() {
+  var _step = 1;
+  var _headers = [];
+  var _rows = [];
+  var _mapping = {};
+  var _importType = 'clients';
+
+  var TARGET_FIELDS = {
+    clients: [
+      {key:'name',    label:'Full name *', required:true},
+      {key:'email',   label:'Email'},
+      {key:'company', label:'Company'},
+      {key:'phone',   label:'Phone'},
+    ],
+    leads: [
+      {key:'title',   label:'Deal title *', required:true},
+      {key:'value',   label:'Value (EUR)'},
+      {key:'stage',   label:'Stage'},
+    ]
+  };
+
+  function open(type) {
+    _importType = type || 'clients';
+    _step = 1; _headers = []; _rows = []; _mapping = {};
+    document.getElementById('import-modal-title').textContent = 'Import ' + (_importType === 'clients' ? 'Clients' : 'Leads') + ' from CSV';
+    showStep(1);
+    document.getElementById('import-overlay').classList.add('open');
+    document.getElementById('import-next-btn').style.display='none';
+  }
+
+  function close() {
+    document.getElementById('import-overlay').classList.remove('open');
+  }
+
+  function showStep(n) {
+    _step = n;
+    document.querySelectorAll('.import-step').forEach(function(s) { s.classList.remove('active'); });
+    var el = document.getElementById('import-step-' + n);
+    if (el) el.classList.add('active');
+    if(nextBtn && n >= 2) nextBtn.style.display='block';
+    var nextBtn = document.getElementById('import-next-btn');
+    if (nextBtn) {
+      nextBtn.textContent = n === 3 ? 'Import now' : 'Next';
+      nextBtn.style.display = n === 4 ? 'none' : 'block';
+    }
+    var backBtn = document.getElementById('import-back-btn');
+    if (backBtn) backBtn.style.display = n > 1 && n < 4 ? 'block' : 'none';
+  }
+
+  function parseCSV(text) {
+    var lines = text.split('\n').filter(function(l) { return l.trim(); });
+    if (!lines.length) return;
+    _headers = lines[0].split(',').map(function(h) { return h.trim().replace(/^"|"$/g, ''); });
+    _rows = lines.slice(1, 501).map(function(line) { // max 500 rows
+      return line.split(',').map(function(v) { return v.trim().replace(/^"|"$/g, ''); });
+    });
+    buildMappingUI();
+    showStep(2);
+  }
+
+  function handleFile(file) {
+    if (!file) return;
+    var ext = file.name.split('.').pop().toLowerCase();
+    if (ext !== 'csv') { Toast.error('', 'Please upload a CSV file (.csv)'); return; }
+    var reader = new FileReader();
+    reader.onload = function(e) { parseCSV(e.target.result); };
+    reader.readAsText(file);
+  }
+
+  function buildMappingUI() {
+    var fields = TARGET_FIELDS[_importType];
+    var html = '<div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary)">Match your CSV columns to Prospeo fields:</div>';
+    // Auto-map by name similarity
+    _mapping = {};
+    fields.forEach(function(f) {
+      var auto = _headers.findIndex(function(h) {
+        return h.toLowerCase().replace(/[^a-z]/g,'').indexOf(f.key.replace(/[^a-z]/g,'')) >= 0 ||
+               f.label.toLowerCase().replace(/[^a-z]/g,'').indexOf(h.toLowerCase().replace(/[^a-z]/g,'')) >= 0;
+      });
+      _mapping[f.key] = auto >= 0 ? auto : -1;
+    });
+    fields.forEach(function(f) {
+      var opts = '<option value="-1">-- Skip --</option>' + _headers.map(function(h, i) {
+        return '<option value="' + i + '"' + (_mapping[f.key] === i ? ' selected' : '') + '>' + sanitize(h) + '</option>';
+      }).join('');
+      html += '<div class="map-row">' +
+        '<div class="map-label">' + sanitize(f.label) + '</div>' +
+        '<div class="map-arrow">&#8594;</div>' +
+        '<select class="map-select" data-field="' + f.key + '" onchange="CSVImport.updateMapping(this)">' + opts + '</select>' +
+      '</div>';
+    });
+    document.getElementById('import-step-2').innerHTML = html;
+  }
+
+  function updateMapping(el) {
+    _mapping[el.dataset.field] = parseInt(el.value, 10);
+  }
+
+  function buildPreview() {
+    var fields = TARGET_FIELDS[_importType];
+    var requiredFields = fields.filter(function(f) { return f.required; });
+    for (var i = 0; i < requiredFields.length; i++) {
+      if (_mapping[requiredFields[i].key] === -1 || _mapping[requiredFields[i].key] === undefined) {
+        Toast.error('', 'Please map the required field: ' + requiredFields[i].label);
+        return false;
+      }
+    }
+    var preview = _rows.slice(0, 5);
+    var heads = fields.filter(function(f) { return _mapping[f.key] >= 0; })
+      .map(function(f) { return '<th>' + sanitize(f.label.replace(' *','')) + '</th>'; }).join('');
+    var bodyRows = preview.map(function(row) {
+      var cells = fields.filter(function(f) { return _mapping[f.key] >= 0; })
+        .map(function(f) { return '<td>' + sanitize(row[_mapping[f.key]] || '') + '</td>'; }).join('');
+      return '<tr>' + cells + '</tr>';
+    }).join('');
+
+    var validRows = _rows.filter(function(row) {
+      return requiredFields.every(function(f) { return row[_mapping[f.key]] && row[_mapping[f.key]].trim(); });
+    });
+
+    document.getElementById('import-step-3').innerHTML =
+      '<div class="import-stats">' +
+        '<div class="stat-pill"><div class="stat-pill-num">' + _rows.length + '</div><div class="stat-pill-lbl">Total rows</div></div>' +
+        '<div class="stat-pill"><div class="stat-pill-num" style="color:var(--success)">' + validRows.length + '</div><div class="stat-pill-lbl">Valid rows</div></div>' +
+        '<div class="stat-pill"><div class="stat-pill-num" style="color:var(--warning)">' + (_rows.length - validRows.length) + '</div><div class="stat-pill-lbl">Skipped (missing required)</div></div>' +
+      '</div>' +
+      '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px">Preview (first 5 rows):</div>' +
+      '<div style="overflow-x:auto"><table class="preview-table"><thead><tr>' + heads + '</tr></thead><tbody>' + bodyRows + '</tbody></table></div>';
+    return true;
+  }
+
+  async function runImport() {
+    var fields = TARGET_FIELDS[_importType];
+    var requiredFields = fields.filter(function(f) { return f.required; });
+    var validRows = _rows.filter(function(row) {
+      return requiredFields.every(function(f) { return row[_mapping[f.key]] && row[_mapping[f.key]].trim(); });
+    });
+    if (!validRows.length) { Toast.error('', 'No valid rows to import.'); return; }
+
+    showStep(4);
+    document.getElementById('import-step-4').innerHTML =
+      '<div style="text-align:center;padding:16px">' +
+      '<div style="font-size:15px;font-weight:600;margin-bottom:12px">Importing ' + validRows.length + ' records...</div>' +
+      '<div class="progress-bar-wrap"><div class="progress-bar-fill" id="import-progress" style="width:0%"></div></div>' +
+      '<div id="import-progress-label" style="font-size:12px;color:var(--text-secondary);margin-top:8px">0 / ' + validRows.length + '</div>' +
+      '</div>';
+
+    var session = await _supa.auth.getSession();
+    if (!session.data.session) { Toast.error('', 'Not authenticated'); return; }
+    var uid = session.data.session.user.id;
+    var table = _importType === 'clients' ? 'clients' : 'leads';
+    var batchSize = 50, success = 0, errors = [];
+
+    for (var i = 0; i < validRows.length; i += batchSize) {
+      var batch = validRows.slice(i, i + batchSize);
+      var records = batch.map(function(row) {
+        var rec = { user_id: uid };
+        fields.forEach(function(f) {
+          if (_mapping[f.key] >= 0 && row[_mapping[f.key]]) {
+            var val = row[_mapping[f.key]].trim();
+            if (f.key === 'value') { val = parseFloat(val.replace(/[^0-9.]/g, '')) || 0; }
+            rec[f.key] = val;
+          }
+        });
+        return rec;
+      });
+      try {
+        var res = await _supa.from(table).insert(records);
+        if (res.error) { errors.push(res.error.message); }
+        else { success += batch.length; }
+      } catch(e) { errors.push(e.message); }
+
+      var pct = Math.round(((i + batchSize) / validRows.length) * 100);
+      var pbar = document.getElementById('import-progress');
+      var plbl = document.getElementById('import-progress-label');
+      if (pbar) pbar.style.width = Math.min(pct, 100) + '%';
+      if (plbl) plbl.textContent = Math.min(i + batchSize, validRows.length) + ' / ' + validRows.length;
+    }
+
+    document.getElementById('import-step-4').innerHTML =
+      '<div style="text-align:center;padding:16px">' +
+      '<div style="font-size:32px;margin-bottom:12px">' + (errors.length ? '&#9888;' : '&#10003;') + '</div>' +
+      '<div style="font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:4px">' +
+        success + ' records imported successfully' +
+      '</div>' +
+      (errors.length ? '<div style="font-size:13px;color:var(--warning);margin-top:8px">' + errors.length + ' errors occurred.</div>' : '') +
+      '<div style="margin-top:20px"><button class="btn btn-primary btn-sm" onclick="CSVImport.close();window.location.reload()">Done</button></div>' +
+      '</div>';
+  }
+
+  function next() {
+    if (_step === 1) return;
+    if (_step === 2) { if (!buildPreview()) return; showStep(3); return; }
+    if (_step === 3) { runImport(); return; }
+  }
+  function back() {
+    if (_step > 1 && _step < 4) showStep(_step - 1);
+  }
+
+  return { open: open, close: close, handleFile: handleFile, updateMapping: updateMapping, next: next, back: back };
+})();
+
 </script>
 
 <!-- Feedback Widget -->
 <div class="feedback-overlay" id="feedback-widget"></div>
 
 <!-- AI Assistant Widget -->
-<button class="ai-btn" onclick="AIAssistant.toggle()" title="AI Business Assistant">
+<button class="ai-btn" onclick="AIAssistant.toggle()" title="Hanna — AI Assistant">
   <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/></svg>
   <span class="ai-badge">AI</span>
 </button>
@@ -1111,7 +1341,7 @@ var AIAssistant = (function() {
       <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
     </div>
     <div class="ai-head-info">
-      <div class="ai-head-name">Prospeo Assistant</div>
+      <div class="ai-head-name">Hanna</div>
       <div class="ai-head-status">Online &mdash; EU Business Expert</div>
     </div>
     <div class="ai-head-actions">
@@ -1143,6 +1373,44 @@ var AIAssistant = (function() {
     <button class="ai-send" id="ai-send-btn" onclick="AIAssistant.send()">
       <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
+  </div>
+</div>
+
+
+<!-- CSV Import Modal -->
+<div class="import-overlay" id="import-overlay">
+  <div class="import-modal">
+    <div class="import-head">
+      <h3 id="import-modal-title">Import from CSV</h3>
+      <button class="btn btn-ghost btn-sm" onclick="CSVImport.close()">&#x2715;</button>
+    </div>
+    <div class="import-body">
+      <div class="import-step active" id="import-step-1">
+        <div class="drop-zone" id="import-drop"
+          ondragover="event.preventDefault();this.classList.add('dragover')"
+          ondragleave="this.classList.remove('dragover')"
+          ondrop="event.preventDefault();this.classList.remove('dragover');CSVImport.handleFile(event.dataTransfer.files[0])"
+          onclick="document.getElementById('csv-file-input').click()">
+          <div style="font-size:40px;margin-bottom:12px">&#128190;</div>
+          <div class="drop-title">Drop your CSV file here</div>
+          <div class="drop-sub">or click to browse &mdash; max 500 rows</div>
+          <input type="file" id="csv-file-input" accept=".csv" style="display:none"
+            onchange="CSVImport.handleFile(this.files[0])">
+        </div>
+        <div style="margin-top:16px;font-size:12px;color:var(--text-secondary)">
+          <strong>Supported format:</strong> CSV with headers in the first row.
+          Columns can be in any order &mdash; you will map them in the next step.
+        </div>
+      </div>
+      <div class="import-step" id="import-step-2"></div>
+      <div class="import-step" id="import-step-3"></div>
+      <div class="import-step" id="import-step-4"></div>
+    </div>
+    <div class="import-foot">
+      <button class="btn btn-ghost btn-sm" id="import-back-btn" onclick="CSVImport.back()" style="display:none">Back</button>
+      <button class="btn btn-ghost btn-sm" onclick="CSVImport.close()">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="import-next-btn" onclick="CSVImport.next()" style="display:none">Next</button>
+    </div>
   </div>
 </div>
 

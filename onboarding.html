@@ -39,7 +39,7 @@
   );
   async function goToDashboard() {
     var s = await _supa.auth.getSession();
-    if (!s.data.session) { window.location.href = 'index.html'; return; }
+    if (!s.data.session) { window.location.href = 'login.html'; return; }
     window.location.href = 'app.html';
   }
   // Auto-redirect after 3 seconds
