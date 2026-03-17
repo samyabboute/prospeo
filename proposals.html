@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smart Files — Prospeo</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="prospeo-animations.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --brand:#003399;--brand-light:#EEF2FF;--brand-dark:#002277;
+  --bg:#F8FAFF;--white:#fff;--text:#0D1117;--text2:#374151;--text3:#6B7280;--text4:#9CA3AF;
+  --border:#E5E7EB;--border2:rgba(0,51,153,.15);
+  --success:#059669;--warning:#D97706;--danger:#DC2626;--purple:#7C3AED;
+  --r:12px;--rlg:16px;--rsm:8px;--rfull:999px;
+  --ease:cubic-bezier(.25,.46,.45,.94);
+  --shadow:0 2px 12px rgba(0,0,0,.06);--shadow-lg:0 8px 32px rgba(0,0,0,.1)
+}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;animation:fadeIn .3s var(--ease)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* ── TOPBAR ─────────────────────────────────────────────────── */
+.topbar{background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;padding:0 24px;gap:14px;position:sticky;top:0;z-index:100;transition:box-shadow .25s}
+.topbar.scrolled{box-shadow:var(--shadow)}
+.topbar-logo img{height:22px;width:auto}
+.topbar-sep{width:1px;height:16px;background:var(--border);flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:600;color:var(--text)}
+.topbar-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:var(--rfull);background:linear-gradient(135deg,#7C3AED,var(--brand));color:#fff;letter-spacing:.03em}
+.topbar-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:inherit;text-decoration:none}
+.btn-primary{background:var(--brand);color:#fff;box-shadow:0 2px 8px rgba(0,51,153,.2)}
+.btn-primary:hover{background:var(--brand-dark);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,51,153,.28)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-ghost:hover{background:#F3F4F6}
+.btn-success{background:var(--success);color:#fff}
+.btn-success:hover{opacity:.88;transform:translateY(-1px)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-lg{padding:12px 24px;font-size:15px}
+.btn:active{transform:scale(.97) !important}
+
+/* ── LAYOUT ──────────────────────────────────────────────────── */
+.content{max-width:1100px;margin:0 auto;padding:28px 24px}
+.two-col{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start}
+@media(max-width:900px){.two-col{grid-template-columns:1fr}}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--rlg);overflow:hidden;box-shadow:var(--shadow)}
+.card-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.card-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ci-blue{background:#EEF2FF}.ci-green{background:#ECFDF5}.ci-purple{background:#F5F3FF}.ci-orange{background:#FFF7ED}
+.card-body{padding:22px}
+
+/* ── FORM ────────────────────────────────────────────────────── */
+.form-section{margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.form-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.form-section-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.form-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-full{grid-column:1/-1}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.fg:last-child{margin-bottom:0}
+label{font-size:12px;font-weight:600;color:var(--text3)}
+input,select,textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:14px;color:var(--text);font-family:inherit;background:var(--white);transition:border-color .15s,box-shadow .15s;outline:none;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(0,51,153,.09)}
+textarea{resize:vertical;min-height:80px}
+
+/* ── LINE ITEMS ──────────────────────────────────────────────── */
+.line-items{margin-bottom:12px}
+.line-item{display:grid;grid-template-columns:1fr 80px 100px 32px;gap:8px;align-items:center;margin-bottom:8px;padding:10px 12px;background:var(--bg);border-radius:var(--rsm);border:1px solid var(--border);transition:border-color .15s}
+.line-item:hover{border-color:var(--border2)}
+.line-item-head{display:grid;grid-template-columns:1fr 80px 100px 32px;gap:8px;padding:0 12px;margin-bottom:4px}
+.li-label{font-size:11px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.04em}
+.line-total{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;justify-content:flex-end}
+.add-line-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--brand);background:var(--brand-light);border:1px dashed var(--border2);border-radius:var(--r);padding:9px 14px;cursor:pointer;width:100%;justify-content:center;font-weight:600;transition:all .15s}
+.add-line-btn:hover{background:#E0E8FF}
+.remove-line{background:none;border:none;color:var(--text4);cursor:pointer;font-size:16px;padding:4px;border-radius:4px;line-height:1;transition:color .15s}
+.remove-line:hover{color:var(--danger)}
+
+/* ── TOTALS ──────────────────────────────────────────────────── */
+.totals{background:var(--bg);border-radius:var(--r);padding:16px;border:1px solid var(--border)}
+.total-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text3);padding:4px 0}
+.total-row strong{color:var(--text)}
+.total-final{display:flex;justify-content:space-between;font-size:17px;font-weight:700;color:var(--text);padding-top:10px;margin-top:6px;border-top:2px solid var(--border)}
+.total-final span:last-child{color:var(--brand)}
+
+/* ── CONTRACT BLOCK ──────────────────────────────────────────── */
+.contract-preview{background:#FFFDF5;border:1px solid #FDE68A;border-radius:var(--r);padding:16px;font-size:13px;line-height:1.7;color:var(--text2);margin-bottom:12px}
+.contract-preview .placeholder{background:#FEF3C7;border-radius:3px;padding:0 4px;color:#92400E;font-weight:600}
+
+/* ── SIDEBAR ─────────────────────────────────────────────────── */
+.sidebar-card{background:var(--white);border:1px solid var(--border);border-radius:var(--rlg);padding:20px;box-shadow:var(--shadow);margin-bottom:16px;transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.sidebar-card:hover{transform:translateY(-1px);box-shadow:var(--shadow-lg)}
+.sc-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.sc-icon{font-size:16px}
+.flow-step{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.flow-step:last-child{border-bottom:none}
+.flow-num{width:22px;height:22px;border-radius:50%;background:var(--brand-light);color:var(--brand);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.flow-body{font-size:12px;color:var(--text3);line-height:1.5}
+.flow-body strong{color:var(--text2);font-weight:600}
+.preview-box{background:var(--bg);border-radius:var(--rsm);padding:14px;border:1px solid var(--border)}
+.preview-box-title{font-size:11px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.preview-val{font-size:20px;font-weight:700;color:var(--brand)}
+.preview-sub{font-size:11px;color:var(--text4);margin-top:2px}
+
+/* ── PROPOSALS LIST ──────────────────────────────────────────── */
+.proposals-list{display:flex;flex-direction:column;gap:10px}
+.proposal-row{background:var(--white);border:1px solid var(--border);border-radius:var(--rlg);padding:18px 20px;display:grid;grid-template-columns:auto 1fr auto auto;gap:16px;align-items:center;transition:all .2s var(--ease);cursor:pointer}
+.proposal-row:hover{border-color:var(--border2);box-shadow:var(--shadow);transform:translateY(-1px)}
+.pr-avatar{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
+.pr-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.pr-meta{font-size:12px;color:var(--text3)}
+.pr-amount{font-size:16px;font-weight:700;color:var(--text);text-align:right}
+.pr-date{font-size:11px;color:var(--text4);text-align:right;margin-top:2px}
+.status-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:var(--rfull)}
+.sb-draft{background:#F3F4F6;color:var(--text3)}
+.sb-sent{background:#EEF2FF;color:var(--brand)}
+.sb-signed{background:#ECFDF5;color:var(--success)}
+.sb-paid{background:#ECFDF5;color:var(--success)}
+.sb-declined{background:#FEF2F2;color:var(--danger)}
+.empty-state{text-align:center;padding:64px 24px}
+.es-icon{font-size:52px;margin-bottom:16px}
+.es-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px}
+.es-sub{font-size:14px;color:var(--text3);margin-bottom:24px;line-height:1.6}
+
+/* ── TABS ────────────────────────────────────────────────────── */
+.page-tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:4px;width:fit-content}
+.page-tab{padding:7px 18px;border-radius:var(--rsm);font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;border:none;background:none;transition:all .15s;font-family:inherit}
+.page-tab.active{background:var(--brand);color:#fff;box-shadow:0 2px 8px rgba(0,51,153,.2)}
+
+/* ── TOAST ───────────────────────────────────────────────────── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#0D1117;color:#fff;padding:10px 20px;border-radius:var(--r);font-size:13px;font-weight:500;opacity:0;transition:all .25s;z-index:9999;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast-success{background:var(--success)}.toast-error{background:var(--danger)}
+
+@media(max-width:768px){.form-grid{grid-template-columns:1fr}.line-item{grid-template-columns:1fr 70px 90px 28px}.content{padding:16px}}
+
+  .templates-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:16px}
+  .tpl-card{border:1.5px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .15s var(--ease);background:var(--white);text-align:center}
+  .tpl-card:hover{border-color:var(--brand);background:var(--brand-light);transform:translateY(-1px)}
+  .tpl-card.selected{border-color:var(--brand);background:var(--brand-light)}
+  .tpl-icon{font-size:24px;margin-bottom:6px}
+  .tpl-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
+  .tpl-desc{font-size:10px;color:var(--text3);line-height:1.4}
+</style>
+</head>
+<body>
+<div class="topbar" id="topbar">
+  <a href="app.html"><img src="prospeo-logo.svg" alt="Prospeo"></a>
+  <div class="topbar-sep"></div>
+  <span class="topbar-title">Smart Files</span>
+  <span class="topbar-badge">PRO</span>
+  <div class="topbar-actions">
+    <a href="invoices.html" class="btn btn-ghost btn-sm">Invoices</a>
+    <button class="btn btn-primary btn-sm" onclick="showTab('new')">+ New Smart File</button>
+  </div>
+</div>
+
+<div class="content">
+  <div class="page-tabs">
+    <button class="page-tab active" id="tab-list" onclick="showTab('list')">All Smart Files</button>
+    <button class="page-tab" id="tab-new" onclick="showTab('new')">Create New</button>
+  </div>
+
+  <!-- LIST VIEW -->
+  <div id="view-list">
+    <div id="proposals-container"><div class="empty-state"><div style="font-size:32px">⏳</div><br>Loading...</div></div>
+  </div>
+
+  <!-- NEW SMART FILE FORM -->
+  <div id="view-new" style="display:none">
+    <div class="two-col">
+      <!-- Main form -->
+      <div>
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title"><div class="card-icon ci-blue">📄</div>Client & Project Details</div>
+          </div>
+          <div class="card-body">
+            <div class="form-section">
+              <div class="form-section-title">Client</div>
+              <div class="form-grid">
+                <div class="fg"><label>Client name *</label><input id="f-client-name" placeholder="Sophie Martin" maxlength="100"></div>
+                <div class="fg"><label>Client email *</label><input id="f-client-email" type="email" placeholder="sophie@company.fr"></div>
+                <div class="fg"><label>Company</label><input id="f-company" placeholder="Agence Martin"></div>
+                <div class="fg"><label>Phone</label><input id="f-phone" placeholder="+33 6 00 00 00 00"></div>
+              </div>
+            </div>
+            <div class="form-section">
+              <div class="form-section-title">Project</div>
+              <div class="fg form-full"><label>Project title *</label><input id="f-project-title" placeholder="Brand identity design for Agence Martin"></div>
+              <div class="form-grid">
+                <div class="fg"><label>Project type</label>
+                  <select id="f-project-type">
+                    <option value="design">Design</option>
+                    <option value="development">Development</option>
+                    <option value="consulting">Consulting</option>
+                    <option value="photography">Photography</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="writing">Writing / Copywriting</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div class="fg"><label>Valid until</label><input id="f-valid-until" type="date"></div>
+              </div>
+              <div class="fg"><label>Project description</label><textarea id="f-description" placeholder="Describe the scope of work, deliverables, and timeline..."></textarea></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="card-head">
+            <div class="card-title"><div class="card-icon ci-orange">💶</div>Pricing & Line Items</div>
+          </div>
+          <div class="card-body">
+            <div class="line-item-head">
+              <span class="li-label">Description</span>
+              <span class="li-label">Qty</span>
+              <span class="li-label">Unit price</span>
+              <span class="li-label"></span>
+            </div>
+            <div class="line-items" id="line-items-container"></div>
+            <button class="add-line-btn" onclick="addLineItem()">+ Add line item</button>
+            <div class="form-grid" style="margin-top:16px">
+              <div class="fg"><label>TVA rate (%)</label>
+                <select id="f-tva" onchange="calcTotals()">
+                  <option value="0">0% — Exonéré (auto-entrepreneur)</option>
+                  <option value="5.5">5.5%</option>
+                  <option value="10">10%</option>
+                  <option value="20" selected>20%</option>
+                </select>
+              </div>
+              <div class="fg"><label>Currency</label>
+                <select id="f-currency"><option value="EUR" selected>EUR (€)</option><option value="GBP">GBP (£)</option><option value="USD">USD ($)</option></select>
+              </div>
+            </div>
+            <div class="totals" id="totals-display">
+              <div class="total-row"><span>Subtotal HT</span><span id="t-ht">€0.00</span></div>
+              <div class="total-row"><span id="t-tva-label">TVA (20%)</span><span id="t-tva">€0.00</span></div>
+              <div class="total-final"><span>Total TTC</span><span id="t-ttc">€0.00</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="card-head">
+            <div class="card-title"><div class="card-icon ci-purple">📋</div>Contract Terms</div>
+            <button class="btn btn-ghost btn-sm" onclick="showTemplateSelector()">Templates</button><button class="btn btn-ghost btn-sm" onclick="toggleContract()">Edit</button>
+          </div>
+          <div class="card-body">
+            <div class="contract-preview" id="contract-preview"></div>
+            <div id="contract-editor" style="display:none">
+              <textarea id="f-contract-terms" style="min-height:200px;font-size:13px;font-family:inherit"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="card-head">
+            <div class="card-title"><div class="card-icon ci-green">📅</div>Payment Schedule (optional)</div>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="fg"><label>Payment type</label>
+                <select id="f-payment-type" onchange="updatePaymentUI()">
+                  <option value="full">Full payment on completion</option>
+                  <option value="deposit">Deposit + final payment</option>
+                  <option value="split3">3 equal payments</option>
+                  <option value="custom">Custom schedule</option>
+                </select>
+              </div>
+              <div class="fg"><label>Due date</label><input id="f-due-date" type="date"></div>
+            </div>
+            <div id="payment-details" style="font-size:13px;color:var(--text3);background:var(--bg);border-radius:var(--rsm);padding:12px;margin-top:8px">
+              Full payment due on the specified date.
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button class="btn btn-ghost" onclick="saveProposal('draft')">Save as draft</button>
+          <button class="btn btn-primary btn-lg" style="flex:1;justify-content:center" onclick="saveProposal('ready')">
+            <svg style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Create Smart File & Get Link
+          </button>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div>
+        <div class="sidebar-card">
+          <div class="sc-title"><span class="sc-icon">⚡</span>Smart File Flow</div>
+          <div class="flow-step"><div class="flow-num">1</div><div class="flow-body"><strong>You create</strong> — fill in client details, scope, pricing, and contract terms here</div></div>
+          <div class="flow-step"><div class="flow-num">2</div><div class="flow-body"><strong>You send</strong> — one link is generated that contains everything</div></div>
+          <div class="flow-step"><div class="flow-num">3</div><div class="flow-body"><strong>Client reviews</strong> — they read the proposal, review the contract, see the total</div></div>
+          <div class="flow-step"><div class="flow-num">4</div><div class="flow-body"><strong>Client signs</strong> — e-signature captured securely in their browser</div></div>
+          <div class="flow-step"><div class="flow-num">5</div><div class="flow-body"><strong>Invoice sent</strong> — automatically generated from the signed Smart File</div></div>
+        </div>
+        <div class="sidebar-card">
+          <div class="sc-title"><span class="sc-icon">💶</span>File Summary</div>
+          <div class="preview-box">
+            <div class="preview-box-title">Total TTC</div>
+            <div class="preview-val" id="preview-total">€0.00</div>
+            <div class="preview-sub" id="preview-items">0 line items</div>
+          </div>
+        </div>
+        <div class="sidebar-card">
+          <div class="sc-title"><span class="sc-icon">💡</span>Tips</div>
+          <div style="font-size:12px;color:var(--text3);line-height:1.7">
+            A good Smart File includes a clear scope, realistic timeline, and explicit payment terms. Clients sign 40% faster when they see the full picture upfront — no surprises after.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .2s" id="success-modal">
+  <div style="background:var(--white);border-radius:20px;padding:36px;max-width:480px;width:90%;text-align:center;transform:translateY(12px);transition:transform .2s">
+    <div style="font-size:52px;margin-bottom:16px">🎉</div>
+    <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">Smart File Created!</div>
+    <div style="font-size:14px;color:var(--text3);margin-bottom:24px;line-height:1.6">Your client link is ready. Share it — they can review, sign, and pay all in one place.</div>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:20px;text-align:left">
+      <input id="share-link-input" readonly style="flex:1;border:none;background:none;font-size:13px;color:var(--text3);font-family:monospace;outline:none">
+      <button class="btn btn-primary btn-sm" onclick="copyLink()">Copy</button>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeSuccessModal()">Done</button>
+      <button class="btn btn-success" style="flex:1;justify-content:center" onclick="sendByEmail()">📧 Email to client</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="prospeo-animations.js"></script>
+<script>
+var SUPA_URL='https://ferkzwzypmdtuypxribz.supabase.co';
+var ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlcmt6d3p5cG1kdHV5cHhyaWJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjY4MjksImV4cCI6MjA4OTI0MjgyOX0.KbRa1t0VqrdURT0xbWLUXOZrf462wLNZaUgljk7h6eg';
+var _supa=supabase.createClient(SUPA_URL,ANON_KEY);
+var _uid=null, _lineItems=[], _createdProposalId=null;
+
+var CURRENCY_SYMBOLS={EUR:'€',GBP:'£',USD:'$'};
+var DEFAULT_CONTRACT = `AGREEMENT FOR SERVICES
+
+This agreement is between the Service Provider ({PROVIDER_NAME}) and the Client ({CLIENT_NAME}).
+
+SCOPE OF WORK
+{PROJECT_DESCRIPTION}
+
+DELIVERABLES
+As described in the project scope above.
+
+TIMELINE
+Work will begin upon receipt of signed agreement and deposit payment (if applicable).
+
+PAYMENT TERMS
+{PAYMENT_TERMS}
+Payment is due upon receipt of invoice. Late payments incur a 2% monthly interest charge.
+
+REVISIONS
+This agreement includes up to 2 rounds of revisions. Additional revisions are billed at the hourly rate.
+
+OWNERSHIP
+All final deliverables become the property of the Client upon full payment. The Service Provider retains rights to display the work in their portfolio.
+
+CONFIDENTIALITY
+Both parties agree to keep confidential any proprietary information shared during the project.
+
+CANCELLATION
+Either party may cancel with 14 days written notice. Work completed to date will be invoiced at the agreed rate.
+
+By signing below, both parties agree to these terms.`;
+
+function sanitize(s){var d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
+function toast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast '+(type||'toast-success')+' show';setTimeout(function(){t.className='toast';},3000);}
+function formatEUR(n,sym){sym=sym||'€';return sym+parseFloat(n||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+
+(async function init(){
+  var s=await _supa.auth.getSession();
+  if(!s.data.session){window.location.href='login.html';return;}
+  _uid=s.data.session.user.id;
+
+  // Check pro plan
+  var {data:sub}=await _supa.from('subscriptions').select('plan,status').eq('user_id',_uid).single();
+  if(!sub||sub.plan!=='pro'){
+    document.querySelector('.content').innerHTML='<div class="empty-state"><div class="es-icon">🔒</div><div class="es-title">Smart Files is a Pro feature</div><div class="es-sub">Smart Files — combining proposal, contract, and invoice in one shareable link — is available on the Pro plan.</div><a href="pricing.html" class="btn btn-primary btn-lg">Upgrade to Pro →</a></div>';
+    return;
+  }
+
+  // Set default valid-until (30 days from now)
+  var d=new Date(); d.setDate(d.getDate()+30);
+  document.getElementById('f-valid-until').value=d.toISOString().slice(0,10);
+  document.getElementById('f-due-date').value=d.toISOString().slice(0,10);
+
+  // Set default contract
+  document.getElementById('f-contract-terms').value=DEFAULT_CONTRACT;
+  updateContractPreview();
+  addLineItem(); // Start with one line item
+  loadProposals();
+  Animate.initPageLoad();
+
+  window.addEventListener('scroll',function(){
+    document.getElementById('topbar').classList.toggle('scrolled',window.scrollY>10);
+  },{passive:true});
+})();
+
+// ── TABS ──────────────────────────────────────────────────────
+function showTab(tab){
+  document.getElementById('view-list').style.display=tab==='list'?'block':'none';
+  document.getElementById('view-new').style.display=tab==='new'?'block':'none';
+  document.getElementById('tab-list').classList.toggle('active',tab==='list');
+  document.getElementById('tab-new').classList.toggle('active',tab==='new');
+}
+
+// ── LINE ITEMS ────────────────────────────────────────────────
+function addLineItem(desc,qty,price){
+  var id='li-'+Date.now()+'-'+Math.random().toString(36).slice(2,6);
+  _lineItems.push({id:id,desc:desc||'',qty:qty||1,price:price||0});
+  var el=document.getElementById('line-items-container');
+  var div=document.createElement('div');
+  div.className='line-item';
+  div.id='row-'+id;
+  div.innerHTML=
+    '<input placeholder="Description of service..." value="'+sanitize(desc||'')+'" oninput="updateLine(\''+id+'\',\'desc\',this.value)" style="font-size:13px">'+
+    '<input type="number" min="1" value="'+(qty||1)+'" oninput="updateLine(\''+id+'\',\'qty\',this.value)" style="text-align:center;font-size:13px">'+
+    '<input type="number" min="0" step="0.01" value="'+(price||'')+'" placeholder="0.00" oninput="updateLine(\''+id+'\',\'price\',this.value)" style="text-align:right;font-size:13px">'+
+    '<button class="remove-line" onclick="removeLine(\''+id+'\')">✕</button>';
+  el.appendChild(div);
+  calcTotals();
+}
+
+function updateLine(id,field,val){
+  var item=_lineItems.find(function(l){return l.id===id;});
+  if(!item)return;
+  if(field==='qty')item.qty=parseFloat(val)||0;
+  else if(field==='price')item.price=parseFloat(val)||0;
+  else item.desc=val;
+  calcTotals();
+}
+
+function removeLine(id){
+  _lineItems=_lineItems.filter(function(l){return l.id!==id;});
+  var el=document.getElementById('row-'+id);
+  if(el)el.remove();
+  calcTotals();
+}
+
+function calcTotals(){
+  var tva=parseFloat(document.getElementById('f-tva').value)||0;
+  var sym=CURRENCY_SYMBOLS[document.getElementById('f-currency').value]||'€';
+  var ht=_lineItems.reduce(function(a,l){return a+(l.qty||0)*(l.price||0);},0);
+  var tvaAmt=ht*(tva/100);
+  var ttc=ht+tvaAmt;
+  document.getElementById('t-ht').textContent=formatEUR(ht,sym);
+  document.getElementById('t-tva-label').textContent='TVA ('+tva+'%)';
+  document.getElementById('t-tva').textContent=formatEUR(tvaAmt,sym);
+  document.getElementById('t-ttc').textContent=formatEUR(ttc,sym);
+  document.getElementById('preview-total').textContent=formatEUR(ttc,sym);
+  document.getElementById('preview-items').textContent=_lineItems.length+' line item'+(  _lineItems.length!==1?'s':'');
+  updateContractPreview();
+}
+
+// ── CONTRACT ──────────────────────────────────────────────────
+function toggleContract(){
+  var ed=document.getElementById('contract-editor');
+  var pr=document.getElementById('contract-preview');
+  var isHidden=ed.style.display==='none';
+  ed.style.display=isHidden?'block':'none';
+  pr.style.display=isHidden?'none':'block';
+}
+
+function updateContractPreview(){
+  var clientName=document.getElementById('f-client-name').value||'[Client Name]';
+  var projectTitle=document.getElementById('f-project-title').value||'[Project Title]';
+  var tva=document.getElementById('f-tva').value;
+  var terms=document.getElementById('f-contract-terms').value||DEFAULT_CONTRACT;
+  var sym=CURRENCY_SYMBOLS[document.getElementById('f-currency').value]||'€';
+  var ht=_lineItems.reduce(function(a,l){return a+(l.qty||0)*(l.price||0);},0);
+  var ttc=ht*(1+parseFloat(tva)/100);
+  var preview=terms
+    .replace('{CLIENT_NAME}',clientName)
+    .replace('{PROJECT_DESCRIPTION}',projectTitle)
+    .replace('{PAYMENT_TERMS}','Total amount: '+formatEUR(ttc,sym)+' TTC')
+    .replace('{PROVIDER_NAME}','[Your Name]');
+  // Convert to HTML with highlighted placeholders
+  var html=preview.split('\n').map(function(line){
+    if(!line.trim())return '<br>';
+    var escaped=line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return '<p style="margin:2px 0">'+escaped+'</p>';
+  }).join('');
+  document.getElementById('contract-preview').innerHTML=html;
+}
+
+document.getElementById('f-client-name').addEventListener('input',updateContractPreview);
+document.getElementById('f-project-title').addEventListener('input',updateContractPreview);
+document.getElementById('f-contract-terms').addEventListener('input',updateContractPreview);
+document.getElementById('f-tva').addEventListener('change',updateContractPreview);
+
+// ── PAYMENT SCHEDULE ──────────────────────────────────────────
+function updatePaymentUI(){
+  var type=document.getElementById('f-payment-type').value;
+  var msgs={
+    full:'Full payment due on the specified date.',
+    deposit:'50% deposit due upon signing. Remaining 50% due on project completion.',
+    split3:'Payment split into 3 equal parts: on signing, at project midpoint, and on delivery.',
+    custom:'Define a custom payment schedule for this client.'
+  };
+  document.getElementById('payment-details').textContent=msgs[type]||msgs.full;
+}
+
+// ── SAVE PROPOSAL ─────────────────────────────────────────────
+async function saveProposal(status){
+  var clientName=(document.getElementById('f-client-name').value||'').trim();
+  var clientEmail=(document.getElementById('f-client-email').value||'').trim();
+  var projectTitle=(document.getElementById('f-project-title').value||'').trim();
+  if(!clientName||!clientEmail||!projectTitle){
+    toast('Please fill in client name, email, and project title.','toast-error');
+    return;
+  }
+  if(!_lineItems.length||!_lineItems.some(function(l){return l.price>0;})){
+    toast('Please add at least one line item with a price.','toast-error');
+    return;
+  }
+
+  var tva=parseFloat(document.getElementById('f-tva').value)||0;
+  var currency=document.getElementById('f-currency').value||'EUR';
+  var ht=_lineItems.reduce(function(a,l){return a+(l.qty||0)*(l.price||0);},0);
+  var ttc=ht*(1+(tva/100));
+  var token=Array.from(crypto.getRandomValues(new Uint8Array(24))).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+
+  var payload={
+    user_id:_uid,
+    client_name:clientName,
+    client_email:clientEmail,
+    client_company:(document.getElementById('f-company').value||'').trim()||null,
+    client_phone:(document.getElementById('f-phone').value||'').trim()||null,
+    project_title:projectTitle,
+    project_type:document.getElementById('f-project-type').value,
+    description:(document.getElementById('f-description').value||'').trim()||null,
+    contract_terms:document.getElementById('f-contract-terms').value||DEFAULT_CONTRACT,
+    line_items:JSON.stringify(_lineItems),
+    amount_ht:parseFloat(ht.toFixed(2)),
+    tva_rate:tva,
+    amount_ttc:parseFloat(ttc.toFixed(2)),
+    currency:currency,
+    payment_type:document.getElementById('f-payment-type').value,
+    due_date:document.getElementById('f-due-date').value||null,
+    valid_until:document.getElementById('f-valid-until').value||null,
+    status:status||'draft',
+    share_token:token,
+    created_at:new Date().toISOString(),
+    updated_at:new Date().toISOString()
+  };
+
+  try{
+    var {data,error}=await _supa.from('proposals').insert(payload).select().single();
+    if(error)throw error;
+    _createdProposalId=data.id;
+    var link=window.location.origin+'/prospeo/smart-file.html?t='+token;
+    document.getElementById('share-link-input').value=link;
+    var modal=document.getElementById('success-modal');
+    modal.style.opacity='1';modal.style.pointerEvents='all';
+    modal.querySelector('div').style.transform='translateY(0)';
+    toast(status==='draft'?'Draft saved!':'Smart File ready to send!');
+    loadProposals();
+  }catch(e){
+    if(e.message&&e.message.includes('relation "public.proposals" does not exist')){
+      toast('Run the schema SQL first — see deployment guide.','toast-error');
+    } else {
+      toast('Save failed: '+(e.message||'unknown error'),'toast-error');
+    }
+  }
+}
+
+function closeSuccessModal(){
+  var m=document.getElementById('success-modal');
+  m.style.opacity='0';m.style.pointerEvents='none';
+}
+
+function copyLink(){
+  var input=document.getElementById('share-link-input');
+  navigator.clipboard.writeText(input.value).then(function(){toast('Link copied to clipboard!');}).catch(function(){input.select();document.execCommand('copy');toast('Link copied!');});
+}
+
+function sendByEmail(){
+  var email=document.getElementById('f-client-email').value;
+  var link=document.getElementById('share-link-input').value;
+  if(email){window.location.href='mailto:'+email+'?subject=Your%20Smart%20File%20from%20Prospeo&body=Hi%2C%0A%0APlease%20review%2C%20sign%2C%20and%20approve%20your%20Smart%20File%20here%3A%0A%0A'+encodeURIComponent(link)+'%0A%0AThis%20link%20contains%20the%20full%20proposal%2C%20contract%2C%20and%20invoice.%0A%0ABest%20regards';}
+  closeSuccessModal();
+}
+
+// ── LOAD PROPOSALS LIST ───────────────────────────────────────
+async function loadProposals(){
+  var el=document.getElementById('proposals-container');
+  try{
+    var {data,error}=await _supa.from('proposals').select('*').eq('user_id',_uid).order('created_at',{ascending:false});
+    if(error)throw error;
+    if(!data||!data.length){
+      el.innerHTML='<div class="empty-state"><div class="es-icon">📄</div><div class="es-title">No Smart Files yet</div><div class="es-sub">Create your first Smart File — a combined proposal, contract, and invoice in one shareable link. Your clients review, sign, and pay without leaving the page.</div><button class="btn btn-primary btn-lg" onclick="showTab(\'new\')">+ Create your first Smart File</button></div>';
+      return;
+    }
+    var colors=['#EEF2FF','#ECFDF5','#FFF7ED','#FEF3C7','#F5F3FF','#E0F2FE'];
+    var textColors=['#003399','#059669','#C2410C','#D97706','#7C3AED','#0284C7'];
+    el.innerHTML='<div class="proposals-list">'+data.map(function(p,i){
+      var ci=i%colors.length;
+      var ini=(p.client_name||'?').split(' ').map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2);
+      var sbClass={draft:'sb-draft',ready:'sb-sent',sent:'sb-sent',signed:'sb-signed',paid:'sb-paid',declined:'sb-declined'}[p.status]||'sb-draft';
+      var sbLabel={draft:'Draft',ready:'Ready to send',sent:'Sent',signed:'Signed',paid:'Paid',declined:'Declined'}[p.status]||'Draft';
+      var created=new Date(p.created_at).toLocaleDateString('fr-FR');
+      return '<div class="proposal-row" onclick="openProposal(\''+p.id+'\',\''+p.share_token+'\')">' +
+        '<div class="pr-avatar" style="background:'+colors[ci]+';color:'+textColors[ci]+'">'+ini+'</div>'+
+        '<div><div class="pr-name">'+sanitize(p.project_title||'Untitled')+'</div><div class="pr-meta">'+sanitize(p.client_name||'')+(p.client_company?' · '+sanitize(p.client_company):'')+'</div></div>'+
+        '<div><span class="status-badge '+sbClass+'">'+sbLabel+'</span></div>'+
+        '<div><div class="pr-amount">€'+parseFloat(p.amount_ttc||0).toFixed(2)+'</div><div class="pr-date">'+created+'</div></div>'+
+      '</div>';
+    }).join('')+'</div>';
+  }catch(e){
+    el.innerHTML='<div class="empty-state"><div class="es-icon">⚠️</div><div class="es-title">Could not load Smart Files</div><div class="es-sub">'+sanitize(e.message||'Please refresh.')+'</div></div>';
+  }
+}
+
+function openProposal(id,token){
+  var link=window.location.origin+'/prospeo/smart-file.html?t='+token;
+  document.getElementById('share-link-input').value=link;
+  _createdProposalId=id;
+  var modal=document.getElementById('success-modal');
+  modal.querySelector('div>div:first-child').textContent='📄';
+  modal.querySelector('div>div:nth-child(2)').textContent='Smart File';
+  modal.style.opacity='1';modal.style.pointerEvents='all';
+}
+
+window.addEventListener('unhandledrejection',function(e){console.error('[Proposals]',e.reason);toast('Error: '+(e.reason?.message||'unknown'),'toast-error');});
+
+// ── CONTRACT TEMPLATES ────────────────────────────────────────
+var CONTRACT_TEMPLATES = {
+  web_design: {
+    name:'Web Design', icon:'💻',
+    title:'Web Design & Development Agreement',
+    terms:`WEB DESIGN & DEVELOPMENT AGREEMENT
+
+This agreement is between the Designer ({PROVIDER_NAME}) and the Client ({CLIENT_NAME}).
+
+SCOPE OF WORK
+{PROJECT_DESCRIPTION}
+
+DELIVERABLES
+- Custom website design (desktop + mobile responsive)
+- Up to {PAGES} pages as agreed
+- Browser compatibility: Chrome, Firefox, Safari, Edge
+- Source files delivered upon final payment
+
+TIMELINE
+Project begins upon receipt of signed agreement and 50% deposit.
+Estimated completion: {TIMELINE} weeks from project start.
+Timeline subject to timely client feedback (max 5 business days per review round).
+
+REVISIONS
+This project includes 2 rounds of revisions per design phase.
+Additional revisions: €{HOURLY_RATE}/hour.
+
+PAYMENT TERMS
+50% deposit due upon signing. Remaining 50% due on delivery.
+Late payments accrue 2% monthly interest after 30 days.
+
+INTELLECTUAL PROPERTY
+All final deliverables become Client property upon full payment.
+Designer retains right to display work in portfolio.
+
+HOSTING & MAINTENANCE
+This agreement covers design and development only.
+Hosting, domain, and ongoing maintenance quoted separately.`
+  },
+  photography: {
+    name:'Photography', icon:'📷',
+    title:'Photography Services Agreement',
+    terms:`PHOTOGRAPHY SERVICES AGREEMENT
+
+This agreement is between the Photographer ({PROVIDER_NAME}) and the Client ({CLIENT_NAME}).
+
+SCOPE OF WORK
+{PROJECT_DESCRIPTION}
+
+DELIVERABLES
+- Professional edited photos (minimum quantity as agreed)
+- High-resolution digital files delivered via online gallery
+- Delivery within 2 weeks of session date
+
+SESSION DETAILS
+Date, time, and location as communicated separately.
+Session duration as agreed in scope above.
+
+PAYMENT TERMS
+50% deposit to confirm booking. Balance due day of session.
+Cancellation with less than 72 hours notice forfeits deposit.
+
+USAGE RIGHTS
+Client receives license for personal and commercial use.
+Photographer retains right to use images for portfolio and marketing.
+
+LIMITATION OF LIABILITY
+Photographer's liability limited to refund of fees paid.
+Not responsible for events beyond reasonable control.`
+  },
+  consulting: {
+    name:'Consulting', icon:'📊',
+    title:'Consulting Services Agreement',
+    terms:`CONSULTING SERVICES AGREEMENT
+
+This agreement is between the Consultant ({PROVIDER_NAME}) and the Client ({CLIENT_NAME}).
+
+SCOPE OF WORK
+{PROJECT_DESCRIPTION}
+
+DELIVERABLES & MILESTONES
+As outlined in the project scope. Written deliverables within agreed timelines.
+
+RATE & PAYMENT
+{PAYMENT_TERMS}
+Invoices due within 30 days of receipt. Late fee: 2% per month.
+
+CONFIDENTIALITY
+Consultant agrees to keep all Client information confidential.
+Client agrees not to solicit Consultant employees for 12 months.
+
+INDEPENDENT CONTRACTOR
+Consultant is an independent contractor, not an employee.
+Consultant responsible for own taxes and insurance.
+
+TERMINATION
+Either party may terminate with 14 days written notice.
+Client owes payment for all work completed to termination date.`
+  },
+  marketing: {
+    name:'Marketing', icon:'📣',
+    title:'Marketing Services Agreement',
+    terms:`MARKETING SERVICES AGREEMENT
+
+This agreement is between the Marketer ({PROVIDER_NAME}) and the Client ({CLIENT_NAME}).
+
+SCOPE OF WORK
+{PROJECT_DESCRIPTION}
+
+DELIVERABLES
+Content, campaigns, and assets as described in scope.
+Monthly reporting on agreed KPIs.
+
+TIMELINE & TERM
+Contract term: as agreed. Renewable monthly unless cancelled.
+30 days written notice required to terminate ongoing services.
+
+PAYMENT TERMS
+{PAYMENT_TERMS}
+Ad spend budgets billed separately at cost.
+
+CLIENT RESPONSIBILITIES
+Client to provide brand assets, approvals within 48 hours.
+Client approves all content before publication.
+
+PERFORMANCE
+No guarantees of specific results (rankings, conversions, revenue).
+Marketer commits to professional best-effort service.`
+  },
+  copywriting: {
+    name:'Copywriting', icon:'✍️',
+    title:'Copywriting Services Agreement',
+    terms:`COPYWRITING SERVICES AGREEMENT
+
+This agreement is between the Copywriter ({PROVIDER_NAME}) and the Client ({CLIENT_NAME}).
+
+SCOPE OF WORK
+{PROJECT_DESCRIPTION}
+
+DELIVERABLES
+Written content as specified in scope.
+Delivered in agreed format (Word, Google Docs, etc.)
+
+REVISIONS
+2 rounds of revisions included.
+Additional revisions: €{HOURLY_RATE}/hour.
+
+TIMELINE
+Drafts delivered within agreed timeframe.
+Timeline requires timely client feedback.
+
+PAYMENT TERMS
+{PAYMENT_TERMS}
+
+OWNERSHIP
+All content becomes Client property upon full payment.
+Copywriter may use work samples for portfolio with Client permission.
+
+PLAGIARISM
+All content guaranteed original. Not AI-generated unless agreed.`
+  }
+};
+
+function showTemplateSelector() {
+  var existing = document.getElementById('tpl-selector');
+  if (existing) { existing.remove(); return; }
+  var div = document.createElement('div');
+  div.id = 'tpl-selector';
+  div.innerHTML = '<div style="margin-bottom:12px;font-size:13px;font-weight:600;color:var(--text)">Choose a template to get started quickly:</div>' +
+    '<div class="templates-grid">' +
+    Object.entries(CONTRACT_TEMPLATES).map(function(entry) {
+      var key = entry[0], tpl = entry[1];
+      return '<div class="tpl-card" onclick="applyTemplate(\'' + key + '\')">' +
+        '<div class="tpl-icon">' + tpl.icon + '</div>' +
+        '<div class="tpl-name">' + tpl.name + '</div>' +
+        '</div>';
+    }).join('') +
+    '</div>';
+  var contractHead = document.querySelector('.card-head .card-title');
+  if (contractHead) {
+    var cardBody = contractHead.closest('.card').querySelector('.card-body');
+    if (cardBody) cardBody.insertBefore(div, cardBody.firstChild);
+  }
+}
+
+function applyTemplate(key) {
+  var tpl = CONTRACT_TEMPLATES[key];
+  if (!tpl) return;
+  document.getElementById('f-contract-terms').value = tpl.terms;
+  // Auto-fill project title if empty
+  var titleEl = document.getElementById('f-project-title');
+  if (titleEl && !titleEl.value.trim()) titleEl.value = tpl.title;
+  // Select the right project type
+  var typeEl = document.getElementById('f-project-type');
+  if (typeEl) typeEl.value = key === 'web_design' ? 'development' : key === 'photography' ? 'photography' : key === 'consulting' ? 'consulting' : key === 'marketing' ? 'marketing' : 'writing';
+  // Highlight selected
+  document.querySelectorAll('.tpl-card').forEach(function(c) {
+    c.classList.toggle('selected', c.getAttribute('onclick') === 'applyTemplate(\'' + key + '\')');
+  });
+  updateContractPreview();
+  toast('Template applied — customise the terms below.');
+  document.getElementById('tpl-selector').style.display = 'none';
+}
+</script>
+</body>
+</html>

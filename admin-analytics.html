@@ -88,6 +88,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="chart-title">Plan distribution</div>
       <div class="chart-wrap"><canvas id="plans-chart"></canvas></div>
     </div>
+  
+  <!-- Contract Conversion Chart -->
+  <div class="chart-card anim-fade-up delay-300" style="margin-bottom:14px">
+    <div class="chart-title">Contract funnel <span class="chart-sub">Proposals → Signed → Paid</span></div>
+    <div class="chart-wrap"><canvas id="funnel-chart"></canvas></div>
+  </div>
+
+  <!-- Revenue by month -->
+  <div class="chart-card anim-fade-up delay-400" style="margin-bottom:14px">
+    <div class="chart-title">Revenue pipeline <span class="chart-sub">Proposals value by status</span></div>
+    <div class="chart-wrap"><canvas id="revenue-pipeline-chart"></canvas></div>
   </div>
 
   <!-- Feedback -->
@@ -244,6 +255,35 @@ function fmt(n){return new Intl.NumberFormat('fr-FR').format(n);}
     }).join('') :
     '<tr><td colspan="3" class="empty-state">No events yet</td></tr>';
 
+
+  // Contract funnel chart
+  try {
+    var {data:allProposals} = await _supa.from('proposals').select('status,amount_ttc').eq('user_id',uid);
+    var pProps = allProposals || [];
+    var funnelData = {
+      draft:  pProps.filter(function(p){return p.status==='draft';}).length,
+      ready:  pProps.filter(function(p){return p.status==='ready'||p.status==='sent';}).length,
+      signed: pProps.filter(function(p){return p.status==='signed';}).length,
+      paid:   pProps.filter(function(p){return p.status==='paid';}).length
+    };
+    new Chart(document.getElementById('funnel-chart').getContext('2d'),{
+      type:'bar',
+      data:{labels:['Draft','Sent','Signed','Paid'],datasets:[{data:[funnelData.draft,funnelData.ready,funnelData.signed,funnelData.paid],backgroundColor:['#E5E7EB','#DBEAFE','#D1FAE5','#059669'],borderRadius:6,borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{stepSize:1}}}}
+    });
+
+    // Revenue pipeline
+    var pipelineData = {
+      active: pProps.filter(function(p){return p.status==='sent';}).reduce(function(a,p){return a+(p.amount_ttc||0);},0),
+      signed: pProps.filter(function(p){return p.status==='signed';}).reduce(function(a,p){return a+(p.amount_ttc||0);},0),
+      paid:   pProps.filter(function(p){return p.status==='paid';}).reduce(function(a,p){return a+(p.amount_ttc||0);},0)
+    };
+    new Chart(document.getElementById('revenue-pipeline-chart').getContext('2d'),{
+      type:'bar',
+      data:{labels:['Sent (awaiting)','Signed (to invoice)','Paid'],datasets:[{data:[Math.round(pipelineData.active),Math.round(pipelineData.signed),Math.round(pipelineData.paid)],backgroundColor:['#DBEAFE','#FEF3C7','#D1FAE5'],borderRadius:6,borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,.04)'}}}}
+    });
+  } catch(e) { console.error('[Analytics charts]', e); }
 })();
 
 window.addEventListener('unhandledrejection',function(e){console.error('[Analytics]',e.reason);});
