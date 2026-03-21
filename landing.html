@@ -10,13 +10,39 @@
 // Prevent flash of wrong theme — runs before CSS
 (function(){
   var t=localStorage.getItem('prospeo-landing-theme');
-  if(!t) t=window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark';
+  // Default is DARK — only switch to light if user explicitly chose it
+  if(!t) t='dark';
   if(t==='light') document.documentElement.setAttribute('data-theme-init','light');
 })();
 </script>
 <style>
 /* Critical: prevent FOUC */
 html[data-theme-init="light"] body{background:#F8FAFF!important}
+
+/* ── PWA INSTALL BANNER ── */
+.pwa-banner{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--rlg);padding:16px 20px;display:flex;align-items:center;gap:14px;z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,.4);transition:transform .4s var(--ease);max-width:380px;width:calc(100% - 40px)}
+.pwa-banner.show{transform:translateX(-50%) translateY(0)}
+.pwa-banner-icon{width:44px;height:44px;border-radius:10px;background:var(--brand);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pwa-banner-icon img{width:26px;height:26px;filter:brightness(0) invert(1)}
+.pwa-banner-body{flex:1;min-width:0}
+.pwa-banner-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.pwa-banner-sub{font-size:11px;color:var(--text3)}
+.pwa-banner-actions{display:flex;gap:6px;flex-shrink:0}
+.pwa-install-btn{font-size:12px;font-weight:600;color:#fff;background:var(--brand);border:none;border-radius:var(--rfull);padding:7px 14px;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.pwa-install-btn:hover{background:var(--brand2)}
+.pwa-dismiss-btn{font-size:12px;color:var(--text3);background:none;border:none;cursor:pointer;padding:7px;font-family:inherit;border-radius:var(--rfull)}
+.pwa-dismiss-btn:hover{color:var(--text)}
+@media(max-width:500px){.pwa-banner{bottom:0;left:0;right:0;transform:translateY(120px);max-width:none;border-radius:var(--rlg) var(--rlg) 0 0}.pwa-banner.show{transform:translateY(0)}}
+
+
+/* ── LANG SWITCHER ── */
+.lang-switcher{display:flex;gap:2px;background:rgba(255,255,255,.06);border:1px solid var(--card-border);border-radius:var(--rfull);padding:3px}
+.lang-btn{font-size:12px;font-weight:600;color:var(--text3);background:none;border:none;border-radius:var(--rfull);padding:5px 10px;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.lang-btn:hover{color:var(--text);background:rgba(255,255,255,.08)}
+.lang-btn.active{background:var(--brand);color:#fff}
+body.light .lang-switcher{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.1)}
+body.light .lang-btn:hover{background:rgba(0,0,0,.06);color:#374151}
+
 </style>
 <link rel="manifest" href="manifest.json">
 <style>
@@ -440,6 +466,7 @@ body.light .stat-badge-ring{
 /* Testimonial section */
 body.light .testimonials{background:rgba(0,0,0,.01)}
 </style>
+<script src="i18n.js"></script>
 </head>
 <body>
 
@@ -449,10 +476,11 @@ body.light .testimonials{background:rgba(0,0,0,.01)}
     <img src="prospeo-logo-white.svg" alt="Prospeo">
   </a>
   <div class="nav-links">
-    <a href="#features" class="nav-link">Features</a>
-    <a href="#how" class="nav-link">How it works</a>
-    <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="#features" class="nav-link" id="nl-features">Features</a>
+    <a href="#how" class="nav-link" id="nl-how">How it works</a>
+    <a href="#pricing" class="nav-link" id="nl-pricing">Pricing</a>
   </div>
+  <div class="lang-switcher" id="lang-switcher"></div>
   <div style="display:flex;align-items:center;gap:10px">
     <button id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode" style="width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;color:var(--text3)">
       <svg id="theme-icon-dark" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:block"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -473,7 +501,7 @@ body.light .testimonials{background:rgba(0,0,0,.01)}
 
   <div class="hero-badge anim-fade-up">
     <span class="hero-badge-dot"></span>
-    Now with Nex AI — your business advisor
+    <span class="hero-badge-text">Now with Nex AI — your business advisor</span>
   </div>
 
   <h1 class="hero-title anim-fade-up delay-1">
@@ -910,8 +938,7 @@ body.light .testimonials{background:rgba(0,0,0,.01)}
 
 <script>
 // ── THEME SYSTEM ──────────────────────────────────────────────
-var _theme = localStorage.getItem('prospeo-landing-theme') ||
-  (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+var _theme = localStorage.getItem('prospeo-landing-theme') || 'dark'; // Default: dark
 
 function applyTheme(t) {
   _theme = t;
@@ -1053,6 +1080,139 @@ function typeDemo(){
 }
 setTimeout(typeDemo,1500);
 
+
+
+// ── i18n INIT ─────────────────────────────────────────────────
+function renderI18n() {
+  var tl = function(id, key) { var el = document.getElementById(id); if (el) el.textContent = i18n.t(key); };
+  var ta = function(id, attr, key) { var el = document.getElementById(id); if (el) el.setAttribute(attr, i18n.t(key)); };
+  var tq = function(sel, key) { var el = document.querySelector(sel); if (el) el.textContent = i18n.t(key); };
+  
+  // Nav
+  tq('#nl-features', 'nav_features');
+  tq('#nl-how', 'nav_how');
+  tq('#nl-pricing', 'nav_pricing');
+  tq('.nav-cta', 'nav_cta');
+  
+  // Hero
+  tq('.hero-badge-text', 'hero_badge');
+  tq('.hero-title-line1', 'hero_title1');
+  tq('.hero-title-line2', 'hero_title2');
+  tq('.hero-sub', 'hero_sub');
+  tq('.btn-hero-primary span', 'hero_btn1');
+  tq('.btn-hero-ghost span', 'hero_btn2');
+  
+  // Trust bar
+  var trustSpans = document.querySelectorAll('.hero-trust > span');
+  var trustKeys = ['trust_gdpr','trust_eu','trust_esign','trust_card'];
+  trustSpans.forEach(function(s, i) { if (trustKeys[i]) s.textContent = i18n.t(trustKeys[i]); });
+  
+  // Stats
+  var statLbls = document.querySelectorAll('.stat-lbl');
+  var statKeys = ['stat_users','stat_margin','stat_price','stat_saved'];
+  statLbls.forEach(function(s, i) { if (statKeys[i]) s.textContent = i18n.t(statKeys[i]); });
+  
+  // Features section
+  tq('.features .section-eyebrow', 'features_eyebrow');
+  tq('.features .section-title', 'features_title');
+  tq('.features .section-sub', 'features_sub');
+  
+  // How it works
+  tq('.how .section-eyebrow', 'how_eyebrow');
+  tq('.how .section-title', 'how_title');
+  var stepTitles = document.querySelectorAll('.step-title');
+  var stepDescs = document.querySelectorAll('.step-desc');
+  ['step1','step2','step3','step4'].forEach(function(s, i) {
+    if (stepTitles[i]) stepTitles[i].textContent = i18n.t(s+'_title');
+    if (stepDescs[i]) stepDescs[i].textContent = i18n.t(s+'_desc');
+  });
+  
+  // AI section
+  tq('.ai-section .section-eyebrow', 'ai_eyebrow');
+  tq('.ai-section .section-title', 'ai_title');
+  tq('.ai-section .section-sub', 'ai_sub');
+  
+  // Pricing
+  tq('.pricing-section .section-eyebrow', 'pricing_eyebrow');
+  tq('.pricing-section .section-title', 'pricing_title');
+  
+  // CTA
+  tq('.cta-title', 'cta_title');
+  tq('.cta-sub', 'cta_sub');
+  tq('.final-cta .btn-hero-primary span', 'cta_btn');
+  
+  // AI demo placeholder
+  var demoInp = document.querySelector('.ai-demo-inp');
+  if (demoInp) demoInp.placeholder = i18n.t('nex_placeholder');
+  
+  // PWA banner
+  tq('.pwa-banner-title', 'nav_features'); // reuse or set static
+  
+  // Update lang switcher
+  i18n.initLangSwitcher('lang-switcher');
+  
+  // Update page lang attribute
+  document.documentElement.lang = i18n.getLang();
+}
+
+// ── DEFAULT DARK MODE ─────────────────────────────────────────
+// Already handled in head script. Ensure dark is default if no preference stored.
+if (!localStorage.getItem('prospeo-landing-theme')) {
+  applyTheme('dark');
+}
+
+// Init on load
+window.addEventListener('DOMContentLoaded', function() {
+  i18n.initLangSwitcher('lang-switcher');
+  renderI18n();
+});
+
+// ── PWA INSTALL ───────────────────────────────────────────────
+var _pwaPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  _pwaPrompt = e;
+  // Show banner after 1 second
+  if (!localStorage.getItem('pwa-dismissed')) {
+    setTimeout(function() {
+      var banner = document.getElementById('pwa-banner');
+      if (banner) { banner.style.display = 'flex'; requestAnimationFrame(function(){ banner.classList.add('show'); }); }
+    }, 1000);
+  }
+});
+
+function pwaInstall() {
+  if (_pwaPrompt) {
+    _pwaPrompt.prompt();
+    _pwaPrompt.userChoice.then(function(r) {
+      if (r.outcome === 'accepted') pwaDismiss();
+      _pwaPrompt = null;
+    });
+  }
+}
+
+function pwaDismiss() {
+  var b = document.getElementById('pwa-banner');
+  if (b) { b.classList.remove('show'); setTimeout(function(){ b.style.display='none'; }, 400); }
+  localStorage.setItem('pwa-dismissed', '1');
+}
+
+// iOS install hint (Safari doesn't support beforeinstallprompt)
+var isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+var isInApp = window.navigator.standalone;
+if (isIos && !isInApp && !localStorage.getItem('pwa-dismissed')) {
+  setTimeout(function() {
+    var banner = document.getElementById('pwa-banner');
+    if (banner) {
+      banner.querySelector('.pwa-banner-title').textContent = 'Install Prospeo';
+      banner.querySelector('.pwa-banner-sub').textContent = 'Tap Share → Add to Home Screen';
+      banner.querySelector('.pwa-install-btn').style.display = 'none';
+      banner.style.display = 'flex';
+      requestAnimationFrame(function(){ banner.classList.add('show'); });
+    }
+  }, 1000);
+}
+
 // ── SMOOTH HASH SCROLL ──
 document.querySelectorAll('a[href^="#"]').forEach(function(a){
   a.addEventListener('click',function(e){
@@ -1062,5 +1222,20 @@ document.querySelectorAll('a[href^="#"]').forEach(function(a){
   });
 });
 </script>
+
+<!-- PWA Install Banner -->
+<div class="pwa-banner" id="pwa-banner" style="display:none">
+  <div class="pwa-banner-icon">
+    <img src="favicon.svg" alt="Prospeo">
+  </div>
+  <div class="pwa-banner-body">
+    <div class="pwa-banner-title">Install Prospeo</div>
+    <div class="pwa-banner-sub">Add to home screen for quick access</div>
+  </div>
+  <div class="pwa-banner-actions">
+    <button class="pwa-install-btn" onclick="pwaInstall()">Install</button>
+    <button class="pwa-dismiss-btn" onclick="pwaDismiss()">✕</button>
+  </div>
+</div>
 </body>
 </html>
