@@ -821,18 +821,18 @@
             </div>
 
             <!-- AI inline panel -->
-            <div class="dash-card" id="hanna-card">
+            <div class="dash-card" id="nex-card">
               <div class="dash-card-head">
                 <div class="dash-card-title">
                   <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
-                  Hanna AI
+                  Nex AI
                 </div>
                 <span class="ai-pro-badge" style="font-size:9px;padding:2px 6px">PRO</span>
               </div>
               <div class="dash-card-body" style="padding:0">
                 <!-- Inline quick prompts -->
-                <div style="padding:12px 18px;display:flex;flex-direction:column;gap:6px" id="hanna-inline-prompts">
-                  <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;font-weight:500">Ask Hanna:</div>
+                <div style="padding:12px 18px;display:flex;flex-direction:column;gap:6px" id="nex-inline-prompts">
+                  <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;font-weight:500">Ask Nex:</div>
                 </div>
                 <div style="padding:12px 18px;border-top:1px solid var(--border)">
                   <button class="qa-btn qa-primary" style="width:100%;justify-content:center;font-size:12px;padding:8px 14px" onclick="AIAssistant.toggle()">
@@ -1149,7 +1149,7 @@ const ACT_ICON={
 
   // Track login count for feedback widget (fire and forget)
   FeedbackWidget.incrementAndCheck(session.user.id);
-  // Init Hanna with plan and token
+  // Init Nex with plan and token
   AIAssistant.init(Auth._plan || 'free', session.access_token);
   // Load limits + notifications in background (non-blocking)
   var _planData = Auth._plan || {plan:'free', is_pro:false};
@@ -1172,28 +1172,38 @@ const ACT_ICON={
     } catch(e) { console.error('[Background init]', e); }
   }, 800);
 
+  // Fetch all dashboard data with individual error isolation
   const [leads, acts, evts, invs] = await Promise.all([
-    DB.getLeads(),
-    _supa.from('activities').select('*').order('happened_at',{ascending:false}).limit(8).then(r=>r.data??[]),
-    DB.getEvents(new Date(Date.now()-86400000).toISOString(), new Date(Date.now()+30*86400000).toISOString()),
-    _supa.from('invoices').select('id,status,amount_ttc,due_date,created_at,client_name').order('created_at',{ascending:false}).limit(50).then(r=>r.data??[])
+    DB.getLeads().catch(function(e){ console.error('[Leads]',e); return []; }),
+    _supa.from('activities').select('*').order('happened_at',{ascending:false}).limit(8).then(r=>r.data??[]).catch(function(){return [];}),
+    DB.getEvents(new Date(Date.now()-86400000).toISOString(), new Date(Date.now()+30*86400000).toISOString()).catch(function(){return [];}),
+    _supa.from('invoices').select('id,status,total,due_date,created_at,client_name,invoice_number').order('created_at',{ascending:false}).limit(50).then(function(r){return (r.data||[]).map(function(i){return Object.assign({},i,{amount_ttc:i.total||0,number:i.invoice_number});});}).catch(function(e){console.error('[Invoices]',e);return [];})
   ]);
   _leads=leads;
 
-  // Render KPIs with full data context
-  renderKPIs(leads, invs, evts);
-  renderPipeline(leads);
-  renderLifecycleBar(leads);
-  renderActivityFeed(acts);
-  renderRevenue(invs);
-  renderTasksToday(evts);
-  renderUpcoming(evts);
+  // Render all dashboard sections — each isolated so one failure can't break others
+  try { renderKPIs(leads, invs, evts); } catch(e){ console.error('[KPIs]',e); }
+  try { renderPipeline(leads); } catch(e){ console.error('[Pipeline]',e); }
+  try { renderLifecycleBar(leads); } catch(e){ console.error('[Lifecycle]',e); }
+  try { renderActivityFeed(acts); } catch(e){ console.error('[Activity]',e); }
+  try { renderRevenue(invs); } catch(e){ console.error('[Revenue]',e); }
+  try { renderTasksToday(evts); } catch(e){ console.error('[Tasks]',e); }
+  try { renderUpcoming(evts); } catch(e){ console.error('[Upcoming]',e); }
 
   document.getElementById('loading').style.display='none';
   document.getElementById('content').style.display='block';
 
-  // Animate cards in sequence
-  if(typeof Animate!=='undefined') Animate.stagger('.kpi-v2', 80);
+  // Stagger-animate KPI cards
+  setTimeout(function(){
+    var kpis=document.querySelectorAll('.kpi-v2');
+    kpis.forEach(function(k,i){
+      k.style.opacity='0';k.style.transform='translateY(12px)';
+      setTimeout(function(){
+        k.style.transition='opacity .3s ease, transform .3s ease';
+        k.style.opacity='1';k.style.transform='translateY(0)';
+      },i*80);
+    });
+  },50);
 
   document.getElementById('srch').addEventListener('input',e=>{
     const q=e.target.value.trim();
@@ -1287,8 +1297,8 @@ function renderKPIs(leads, invoices, tasks){
   renderMiniPipeline(leads);
   // Render tasks
   renderTasksToday(tasks||[]);
-  // Update Hanna context
-  updateHannaContext(leads, invoices||[], tasks||[]);
+  // Update Nex context
+  updateNexContext(leads, invoices||[], tasks||[]);
 }
 
 function renderMiniPipeline(leads){
@@ -1365,7 +1375,7 @@ function renderRevenue(invoices){
   '</div>';
 }
 
-function updateHannaContext(leads, invoices, tasks){
+function updateNexContext(leads, invoices, tasks){
   if(typeof AIAssistant==='undefined') return;
   var now=new Date();
   var active=leads.filter(function(l){return!['won','lost'].includes(l.stage);});
@@ -1381,7 +1391,7 @@ function updateHannaContext(leads, invoices, tasks){
   AIAssistant.setDashboardContext(ctx);
 
   // Render inline quick prompts
-  var promptsEl=document.getElementById('hanna-inline-prompts');
+  var promptsEl=document.getElementById('nex-inline-prompts');
   if(promptsEl){
     var prompts=[
       'Summarize my pipeline',
@@ -1389,14 +1399,14 @@ function updateHannaContext(leads, invoices, tasks){
       'What are my '+overdue.length+' overdue invoice'+(overdue.length!==1?'s':'')+'?',
       'Help me write a client follow-up'
     ].filter(function(p){return !p.includes('0 overdue');});
-    promptsEl.innerHTML='<div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;font-weight:500">Ask Hanna:</div>'+
+    promptsEl.innerHTML='<div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;font-weight:500">Ask Nex:</div>'+
       prompts.slice(0,3).map(function(p){
-        return '<button class="ai-quick-btn" onclick="inlineAskHanna(\''+p.replace(/'/g,"\\'")+'\')">'+sanitize(p)+'</button>';
+        return '<button class="ai-quick-btn" onclick="inlineAskNex(\''+p.replace(/'/g,"\\'")+'\')">'+sanitize(p)+'</button>';
       }).join('');
   }
 }
 
-function inlineAskHanna(prompt){
+function inlineAskNex(prompt){
   AIAssistant.open();
   setTimeout(function(){
     var inp=document.getElementById('ai-input');
@@ -1648,7 +1658,7 @@ var AIAssistant = (function() {
     _dashboardContext = ctx;
   }
 
-  var SYSTEM_PROMPT = 'You are Hanna, an expert business advisor built into Prospeo CRM. ' +
+  var SYSTEM_PROMPT = 'You are Nex, an expert business advisor built into Prospeo CRM. ' +
     'You specialize in: EU accounting and invoicing rules (HT/TVA/TTC, reverse charge, VIES), ' +
     'French and European freelance taxation (auto-entrepreneur, micro-entreprise, SASU, SAS, SARL), ' +
     'business strategy for freelancers and small businesses, ' +
@@ -1702,13 +1712,13 @@ var AIAssistant = (function() {
   }
 
   function showUpgradePrompt() {
-    Toast.info('Pro feature', 'Upgrade to Pro to access the Hanna — AI Assistant.');
+    Toast.info('Pro feature', 'Upgrade to Pro to access the Nex — AI Assistant.');
     if (typeof window.showUpgradeModal === 'function') { window.showUpgradeModal(); }
   }
 
   function addWelcomeMessage() {
     addMessage('assistant',
-      'Hi, I am Hanna \u2014 your Prospeo business advisor. I can help you with:\n\n' +
+      'Hi, I am Nex \u2014 your Prospeo business advisor. I can help you with:\n\n' +
       '- EU invoicing rules (TVA, reverse charge, VIES)\n' +
       '- French freelance taxation (auto-entrepreneur, SAS...)\n' +
       '- Pricing strategy and client negotiation\n' +
@@ -2321,7 +2331,7 @@ if (typeof Notifications !== 'undefined') Notifications.init();
 <div class="feedback-overlay" id="feedback-widget"></div>
 
 <!-- AI Assistant Widget -->
-<button class="ai-btn" onclick="AIAssistant.toggle()" title="Hanna — AI Assistant">
+<button class="ai-btn" onclick="AIAssistant.toggle()" title="Nex — AI Assistant">
   <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/></svg>
   <span class="ai-badge">AI</span>
 </button>
@@ -2331,7 +2341,7 @@ if (typeof Notifications !== 'undefined') Notifications.init();
       <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>
     </div>
     <div class="ai-head-info">
-      <div class="ai-head-name">Hanna</div>
+      <div class="ai-head-name">Nex</div>
       <div class="ai-head-status">Online &mdash; EU Business Expert</div>
     </div>
     <div class="ai-head-actions">
