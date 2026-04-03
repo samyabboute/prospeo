@@ -3,6 +3,9 @@ var PROSPEO_CONFIG = {
   SUPA_URL: 'https://ferkzwzypmdtuypxribz.supabase.co',
   SUPA_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlcmt6d3p5cG1kdHV5cHhyaWJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NjY4MjksImV4cCI6MjA4OTI0MjgyOX0.KbRa1t0VqrdURT0xbWLUXOZrf462wLNZaUgljk7h6eg',
   APP_URL:  'https://samyabboute.github.io/prospeo',
+  // Stripe Price IDs — replace with your live price IDs from the Stripe dashboard
+  STRIPE_PRICE_PRO_MONTHLY: 'price_REPLACE_WITH_MONTHLY_ID',
+  STRIPE_PRICE_PRO_YEARLY:  'price_REPLACE_WITH_YEARLY_ID',
   get EDGE_BASE() { return this.SUPA_URL + '/functions/v1'; }
 };
 var SUPA_URL  = PROSPEO_CONFIG.SUPA_URL;

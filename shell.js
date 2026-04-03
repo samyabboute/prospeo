@@ -72,6 +72,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .sb-item svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;flex-shrink:0;opacity:.7}
 .sb-item:hover{background:var(--brand-light);color:var(--brand)}
 .sb-item:hover svg{opacity:1}
+.sb-item:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
 .sb-item.active{background:var(--brand-light);color:var(--brand);font-weight:600}
 .sb-item.active svg{opacity:1;stroke:var(--brand)}
 .sb-item.locked{opacity:.5;cursor:not-allowed}
@@ -186,7 +187,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
     var userEmail = opts.userEmail || '';
     var initials = userName ? userName.split(' ').map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2) : (userEmail[0]||'?').toUpperCase();
     var leadCount = opts.leadCount || 0;
-    var leadLimit = isPro ? 9999 : 25;
+    var leadLimit = isPro ? 9999 : 10;
     var pct = Math.min(100, Math.round((leadCount/leadLimit)*100));
 
     // Sidebar HTML
@@ -218,12 +219,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
       '</nav>' +
       usageHTML +
       '<div class="sb-footer">' +
-        '<div class="sb-user" onclick="if(typeof Auth!==\'undefined\')Auth.signOut()">' +
+        '<div class="sb-user" onclick="if(typeof Auth!==\'undefined\')Auth.signOut()" title="Sign out">' +
           '<div class="sb-avatar">'+initials+'</div>' +
           '<div style="min-width:0;flex:1">' +
             '<div class="sb-username">'+(userName||userEmail||'Account')+'</div>' +
-            '<div class="sb-email">Sign out</div>' +
+            '<div class="sb-email">'+(userEmail||'Click to sign out')+'</div>' +
           '</div>' +
+          '<svg style="width:14px;height:14px;flex-shrink:0;opacity:.4;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' +
         '</div>' +
       '</div>';
 

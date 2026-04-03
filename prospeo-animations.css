@@ -1,4 +1,9 @@
 /* Prospeo Shared Animation System v5 */
+/* Fallback vars for pages that don't load shell.js */
+:root{
+  --bg-subtle: var(--surface2, #F3F4F6);
+  --bg-hover:  var(--surface,  #FFFFFF);
+}
 
   /* ── APPLE-STYLE ANIMATIONS ─────────────────────────────── */
   @keyframes fadeIn    { from{opacity:0}                        to{opacity:1} }
@@ -92,6 +97,21 @@
     .invoice-header-grid { grid-template-columns:1fr !important; }
     .invoice-line-grid { grid-template-columns:1fr 80px 80px 100px 32px !important; }
   }
+  /* Respect user motion preferences — disable all animations */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    body { animation: none; }
+    .anim-fade-in, .anim-fade-up, .anim-fade-down,
+    .anim-scale-in, .anim-slide-right, .anim-slide-left,
+    .anim-pop { animation: none; opacity: 1; transform: none; }
+    .hover-lift:hover { transform: none; }
+    .skeleton { animation: none; background: var(--bg-subtle); }
+  }
+
   @media (max-width:480px) {
     .stat-grid { grid-template-columns:1fr !important; }
     .form-row-2 { grid-template-columns:1fr !important; }
