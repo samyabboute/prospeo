@@ -486,11 +486,11 @@ async function signOut(){ await _supa.auth.signOut(); window.location.href=ghpNa
 // ── SETTINGS ────────────────────────────────────────────────────────
 
 const PAYMENT_METHODS = [
-  { key:'payment_cib',       label:'CIB / Carte interbancaire', icon:'💳', desc:'Carte CIB pour les paiements en ligne.' },
-  { key:'payment_edahabia',  label:'Edahabia (Algérie Poste)',  icon:'📮', desc:'Carte Edahabia via Algérie Poste.' },
-  { key:'payment_baridimob', label:'BaridiMob',                 icon:'📱', desc:'Paiement mobile via l\'application BaridiMob.' },
-  { key:'payment_virement',  label:'Virement bancaire',         icon:'🏦', desc:'Virement manuel — confirmé par l\'admin.' },
-  { key:'payment_cash',      label:'Paiement en espèces',       icon:'💵', desc:'Remise en main propre — confirmée par l\'admin.' },
+  { key:'payment_cib',       label:'CIB / Carte interbancaire', icon:'CIB', desc:'Carte CIB pour les paiements en ligne.' },
+  { key:'payment_edahabia',  label:'Edahabia (Algérie Poste)',  icon:'ED',  desc:'Carte Edahabia via Algérie Poste.' },
+  { key:'payment_baridimob', label:'BaridiMob',                 icon:'BM',  desc:'Paiement mobile via l\'application BaridiMob.' },
+  { key:'payment_virement',  label:'Virement bancaire',         icon:'VIR', desc:'Virement manuel — confirmé par l\'admin.' },
+  { key:'payment_cash',      label:'Paiement en espèces',       icon:'ESP', desc:'Remise en main propre — confirmée par l\'admin.' },
 ];
 
 let _settings = {};
@@ -528,7 +528,7 @@ function renderPaymentMethods() {
     const isOn = _settings[m.key] !== false && _settings[m.key] !== 'false';
     return `<div class="setting-row">
       <div style="display:flex;align-items:center;gap:12px">
-        <span style="font-size:20px">${m.icon}</span>
+        <span style="font-size:.5rem;font-weight:800;color:var(--brand);background:var(--brand-light);width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;letter-spacing:.3px;flex-shrink:0">${m.icon}</span>
         <div class="setting-info">
           <div class="setting-label">${m.label}</div>
           <div class="setting-desc">${m.desc}</div>

@@ -801,7 +801,7 @@ ul,ol{list-style:none}
       <!-- Penalty notice (shown if 2nd+ extension) -->
       <div id="crm-penalty-block" style="display:none">
         <div class="crm-penalty">
-          <strong>⚠️ Frais de déblocage applicables</strong>
+          <strong>Frais de déblocage applicables</strong>
           Ce compte a déjà bénéficié d'une extension. Une 2ème extension entraîne des frais de <strong>500 DA</strong>.
         </div>
       </div>
@@ -2332,7 +2332,7 @@ function openDoctorPanel(idx) {
   const grad     = avatarGradient(name);
   const ini      = initials2(name);
   const kycColor = r.kyc_status === 'approved' ? 'var(--success)' : r.kyc_status === 'pending_review' ? 'var(--warning)' : 'var(--text-muted)';
-  const kycLabel = { approved:'Approuvé ✓', pending_review:'En attente ⏳', rejected:'Rejeté ✗', not_submitted:'Non soumis' }[r.kyc_status] || r.kyc_status || '—';
+  const kycLabel = { approved:'Approuvé', pending_review:'En attente', rejected:'Rejeté', not_submitted:'Non soumis' }[r.kyc_status] || r.kyc_status || '—';
 
   document.getElementById('panel-title').textContent = 'Dr. ' + name;
   document.getElementById('panel-sub').textContent = 'Inscrit le ' + fmtDate(r.created_at);
@@ -2433,9 +2433,9 @@ async function openCrmPanel(profile) {
   pills.push(isPro
     ? `<span class="crm-pill crm-pill-pro">● Pro</span>`
     : `<span class="crm-pill crm-pill-free">Free</span>`);
-  if (isBlocked)  pills.push(`<span class="crm-pill crm-pill-blocked">⛔ Suspendu</span>`);
-  if (profile.kyc_status === 'pending_review') pills.push(`<span class="crm-pill crm-pill-warn">⏳ KYC en attente</span>`);
-  if (profile.kyc_status === 'approved')       pills.push(`<span class="crm-pill crm-pill-pro">✓ KYC vérifié</span>`);
+  if (isBlocked)  pills.push(`<span class="crm-pill crm-pill-blocked">Suspendu</span>`);
+  if (profile.kyc_status === 'pending_review') pills.push(`<span class="crm-pill crm-pill-warn">KYC en attente</span>`);
+  if (profile.kyc_status === 'approved')       pills.push(`<span class="crm-pill crm-pill-pro">KYC vérifié</span>`);
   if (profile.trial_end && new Date(profile.trial_end) > new Date()) pills.push(`<span class="crm-pill crm-pill-info">Essai actif</span>`);
   document.getElementById('crm-status-row').innerHTML = pills.join('');
 
@@ -2459,7 +2459,7 @@ async function openCrmPanel(profile) {
     ['Inscrit le', fmtDate(profile.created_at)],
     ['Dernière connexion', profile.last_seen_at ? fmtDate(profile.last_seen_at) : 'jamais'],
     ['Consultation (DA)', profile.consultation_price ? profile.consultation_price + ' DA' : '—'],
-    ['Profil public', profile.is_public ? 'Oui ✓' : 'Non'],
+    ['Profil public', profile.is_public ? 'Oui' : 'Non'],
   ].map(([k,v]) => `<div class="crm-info-row"><span class="crm-info-key">${k}</span><span class="crm-info-val">${esc(String(v))}</span></div>`).join('');
 
   // Support pane
@@ -2543,7 +2543,7 @@ async function loadCrmPayments(userId) {
 
   // Billing header
   document.getElementById('crm-billing-total').textContent =
-    grandTotal.toLocaleString('fr-DZ') + ' DA ' + (grandTotal > 0 ? '✓' : '');
+    grandTotal.toLocaleString('fr-DZ') + ' DA';
   document.getElementById('crm-billing-streak').textContent =
     paidMonths + '/6 mois payés';
 
@@ -2617,7 +2617,7 @@ function computeChurnScore(profile, sub) {
   fillEl.style.background = score > 65 ? 'var(--danger)' : score > 35 ? 'var(--warning)' : 'var(--success)';
   pctEl.textContent = score + '% risque';
   pctEl.style.color = score > 65 ? 'var(--danger)' : score > 35 ? 'var(--warning)' : 'var(--success)';
-  reasonEl.textContent = reasons.length ? 'Facteurs : ' + reasons.join(', ') : 'Profil sain ✓';
+  reasonEl.textContent = reasons.length ? 'Facteurs : ' + reasons.join(', ') : 'Profil sain';
 
   // Suggested retention offer
   const offerTitle  = document.getElementById('crm-offer-title');
@@ -2628,17 +2628,17 @@ function computeChurnScore(profile, sub) {
   const discount = revenue6 >= 50000 ? 20 : revenue6 >= 20000 ? 10 : 0;
 
   if (score > 65) {
-    offerTitle.textContent = '🚨 Risque élevé — Offre rétention recommandée';
+    offerTitle.textContent = 'Risque élevé — Offre rétention recommandée';
     offerDesc.textContent  = `Ce médecin génère ${revenue6.toLocaleString('fr-DZ')} DA. Rabais suggéré : ${discount || 10}%.`;
     offerActions.innerHTML = `
       <button class="btn btn-success btn-sm" onclick="crmOfferDiscount(${discount||10})">Appliquer rabais ${discount||10}%</button>
       <button class="btn btn-warning btn-sm" onclick="crmOffer1Month()">+1 mois gratuit</button>`;
   } else if (score > 35) {
-    offerTitle.textContent = '⚠️ Risque modéré — Relance recommandée';
+    offerTitle.textContent = 'Risque modéré — Relance recommandée';
     offerDesc.textContent  = 'Envoyer un email de relance avec récap des bénéfices de l\'abonnement.';
     offerActions.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="crmSendSupportEmail()">Envoyer email relance</button>`;
   } else {
-    offerTitle.textContent = '✅ Profil sain — Aucune action urgente';
+    offerTitle.textContent = 'Profil sain — Aucune action urgente';
     offerDesc.textContent  = 'Ce médecin est actif et engagé. Considérez un programme de fidélité.';
     offerActions.innerHTML = '';
   }
@@ -2649,7 +2649,7 @@ function computeChurnScore(profile, sub) {
 async function crmExtendDeadline() {
   if (!_crmDoctor) return;
   const penaltyMsg = _crmExtensionCount >= 1
-    ? '\n\n⚠️ ATTENTION : 2ème extension — des frais de 500 DA seront appliqués.' : '';
+    ? '\n\nATTENTION : 2ème extension — des frais de 500 DA seront appliqués.' : '';
   if (!confirm(`Prolonger le délai de paiement de ${doctorName(_crmDoctor)} de 7 jours ?${penaltyMsg}`)) return;
   try {
     const newDate = new Date(Date.now() + 7 * 86400000).toISOString();
@@ -2725,7 +2725,7 @@ async function crmToggleBlock() {
     // Refresh pills
     const blocked = document.querySelector('.crm-pill-blocked');
     if (blocked) blocked.remove();
-    if (!newActive) pills.insertAdjacentHTML('beforeend', '<span class="crm-pill crm-pill-blocked">⛔ Suspendu</span>');
+    if (!newActive) pills.insertAdjacentHTML('beforeend', '<span class="crm-pill crm-pill-blocked">Suspendu</span>');
     showToast('success', isBlocked ? 'Compte réactivé' : 'Compte suspendu', doctorName(_crmDoctor));
   } catch(e) { showToast('error', 'Erreur', e.message); }
 }
@@ -2737,7 +2737,7 @@ async function crmResetPassword() {
   try {
     const { error } = await _sb.auth.resetPasswordForEmail(_crmDoctor.email);
     if (error) throw error;
-    showToast('success', 'Email envoyé 🔑', 'Lien de réinitialisation envoyé à ' + _crmDoctor.email);
+    showToast('success', 'Lien de réinitialisation envoyé', 'Email envoyé à ' + _crmDoctor.email);
   } catch(e) { showToast('error', 'Erreur', e.message); }
 }
 
@@ -2756,7 +2756,7 @@ async function crmUpgradePlan() {
     });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Erreur');
-    showToast('success', 'Plan modifié ✓', plan + ' activé jusqu\'au ' + fmtDate(data.expires_at));
+    showToast('success', 'Plan modifié', plan + ' activé jusqu\'au ' + fmtDate(data.expires_at));
   } catch(e) { showToast('error', 'Erreur', e.message); }
 }
 
@@ -2768,7 +2768,7 @@ async function crmSetFeatured() {
     await _sb.from('profiles').update({ featured: newVal }).eq('id', _crmDoctor.id);
     _crmDoctor.featured = newVal;
     document.getElementById('crm-featured-label').textContent = newVal ? 'Retirer vedette' : 'Mettre en vedette';
-    showToast('success', newVal ? 'Mis en vedette ⭐' : 'Retiré de la vedette', doctorName(_crmDoctor));
+    showToast('success', newVal ? 'Mis en vedette' : 'Retiré de la vedette', doctorName(_crmDoctor));
   } catch(e) { showToast('error', 'Erreur', e.message); }
 }
 
@@ -2800,7 +2800,7 @@ function crmOfferEquipment() {
   if (!_crmDoctor) return;
   const equipment = prompt('Quel équipement est offert ? (ex: Tablette, Imprimante…)', '');
   if (!equipment) return;
-  showToast('success', 'Équipement noté ✓', `"${equipment}" offert à Dr. ${doctorName(_crmDoctor)} — À consigner dans le dossier.`);
+  showToast('success', 'Équipement noté', `"${equipment}" offert à Dr. ${doctorName(_crmDoctor)} — À consigner dans le dossier.`);
   document.getElementById('crm-retention-history').innerHTML =
     `<div style="padding:8px 0;border-bottom:1px solid var(--border);color:var(--text-secondary)">
       <span style="font-weight:700;color:var(--info)">Équipement : ${esc(equipment)}</span> — accordé le ${new Date().toLocaleDateString('fr-FR')}.
@@ -2819,7 +2819,7 @@ async function crmSendSupportEmail() {
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
       body: JSON.stringify({ to: _crmDoctor.email, subject: 'Message de l\'équipe Docline', html: `<p>${msg.replace(/\n/g,'<br>')}</p>` })
     });
-    showToast('success', 'Email envoyé ✉️', 'Message envoyé à ' + _crmDoctor.email);
+    showToast('success', 'Email envoyé', 'Message envoyé à ' + _crmDoctor.email);
   } catch(e) { showToast('error', 'Erreur', e.message); }
 }
 
@@ -2827,7 +2827,7 @@ function crmCopyProfile() {
   if (!_crmDoctor) return;
   try {
     navigator.clipboard.writeText(JSON.stringify(_crmDoctor, null, 2));
-    showToast('success', 'Copié ✓', 'Profil JSON copié dans le presse-papiers.');
+    showToast('success', 'Copié', 'Profil JSON copié dans le presse-papiers.');
   } catch(e) {
     showToast('error', 'Erreur', 'Impossible de copier.');
   }
@@ -4129,7 +4129,7 @@ function renderPaymentTable(rows) {
   <div style="background:var(--bg-raised);border-radius:16px;padding:32px;width:480px;max-width:94vw;box-shadow:0 12px 40px rgba(0,0,0,.18);max-height:90vh;overflow-y:auto">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
       <h3 id="modal-staff-title" style="font-size:16px;font-weight:800;color:var(--text-primary)">Ajouter un agent</h3>
-      <button onclick="closeStaffModal()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:20px">✕</button>
+      <button onclick="closeStaffModal()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:20px">&times;</button>
     </div>
 
     <input type="hidden" id="staff-edit-id">

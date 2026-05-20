@@ -496,7 +496,7 @@
               <tbody id="kyc-tbl"></tbody>
             </table>
           </div>
-          <div id="kyc-empty" style="display:none;padding:40px;text-align:center;color:var(--text-muted);font-size:var(--text-sm)">Aucune vérification KYC en attente ✓</div>
+          <div id="kyc-empty" style="display:none;padding:40px;text-align:center;color:var(--text-muted);font-size:var(--text-sm)">Aucune vérification KYC en attente</div>
         </div>
 
         <!-- MANUAL ACTIVATION -->
@@ -546,8 +546,8 @@
     <div class="modal-body" id="modal-body"></div>
     <div class="modal-foot">
       <button class="btn btn-secondary" onclick="closeModal()">Fermer</button>
-      <button class="btn btn-secondary btn-sm" onclick="sendPasswordReset(document.getElementById('modal-email').textContent)">🔑 Réinitialiser MDP</button>
-      <button class="btn btn-danger btn-sm" id="block-btn" onclick="blockUser()">⛔ Désactiver</button>
+      <button class="btn btn-secondary btn-sm" onclick="sendPasswordReset(document.getElementById('modal-email').textContent)">Réinitialiser MDP</button>
+      <button class="btn btn-danger btn-sm" id="block-btn" onclick="blockUser()">Désactiver</button>
     </div>
   </div>
 </div>
@@ -754,7 +754,7 @@ let _users=[], _subs=[], _filtered=[], _selectedUser=null;
     const loadEl = document.getElementById('loading');
     if (loadEl) loadEl.innerHTML = `
       <div style="text-align:center;padding:40px">
-        <div style="font-size:2rem;margin-bottom:12px">⚠️</div>
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--danger-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:var(--danger);fill:none;stroke-width:2;stroke-linecap:round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
         <div style="font-weight:700;color:#F04438;margin-bottom:8px">Erreur d'initialisation</div>
         <div style="font-size:.8125rem;color:#8B92A9;margin-bottom:16px;max-width:340px;margin-left:auto;margin-right:auto">${initErr.message||String(initErr)}</div>
         <button onclick="location.reload()" style="padding:9px 20px;border:none;border-radius:8px;background:#3B1772;color:#fff;font-size:.8125rem;font-weight:700;cursor:pointer">↺ Recharger</button>
@@ -909,7 +909,7 @@ function renderTable(){
       <td style="white-space:nowrap;display:flex;align-items:center;gap:4px;padding:8px 16px">
         <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openCrm('${u.id}')" title="Ouvrir le CRM complet">CRM</button>
         <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();viewUser('${u.id}')">Détail</button>
-        ${u.email?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();sendPasswordReset('${sanitize(u.email)}')" title="Réinitialiser mot de passe">🔑</button>`:''}
+        ${u.email?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();sendPasswordReset('${sanitize(u.email)}')" title="Réinitialiser mot de passe">MDP</button>`:''}
       </td>
     </tr>`;
   }).join('');
@@ -932,7 +932,7 @@ function renderAnomalies() {
   if (ghostUsers.length) {
     alerts.push({
       type: 'warning',
-      icon: '👻',
+      icon: '<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>',
       title: `${ghostUsers.length} médecin${ghostUsers.length > 1 ? 's' : ''} inscrit${ghostUsers.length > 1 ? 's' : ''} mais jamais connecté${ghostUsers.length > 1 ? 's' : ''} (>14j)`,
       desc: ghostUsers.slice(0, 3).map(u => sanitize(u.email || u.id)).join(', ') + (ghostUsers.length > 3 ? ` +${ghostUsers.length - 3} autres` : ''),
       action: `filterByExtra('never_logged')`,
@@ -949,7 +949,7 @@ function renderAnomalies() {
   if (stalkyc.length) {
     alerts.push({
       type: 'info',
-      icon: '📋',
+      icon: '<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
       title: `${stalkyc.length} vérification${stalkyc.length > 1 ? 's' : ''} KYC en attente depuis >7 jours`,
       desc: stalkyc.slice(0, 3).map(u => sanitize(u.email || u.id)).join(', ') + (stalkyc.length > 3 ? ` +${stalkyc.length - 3} autres` : ''),
       action: `filterByExtra('kyc_pending')`,
@@ -969,7 +969,7 @@ function renderAnomalies() {
   if (expiring.length) {
     alerts.push({
       type: 'danger',
-      icon: '⏰',
+      icon: '<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
       title: `${expiring.length} abonnement${expiring.length > 1 ? 's' : ''} Pro expire${expiring.length > 1 ? 'nt' : ''} dans les 7 prochains jours`,
       desc: expiring.slice(0, 3).map(u => sanitize(u.email || u.id)).join(', ') + (expiring.length > 3 ? ` +${expiring.length - 3} autres` : ''),
       action: `filterByExtra('expiring')`,
@@ -987,7 +987,7 @@ function renderAnomalies() {
   if (longFree.length > 5) {
     alerts.push({
       type: 'neutral',
-      icon: '💡',
+      icon: '<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
       title: `${longFree.length} comptes Free actifs depuis >30 jours — opportunité de conversion`,
       desc: `${Math.round((longFree.length / (_users.length || 1)) * 100)}% de la base utilisateur restent sur Free`,
       action: `document.querySelector('.filter-pill[data-plan="free"]').click()`,
@@ -1009,14 +1009,14 @@ function renderAnomalies() {
   container.style.display = 'block';
   container.innerHTML = `
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <div style="font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted)">⚡ Alertes & Anomalies</div>
+      <div style="font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted)">Alertes &amp; Anomalies</div>
       <span style="font-size:.625rem;font-weight:700;background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border);padding:1px 7px;border-radius:999px">${alerts.length}</span>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
       ${alerts.map(a => {
         const c = typeColors[a.type];
         return `<div style="background:${c.bg};border:1px solid ${c.border};border-radius:12px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px">
-          <div style="width:32px;height:32px;border-radius:8px;background:${c.iconBg};display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">${a.icon}</div>
+          <div style="width:32px;height:32px;border-radius:8px;background:${c.iconBg};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:${c.iconC}">${a.icon}</div>
           <div style="flex:1;min-width:0">
             <div style="font-size:.8125rem;font-weight:700;color:var(--text-primary);margin-bottom:3px">${a.title}</div>
             <div style="font-size:.6875rem;color:var(--text-muted);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.desc}</div>
@@ -1082,8 +1082,8 @@ function renderTrialList() {
     const isActive = new Date(u.trial_end) > new Date(now);
     return `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.6875rem;font-weight:600;background:${isActive?'#FFF7ED':'var(--bg-subtle)'};border:1px solid ${isActive?'#FED7AA':'var(--border)'};color:${isActive?'#C2410C':'var(--text-muted)'}">
       <span style="width:6px;height:6px;border-radius:50%;background:${isActive?'#F97316':'var(--text-faint)'}"></span>
-      ${sanitize(u.email)} · ${isActive?'expire '+formatDate(u.trial_end):'expiré'}
-      ${isActive?`<button onclick="revokeTrial('${u.id}','${sanitize(u.email)}')" style="background:none;border:none;cursor:pointer;color:#F04438;font-size:11px;padding:0;margin-left:2px;font-family:inherit">✕</button>`:''}
+      ${sanitize(u.email)} — ${isActive?'expire '+formatDate(u.trial_end):'expiré'}
+      ${isActive?`<button onclick="revokeTrial('${u.id}','${sanitize(u.email)}')" style="background:none;border:none;cursor:pointer;color:#F04438;font-size:11px;padding:0;margin-left:2px;font-family:inherit">&times;</button>`:''}
     </span>`;
   }).join('');
 }
@@ -1186,7 +1186,7 @@ async function sendPasswordReset(email) {
       reset_type: 'email_link',
       requested_by: AdminAuth._session?.user?.email || 'admin'
     }).then(()=>{});
-    Toast.success('Email envoyé ✉️', 'Lien de réinitialisation envoyé à '+email);
+    Toast.success('Lien de réinitialisation envoyé', 'Email envoyé à '+email);
   } catch(e) {
     Toast.error('Erreur', e.message||'Impossible d\'envoyer le lien.');
   }
@@ -1381,8 +1381,8 @@ async function loadKyc() {
       <td>${date}</td>
       <td><span style="font-weight:700;color:${k.ai_score>=0.8?'var(--success)':k.ai_score>=0.5?'var(--warning)':'var(--danger)'}">${score}</span> <span style="font-size:11px;color:var(--text-muted)">${verdict}</span></td>
       <td style="display:flex;gap:6px">
-        <button class="btn btn-success btn-sm" onclick="kycAction('${k.id}','${k.user_id}','approve')">✓ Approuver</button>
-        <button class="btn btn-danger btn-sm" onclick="kycAction('${k.id}','${k.user_id}','reject')">✗ Rejeter</button>
+        <button class="btn btn-success btn-sm" onclick="kycAction('${k.id}','${k.user_id}','approve')">Approuver</button>
+        <button class="btn btn-danger btn-sm" onclick="kycAction('${k.id}','${k.user_id}','reject')">Rejeter</button>
       </td>
     </tr>`;
   }).join('');

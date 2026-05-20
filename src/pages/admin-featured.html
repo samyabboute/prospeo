@@ -452,7 +452,7 @@ async function loadDoctors() {
     // Affichage d'erreur persistent dans le tableau
     document.getElementById('doctors-tbody').innerHTML =
       '<tr><td colspan="8" style="padding:32px;text-align:center;color:var(--danger);font-weight:600">'
-      + '⚠ Erreur de chargement : ' + (e.message || String(e))
+      + 'Erreur de chargement : ' + (e.message || String(e))
       + '<br><span style="font-size:.6875rem;font-weight:400;color:var(--text-muted);margin-top:6px;display:block">Vérifiez la table <code>profiles</code> et les policies RLS dans Supabase.</span>'
       + '</td></tr>';
     toast('Erreur chargement : ' + (e.message || ''), 'error');
