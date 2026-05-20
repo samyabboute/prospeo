@@ -287,6 +287,49 @@ ul{list-style:none}
 .email-log-subject{font-weight:700;font-size:.8125rem;color:var(--text-primary)}
 .email-log-meta{font-size:.6875rem;color:var(--text-muted);margin-top:2px}
 
+/* HEALTH SCORE RING */
+.health-ring-wrap{position:relative;width:56px;height:56px;flex-shrink:0}
+.health-ring-wrap svg{transform:rotate(-90deg);width:56px;height:56px}
+.health-ring-bg{fill:none;stroke:var(--bg-subtle);stroke-width:3.5}
+.health-ring-fill{fill:none;stroke-width:3.5;stroke-linecap:round;transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)}
+.health-ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:var(--text-primary)}
+.health-grade-excellent{color:var(--success)}
+.health-grade-good{color:var(--info)}
+.health-grade-warning{color:var(--warning)}
+.health-grade-critical{color:var(--danger)}
+
+/* TIMELINE */
+.tl-item{display:flex;gap:12px;padding:10px 0;position:relative}
+.tl-item:not(:last-child)::before{content:'';position:absolute;left:14px;top:38px;bottom:0;width:1px;background:var(--border)}
+.tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1;font-size:12px;border:2px solid var(--bg-raised)}
+.tl-dot.tl-plan{background:#E6ECF9;color:var(--brand)}
+.tl-dot.tl-email{background:#FEF3C7;color:#D97706}
+.tl-dot.tl-geste{background:var(--success-bg);color:var(--success)}
+.tl-dot.tl-block{background:var(--danger-bg);color:var(--danger)}
+.tl-dot.tl-note{background:var(--bg-subtle);color:var(--text-muted)}
+.tl-dot.tl-default{background:var(--bg-subtle);color:var(--text-faint)}
+.tl-body{flex:1;min-width:0}
+.tl-title{font-size:.8125rem;font-weight:600;color:var(--text-primary);line-height:1.4}
+.tl-meta{font-size:.6875rem;color:var(--text-muted);margin-top:2px}
+
+/* SPARKLINE BAR CHART */
+.sparkline{display:flex;align-items:flex-end;gap:5px;height:52px;padding:4px 0 0}
+.spark-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.spark-bar{width:100%;border-radius:3px 3px 0 0;min-height:4px;transition:height .5s ease;cursor:default}
+.spark-bar:hover{filter:brightness(1.1)}
+.spark-label{font-size:9px;color:var(--text-faint);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+/* CRM NOTES */
+.crm-note-entry{padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:10px}
+.crm-note-entry:last-child{border-bottom:none}
+.crm-note-avatar{width:26px;height:26px;border-radius:50%;background:var(--brand-light);display:flex;align-items:center;justify-content:center;font-size:.625rem;font-weight:700;color:var(--brand);flex-shrink:0}
+.crm-note-text{font-size:.8125rem;color:var(--text-primary);line-height:1.5}
+.crm-note-time{font-size:.6875rem;color:var(--text-faint);margin-top:3px}
+
+/* TWO-COL GRID UTIL */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:760px){.two-col{grid-template-columns:1fr}}
+
 @media(max-width:960px){
   .app{grid-template-columns:1fr}
   .sidebar{display:none}
@@ -729,26 +772,57 @@ ul{list-style:none}
 
       <!-- ── TAB: RÉSUMÉ ── -->
       <div class="crm-pane active" id="pane-resume">
-        <div class="kpi-grid" id="resume-kpis">
-          <div class="kpi kpi-success">
-            <div class="kpi-label">Revenu Total (6 mois)</div>
-            <div class="kpi-value" id="kpi-revenue">—</div>
-            <div class="kpi-sub">paiements validés</div>
+
+        <!-- KPI ROW 1: 4 standard KPIs -->
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
+          <!-- HEALTH SCORE -->
+          <div class="kpi kpi-success" id="kpi-health-card">
+            <div class="kpi-label">Santé Client</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+              <div class="health-ring-wrap" id="health-ring-wrap">
+                <svg viewBox="0 0 36 36">
+                  <circle class="health-ring-bg" cx="18" cy="18" r="14"/>
+                  <circle class="health-ring-fill" id="health-ring-fill" cx="18" cy="18" r="14" stroke="var(--success)" stroke-dasharray="88 88" stroke-dashoffset="88"/>
+                </svg>
+                <div class="health-ring-num" id="health-ring-num">—</div>
+              </div>
+              <div>
+                <div style="font-size:1rem;font-weight:800;color:var(--text-primary)" id="health-grade">—</div>
+                <div class="kpi-sub" id="health-factors" style="margin-top:2px">—</div>
+              </div>
+            </div>
           </div>
+          <!-- REVENUE -->
+          <div class="kpi kpi-success">
+            <div class="kpi-label">Revenu Validé</div>
+            <div class="kpi-value" id="kpi-revenue">—</div>
+            <div class="kpi-sub">paiements confirmés</div>
+          </div>
+          <!-- RDV -->
           <div class="kpi kpi-brand">
             <div class="kpi-label">RDV Total</div>
             <div class="kpi-value" id="kpi-rdv">—</div>
             <div class="kpi-sub">consultations planifiées</div>
           </div>
-          <div class="kpi kpi-warning">
-            <div class="kpi-label">Risque Churn</div>
-            <div class="kpi-value" id="kpi-churn">—</div>
-            <div class="kpi-sub">score de rétention</div>
-          </div>
+          <!-- PATIENTS -->
           <div class="kpi kpi-info">
+            <div class="kpi-label">Patients</div>
+            <div class="kpi-value" id="kpi-patients">—</div>
+            <div class="kpi-sub">enregistrés</div>
+          </div>
+        </div>
+
+        <!-- KPI ROW 2: derniers paiement + churn -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">
+          <div class="kpi kpi-warning" style="padding:14px 18px">
             <div class="kpi-label">Dernier Paiement</div>
-            <div class="kpi-value" id="kpi-lastpay">—</div>
-            <div class="kpi-sub">date de validation</div>
+            <div class="kpi-value" style="font-size:1.1rem" id="kpi-lastpay">—</div>
+            <div class="kpi-sub" id="kpi-lastpay-method">—</div>
+          </div>
+          <div class="kpi kpi-danger" style="padding:14px 18px" id="kpi-churn-card">
+            <div class="kpi-label">Risque Churn</div>
+            <div class="kpi-value" style="font-size:1.1rem" id="kpi-churn">—</div>
+            <div class="kpi-sub" id="kpi-churn-reason">facteurs de risque</div>
           </div>
         </div>
 
@@ -772,19 +846,54 @@ ul{list-style:none}
           </button>
         </div>
 
-        <div class="section-head" style="margin-top:24px">Dernières activités</div>
-        <div class="card">
-          <div class="card-body" id="recent-activity">
-            <div class="empty">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <p>Activité détaillée disponible via audit_log</p>
+        <!-- TIMELINE + NOTES -->
+        <div class="two-col" style="margin-top:24px">
+          <div>
+            <div class="section-head">Historique des actions</div>
+            <div class="card">
+              <div class="card-body" id="activity-timeline" style="padding:12px 20px">
+                <div class="empty">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <p>Chargement…</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="section-head">Notes internes (admin)</div>
+            <div class="card">
+              <div class="card-body" style="padding:14px 16px">
+                <textarea id="crm-note-input" rows="3" placeholder="Ajouter une note interne visible uniquement par les admins…" style="width:100%;border:1.5px solid var(--border);border-radius:var(--r-md);padding:8px 10px;font-family:inherit;font-size:.8125rem;resize:vertical;outline:none;color:var(--text-primary);background:var(--bg-raised)" onfocus="this.style.borderColor='var(--brand)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+                <div style="display:flex;justify-content:flex-end;margin-top:8px">
+                  <button class="btn btn-primary btn-sm" onclick="saveCrmNote()">
+                    <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    Sauvegarder
+                  </button>
+                </div>
+                <div id="crm-notes-list" style="margin-top:10px"></div>
+              </div>
             </div>
           </div>
         </div>
+
       </div>
 
       <!-- ── TAB: BILLING ── -->
       <div class="crm-pane" id="pane-billing">
+
+        <!-- REVENUE SPARKLINE -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Revenus sur 6 mois
+            </div>
+            <span id="sparkline-total" class="badge badge-success" style="display:none"></span>
+          </div>
+          <div class="card-body" style="padding:12px 20px 16px">
+            <div id="billing-sparkline" style="display:flex;align-items:flex-end;gap:6px;height:68px"></div>
+          </div>
+        </div>
 
         <!-- Current plan detail card -->
         <div class="card" style="margin-bottom:20px">
@@ -989,10 +1098,14 @@ ul{list-style:none}
 <script>
 /* ══ INIT ══════════════════════════════════════════════ */
 const _sb = supabase.createClient(SUPA_URL, SUPA_KEY);
-let _doctor = null;
-let _sub    = null;
-let _payments = [];
-let _emailLog = [];
+let _doctor       = null;
+let _sub          = null;
+let _payments     = [];
+let _emailLog     = [];
+let _auditAll     = [];    // full timeline
+let _crmNotes     = [];    // crm_note actions
+let _patientsCount = 0;
+let _rdvCount      = 0;
 
 const uid = new URLSearchParams(location.search).get('uid');
 
@@ -1025,6 +1138,32 @@ const uid = new URLSearchParams(location.search).get('uid');
       .limit(30);
     _emailLog = logs || [];
 
+    // Load full audit trail (timeline)
+    const { data: trail } = await _sb.from('audit_log')
+      .select('*').eq('user_id', uid)
+      .order('created_at', { ascending: false })
+      .limit(30);
+    _auditAll = trail || [];
+
+    // Load CRM notes
+    _crmNotes = _auditAll.filter(e => e.action === 'crm_note');
+
+    // Patients count (non-blocking)
+    _sb.from('patients').select('id', { count:'exact', head:true }).eq('doctor_id', uid)
+      .then(({ count }) => {
+        _patientsCount = count || 0;
+        const el = document.getElementById('kpi-patients');
+        if (el) el.textContent = _patientsCount;
+      }).catch(()=>{});
+
+    // RDV count (non-blocking)
+    _sb.from('appointments').select('id', { count:'exact', head:true }).eq('doctor_id', uid)
+      .then(({ count }) => {
+        _rdvCount = count || 0;
+        const el = document.getElementById('kpi-rdv');
+        if (el) el.textContent = _rdvCount;
+      }).catch(()=>{});
+
     renderAll();
     document.getElementById('loading-state').style.display = 'none';
     document.getElementById('crm-content').style.display = 'block';
@@ -1042,6 +1181,9 @@ function renderAll() {
   renderRetentionTab();
   renderSupportTab();
   renderResumeKPIs();
+  renderTimeline();
+  renderCrmNotes();
+  renderBillingSparkline();
   updateEmailPreview();
 }
 
@@ -1160,23 +1302,42 @@ function renderPlanBanner() {
 }
 
 function renderResumeKPIs() {
+  // Revenue
   const revenue = _payments.filter(p => p.status === 'paid' || p.status === 'approved')
     .reduce((s,p) => s + (p.amount || 0), 0);
   document.getElementById('kpi-revenue').textContent = revenue > 0
     ? revenue.toLocaleString('fr-DZ') + ' DA' : '0 DA';
 
+  // Last payment
   const lastPay = _payments.find(p => p.status === 'paid' || p.status === 'approved');
   document.getElementById('kpi-lastpay').textContent = lastPay ? fmtDate(lastPay.created_at) : '—';
+  const methodMap = { online:'💳 En ligne', transfer:'🏦 Virement', cash:'💵 Cash', complimentary:'🎁 Offert' };
+  document.getElementById('kpi-lastpay-method').textContent = lastPay
+    ? (methodMap[lastPay.method] || lastPay.method || '—') : 'Aucun paiement';
 
-  // RDV count async
-  _sb.from('appointments').select('id', { count:'exact', head:true }).eq('doctor_id', uid).then(({ count }) => {
-    document.getElementById('kpi-rdv').textContent = count || 0;
-  });
+  // Patients placeholder (filled async in init)
+  document.getElementById('kpi-patients').textContent = _patientsCount || '—';
+  document.getElementById('kpi-rdv').textContent = _rdvCount || '—';
 
-  // Churn
-  const score = computeChurn();
-  document.getElementById('kpi-churn').textContent = score + '% risque';
-  document.getElementById('kpi-churn').style.color = score > 65 ? 'var(--danger)' : score > 35 ? 'var(--warning)' : 'var(--success)';
+  // Health score
+  const health = computeHealth();
+  renderHealthWidget(health);
+
+  // Churn KPI (simplified row)
+  const churnEl = document.getElementById('kpi-churn');
+  const churnCard = document.getElementById('kpi-churn-card');
+  const churnReason = document.getElementById('kpi-churn-reason');
+  churnEl.textContent = health.churnScore + '%';
+  churnReason.textContent = health.churnFactors.length
+    ? health.churnFactors.slice(0,2).join(' · ')
+    : 'Aucun facteur de risque';
+  if (health.churnScore > 65) {
+    churnCard.className = 'kpi kpi-danger'; churnEl.style.color = 'var(--danger)';
+  } else if (health.churnScore > 35) {
+    churnCard.className = 'kpi kpi-warning'; churnEl.style.color = 'var(--warning)';
+  } else {
+    churnCard.className = 'kpi kpi-success'; churnEl.style.color = 'var(--success)';
+  }
 }
 
 function renderBillingTab() {
@@ -1298,25 +1459,134 @@ function renderAccountTab() {
   ).join('');
 }
 
-function computeChurn() {
-  let score = 0;
-  const reasons = [];
+/* ── HEALTH SCORE (0–100, 100 = perfect) ───────────── */
+function computeHealth() {
+  let pts = 0;
+  const strengths = [], churnFactors = [];
   const isPro = _sub && _sub.plan !== 'free' && _sub.status === 'active';
-  if (!isPro) { score += 30; reasons.push('pas abonné'); }
-  if (!_doctor.is_public) { score += 15; reasons.push('profil masqué'); }
-  if (_doctor.kyc_status !== 'approved') { score += 20; reasons.push('KYC non validé'); }
-  const hasPendingPay = _payments.some(p => p.status === 'pending');
-  if (hasPendingPay) { score += 25; reasons.push('paiement en attente'); }
+  const isTrial = _doctor.trial_end && new Date(_doctor.trial_end) > new Date();
+  const blocked = _doctor.is_active === false;
+
+  // — Plan — (35 pts max)
+  if (blocked) {
+    churnFactors.push('compte suspendu');
+  } else if (isPro && _sub.payment_status === 'paid') {
+    pts += 35; strengths.push('Pro payant');
+  } else if (isPro && _sub.payment_status === 'complimentary') {
+    pts += 28; strengths.push('Pro offert');
+  } else if (isPro) {
+    pts += 20; churnFactors.push('paiement non confirmé');
+  } else if (isTrial) {
+    pts += 18; strengths.push('Essai actif');
+  } else {
+    churnFactors.push('plan Free');
+  }
+
+  // — KYC — (20 pts)
+  if (_doctor.kyc_status === 'approved') {
+    pts += 20; strengths.push('KYC ✓');
+  } else if (_doctor.kyc_status === 'pending_review') {
+    pts += 8; churnFactors.push('KYC en attente');
+  } else {
+    churnFactors.push('KYC non soumis');
+  }
+
+  // — Profil public — (10 pts)
+  if (_doctor.is_public) {
+    pts += 10; strengths.push('Profil visible');
+  } else {
+    churnFactors.push('profil masqué');
+  }
+
+  // — Paiement en attente — (–15 si oui)
+  const hasPending = _payments.some(p => p.status === 'pending');
+  if (hasPending) {
+    pts = Math.max(0, pts - 15); churnFactors.push('paiement en attente');
+  }
+
+  // — Dernière activité — (10 pts)
+  const lastSeen = _doctor.last_seen_at;
+  if (lastSeen) {
+    const days = (Date.now() - new Date(lastSeen)) / 86400000;
+    if (days < 14)       { pts += 10; strengths.push('Actif récemment'); }
+    else if (days < 60)  { pts += 5; }
+    else { churnFactors.push('inactif >60j'); }
+  }
+
+  // — Accepte RDV — (5 pts)
+  if (_doctor.accepts_rdv)    { pts += 5; }
+  // — Prix consultation renseigné — (5 pts)
+  if (_doctor.consultation_price) { pts += 5; }
+  // — Spécialité renseignée — (5 pts)
+  if (_doctor.specialty)      { pts += 5; }
+  // — Paiement récent — (10 pts)
   const lastPay = _payments.find(p => p.status === 'paid' || p.status === 'approved');
   if (lastPay) {
-    const days = (Date.now() - new Date(lastPay.created_at)) / 86400000;
-    if (days > 60) { score += 20; reasons.push('pas de paiement depuis 60j'); }
+    const daysLP = (Date.now() - new Date(lastPay.created_at)) / 86400000;
+    if (daysLP < 35) { pts += 10; }
+    else if (daysLP > 90) { churnFactors.push('aucun paiement >90j'); }
   }
-  return { score: Math.min(score, 100), reasons };
+
+  const finalScore = Math.min(100, Math.max(0, pts));
+  let grade, gradeClass;
+  if (finalScore >= 80)      { grade = 'Excellent'; gradeClass = 'health-grade-excellent'; }
+  else if (finalScore >= 60) { grade = 'Bon';       gradeClass = 'health-grade-good'; }
+  else if (finalScore >= 35) { grade = 'Fragile';   gradeClass = 'health-grade-warning'; }
+  else                        { grade = 'Critique';  gradeClass = 'health-grade-critical'; }
+
+  // Churn risk = inverse
+  const churnScore = Math.min(100, Math.max(0, 100 - finalScore));
+
+  return { score: finalScore, grade, gradeClass, strengths, churnScore, churnFactors };
+}
+
+/* Legacy alias for renderRetentionTab */
+function computeChurn() {
+  const h = computeHealth();
+  return { score: h.churnScore, reasons: h.churnFactors };
+}
+
+function renderHealthWidget(health) {
+  const circumference = 2 * Math.PI * 14; // r=14 → ~87.96
+  const offset = circumference * (1 - health.score / 100);
+
+  const fill = document.getElementById('health-ring-fill');
+  if (fill) {
+    const strokeColor = health.score >= 80 ? 'var(--success)'
+      : health.score >= 60 ? 'var(--info)'
+      : health.score >= 35 ? 'var(--warning)' : 'var(--danger)';
+    fill.style.stroke = strokeColor;
+    fill.setAttribute('stroke-dasharray', `${circumference} ${circumference}`);
+    // Animate on load
+    fill.style.strokeDashoffset = circumference;
+    setTimeout(() => { fill.style.strokeDashoffset = offset; }, 100);
+  }
+
+  const numEl = document.getElementById('health-ring-num');
+  if (numEl) numEl.textContent = health.score;
+
+  const gradeEl = document.getElementById('health-grade');
+  if (gradeEl) { gradeEl.textContent = health.grade; gradeEl.className = health.gradeClass; }
+
+  const factEl = document.getElementById('health-factors');
+  if (factEl) {
+    factEl.textContent = health.strengths.slice(0, 2).join(' · ') || 'Profil incomplet';
+  }
+
+  // Card border color
+  const card = document.getElementById('kpi-health-card');
+  if (card) {
+    const c = health.score >= 80 ? 'kpi-success' : health.score >= 60 ? 'kpi-info'
+      : health.score >= 35 ? 'kpi-warning' : 'kpi-danger';
+    card.className = 'kpi ' + c;
+  }
 }
 
 function renderRetentionTab() {
-  const { score, reasons } = computeChurn();
+  const health = computeHealth();
+  const score = health.churnScore;
+  const reasons = health.churnFactors;
+
   const fillEl   = document.getElementById('churn-fill');
   const pctEl    = document.getElementById('churn-pct');
   const reasonEl = document.getElementById('churn-reasons');
@@ -1329,6 +1599,7 @@ function renderRetentionTab() {
 
   const revenue6 = _payments.filter(p => p.status==='paid'||p.status==='approved')
     .reduce((s,p)=>s+(p.amount||0),0);
+  const healthScore = health.score;
 
   const oTitle = document.getElementById('ret-offer-title');
   const oDesc  = document.getElementById('ret-offer-desc');
@@ -1694,6 +1965,152 @@ function offerDiscount(pct) {
       <span class="badge badge-success">Rabais ${pct}%</span>
       <span style="font-size:.8125rem;color:var(--text-muted);margin-left:8px">accordé le ${new Date().toLocaleDateString('fr-FR')} par l'admin</span>
     </div>`;
+}
+
+/* ══ TIMELINE ══════════════════════════════════════════ */
+const TL_ICONS = {
+  email_sent:       { cls:'tl-email',  icon:'📧', label:'Email envoyé' },
+  geste_commercial: { cls:'tl-geste',  icon:'🎁', label:'Geste commercial' },
+  plan_change:      { cls:'tl-plan',   icon:'⬆️', label:'Changement plan' },
+  block:            { cls:'tl-block',  icon:'🚫', label:'Suspension' },
+  unblock:          { cls:'tl-plan',   icon:'✅', label:'Réactivation' },
+  crm_note:         { cls:'tl-note',   icon:'📝', label:'Note admin' },
+  kyc_approved:     { cls:'tl-plan',   icon:'✔️', label:'KYC approuvé' },
+  featured:         { cls:'tl-plan',   icon:'⭐', label:'Mis en vedette' },
+};
+
+function renderTimeline() {
+  const el = document.getElementById('activity-timeline');
+  if (!el) return;
+
+  // Merge audit log + payments as timeline events
+  const events = [..._auditAll];
+
+  // Add plan activation events from payments
+  _payments.forEach(p => {
+    if (p.status === 'paid' || p.status === 'approved') {
+      events.push({
+        _synthetic: true,
+        action: 'plan_change',
+        created_at: p.created_at,
+        details: { subject: `Paiement ${(p.plan||'').toUpperCase()} — ${p.amount ? p.amount.toLocaleString('fr-DZ') + ' DA' : ''}`, method: p.method }
+      });
+    }
+  });
+
+  // Sort by date desc
+  events.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+  const top = events.slice(0, 15);
+
+  if (!top.length) {
+    el.innerHTML = `<div class="empty" style="padding:24px">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <p>Aucune action enregistrée</p>
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = top.map((e, i) => {
+    const cfg = TL_ICONS[e.action] || { cls:'tl-default', icon:'●', label: e.action || 'Action' };
+    const isLast = i === top.length - 1;
+    let detail = '';
+    if (e.details?.subject) detail = e.details.subject;
+    else if (e.details?.motif_label) detail = e.details.motif_label;
+    else if (e.details?.plan) detail = `Plan ${e.details.plan.toUpperCase()}`;
+    else if (e.details?.note) detail = e.details.note;
+
+    return `<div class="tl-item" style="${isLast ? '' : 'border-bottom:1px solid var(--border)'}">
+      <div class="tl-dot ${cfg.cls}" style="${isLast ? '' : 'margin-bottom:0'}">${cfg.icon}</div>
+      <div class="tl-body">
+        <div class="tl-title">${esc(detail || cfg.label)}</div>
+        <div class="tl-meta">${cfg.label} · ${fmtDate(e.created_at)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ══ CRM NOTES ═════════════════════════════════════════ */
+function renderCrmNotes() {
+  const el = document.getElementById('crm-notes-list');
+  if (!el) return;
+  if (!_crmNotes.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div style="font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-faint);margin-bottom:8px">Notes précédentes</div>` +
+    _crmNotes.slice(0,5).map(n => `
+      <div class="crm-note-entry">
+        <div class="crm-note-avatar">A</div>
+        <div>
+          <div class="crm-note-text">${esc(n.details?.note || '—')}</div>
+          <div class="crm-note-time">${fmtDate(n.created_at)}</div>
+        </div>
+      </div>`).join('');
+}
+
+async function saveCrmNote() {
+  const inp = document.getElementById('crm-note-input');
+  const note = inp.value.trim();
+  if (!note) { showToast('error', 'Note vide', 'Écrivez quelque chose avant de sauvegarder'); return; }
+  if (!_doctor) return;
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) { showToast('error', 'Non authentifié', ''); return; }
+  try {
+    await _sb.from('audit_log').insert({
+      user_id: uid,
+      performed_by: session.user.id,
+      action: 'crm_note',
+      details: { note }
+    });
+    inp.value = '';
+    // Refresh notes
+    const { data: fresh } = await _sb.from('audit_log')
+      .select('*').eq('user_id', uid).eq('action','crm_note')
+      .order('created_at',{ascending:false}).limit(10);
+    _crmNotes = fresh || [];
+    renderCrmNotes();
+    showToast('success', 'Note sauvegardée ✓', '');
+  } catch(e) { showToast('error', 'Erreur', e.message); }
+}
+
+/* ══ BILLING SPARKLINE ══════════════════════════════════ */
+function renderBillingSparkline() {
+  const el = document.getElementById('billing-sparkline');
+  if (!el) return;
+
+  // Build 6-month buckets
+  const now = new Date();
+  const buckets = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    buckets.push({
+      year: d.getFullYear(),
+      month: d.getMonth(),
+      label: d.toLocaleDateString('fr-FR', { month:'short' }),
+      total: 0
+    });
+  }
+
+  _payments.filter(p => p.status === 'paid' || p.status === 'approved').forEach(p => {
+    const d = new Date(p.created_at);
+    const bkt = buckets.find(b => b.year === d.getFullYear() && b.month === d.getMonth());
+    if (bkt) bkt.total += (p.amount || 0);
+  });
+
+  const maxVal = Math.max(...buckets.map(b => b.total), 1);
+  const totalRevenue = buckets.reduce((s,b) => s + b.total, 0);
+
+  if (totalRevenue > 0) {
+    const badge = document.getElementById('sparkline-total');
+    if (badge) { badge.style.display=''; badge.textContent = 'Total 6 mois : ' + totalRevenue.toLocaleString('fr-DZ') + ' DA'; }
+  }
+
+  const COLORS = ['#3B1772','#4C28A3','#6B46C1','#7C3AED','#8B5CF6','#A78BFA'];
+  el.innerHTML = buckets.map((b, i) => {
+    const h = Math.round((b.total / maxVal) * 48) + 4;
+    const isCurrent = i === 5;
+    return `<div class="spark-bar-wrap">
+      <div class="spark-bar" style="height:${h}px;background:${isCurrent ? 'var(--brand)' : COLORS[i]};opacity:${isCurrent ? 1 : .65}" title="${b.label} : ${b.total.toLocaleString('fr-DZ')} DA"></div>
+      <div class="spark-label">${b.label}</div>
+    </div>`;
+  }).join('');
 }
 
 /* ══ UI HELPERS ════════════════════════════════════════ */

@@ -396,7 +396,11 @@
         <div class="spinner"></div><div style="color:var(--text-muted);font-size:var(--text-sm)">Loading users…</div>
       </div>
       <div id="content" style="display:none">
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px" id="user-kpis"></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px" id="user-kpis"></div>
+
+        <!-- ── ANOMALY ALERTS ─────────────────────────────────── -->
+        <div id="anomaly-alerts" style="display:none;margin-bottom:20px"></div>
+
         <!-- ── LANCEMENT: ACCÈS GRATUIT 2 MOIS ───────────────── -->
         <div class="card" style="margin-bottom:20px;border:1.5px solid rgba(247,144,9,.3);background:linear-gradient(135deg,rgba(247,144,9,.04) 0%,var(--bg-raised) 100%)">
           <div class="card-header" style="border-bottom:1px solid rgba(247,144,9,.15)">
@@ -439,10 +443,13 @@
         <div class="card">
           <div class="card-header">
             <div class="filter-pills" id="plan-filter">
-              <button class="filter-pill active" data-plan="">All</button>
-              <button class="filter-pill" data-plan="pro">Pro</button>
-              <button class="filter-pill" data-plan="free">Free</button>
-              <button class="filter-pill" data-plan="canceled">Canceled</button>
+              <button class="filter-pill active" data-plan="" data-extra="">Tous</button>
+              <button class="filter-pill" data-plan="pro" data-extra="">Pro</button>
+              <button class="filter-pill" data-plan="free" data-extra="">Free</button>
+              <button class="filter-pill" data-plan="canceled" data-extra="">Résiliés</button>
+              <button class="filter-pill" data-plan="" data-extra="never_logged" style="border-color:rgba(240,68,56,.3);color:var(--danger)">Jamais connecté</button>
+              <button class="filter-pill" data-plan="" data-extra="expiring" style="border-color:rgba(247,144,9,.3);color:var(--warning)">Expire bientôt</button>
+              <button class="filter-pill" data-plan="" data-extra="kyc_pending" style="border-color:rgba(46,144,250,.3);color:var(--info)">KYC en attente</button>
             </div>
             <span id="count-label" style="font-size:.6875rem;color:var(--text-muted)"></span>
           </div>
@@ -740,7 +747,7 @@ let _users=[], _subs=[], _filtered=[], _selectedUser=null;
     if (pf) pf.addEventListener('click',e=>{
       const p=e.target.closest('.filter-pill'); if(!p) return;
       document.querySelectorAll('.filter-pill').forEach(x=>x.classList.remove('active'));
-      p.classList.add('active'); applyFilter(p.dataset.plan||'', document.getElementById('srch').value);
+      p.classList.add('active'); applyFilter(p.dataset.plan||'', document.getElementById('srch').value, p.dataset.extra||'');
     });
   } catch(initErr) {
     console.error('[admin-users] init error:', initErr);
@@ -767,7 +774,7 @@ async function load(){
     ]);
     if (u.error) throw u.error;
     _users = u.data??[]; _subs = s.data??[];
-    renderKPIs(); renderTrialList(); applyFilter('','');
+    renderKPIs(); renderAnomalies(); renderTrialList(); applyFilter('','','');
     loadEl.style.display = 'none';
     document.getElementById('content').style.display = 'block';
   } catch(e) {
@@ -825,7 +832,8 @@ function renderKPIs(){
     </div>`).join('');
 }
 
-function applyFilter(plan, search){
+function applyFilter(plan, search, extra){
+  const now = Date.now();
   _filtered = _users.filter(u=>{
     const s = _subs.find(x=>x.user_id===u.id);
     const isPro = s?.plan!=='free' && s?.status==='active';
@@ -833,6 +841,17 @@ function applyFilter(plan, search){
     if(plan==='pro' && !isPro) return false;
     if(plan==='free' && (isPro||isCan)) return false;
     if(plan==='canceled' && !isCan) return false;
+    // Extra filters
+    if(extra==='never_logged' && u.last_seen_at) return false;
+    if(extra==='never_logged' && (now - new Date(u.created_at).getTime()) <= 14*86400000) return false;
+    if(extra==='kyc_pending' && u.kyc_status!=='pending_review') return false;
+    if(extra==='expiring') {
+      if(!s||s.plan==='free'||s.status!=='active') return false;
+      const exp = s.current_period_end||s.expires_at;
+      if(!exp) return false;
+      const daysLeft = (new Date(exp).getTime()-now)/86400000;
+      if(daysLeft<0||daysLeft>7) return false;
+    }
     if(search){
       const q=search.toLowerCase();
       const name=(u.full_name||`${u.first_name||''} ${u.last_name||''}`).toLowerCase();
@@ -840,13 +859,13 @@ function applyFilter(plan, search){
     }
     return true;
   });
-  document.getElementById('count-label').textContent = _filtered.length+' users';
+  document.getElementById('count-label').textContent = _filtered.length+' utilisateur'+(+_filtered.length!==1?'s':'');
   renderTable();
 }
 
 function filterUsers(q){
   const active = document.querySelector('.filter-pill.active');
-  applyFilter(active?.dataset.plan||'', q);
+  applyFilter(active?.dataset.plan||'', q, active?.dataset.extra||'');
 }
 
 function renderTable(){
@@ -887,13 +906,134 @@ function renderTable(){
       <td>${trialCell}</td>
       <td style="font-size:.6875rem;color:var(--text-muted)">${lastSeen}</td>
       <td style="font-size:.6875rem;color:var(--text-muted)">${formatDate(u.created_at)}</td>
-      <td style="white-space:nowrap">
-        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();viewUser('${u.id}')">Voir</button>
-        ${u.email?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();sendPasswordReset('${sanitize(u.email)}')" title="Envoyer un lien de réinitialisation" style="margin-left:4px">🔑 MDP</button>`:''}
-
+      <td style="white-space:nowrap;display:flex;align-items:center;gap:4px;padding:8px 16px">
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openCrm('${u.id}')" title="Ouvrir le CRM complet">CRM</button>
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();viewUser('${u.id}')">Détail</button>
+        ${u.email?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();sendPasswordReset('${sanitize(u.email)}')" title="Réinitialiser mot de passe">🔑</button>`:''}
       </td>
     </tr>`;
   }).join('');
+}
+
+function openCrm(uid) {
+  window.open(ghpNav('/admin-crm') + '?uid=' + encodeURIComponent(uid), '_blank');
+}
+
+/* ── ANOMALY ALERTS ─────────────────────────────────── */
+function renderAnomalies() {
+  const now = Date.now();
+  const alerts = [];
+
+  // Registered >14d ago, never logged in
+  const ghostUsers = _users.filter(u =>
+    !u.last_seen_at &&
+    (Date.now() - new Date(u.created_at).getTime()) > 14 * 86400000
+  );
+  if (ghostUsers.length) {
+    alerts.push({
+      type: 'warning',
+      icon: '👻',
+      title: `${ghostUsers.length} médecin${ghostUsers.length > 1 ? 's' : ''} inscrit${ghostUsers.length > 1 ? 's' : ''} mais jamais connecté${ghostUsers.length > 1 ? 's' : ''} (>14j)`,
+      desc: ghostUsers.slice(0, 3).map(u => sanitize(u.email || u.id)).join(', ') + (ghostUsers.length > 3 ? ` +${ghostUsers.length - 3} autres` : ''),
+      action: `filterByExtra('never_logged')`,
+      actionLabel: 'Voir la liste'
+    });
+  }
+
+  // KYC pending >7 days
+  const stalkyc = _users.filter(u =>
+    u.kyc_status === 'pending_review' &&
+    u.kyc_submitted_at &&
+    (Date.now() - new Date(u.kyc_submitted_at).getTime()) > 7 * 86400000
+  );
+  if (stalkyc.length) {
+    alerts.push({
+      type: 'info',
+      icon: '📋',
+      title: `${stalkyc.length} vérification${stalkyc.length > 1 ? 's' : ''} KYC en attente depuis >7 jours`,
+      desc: stalkyc.slice(0, 3).map(u => sanitize(u.email || u.id)).join(', ') + (stalkyc.length > 3 ? ` +${stalkyc.length - 3} autres` : ''),
+      action: `filterByExtra('kyc_pending')`,
+      actionLabel: 'Voir KYC'
+    });
+  }
+
+  // Pro subscriptions expiring within 7 days
+  const expiring = _users.filter(u => {
+    const s = _subs.find(x => x.user_id === u.id);
+    if (!s || s.plan === 'free' || s.status !== 'active') return false;
+    const exp = s.current_period_end || s.expires_at;
+    if (!exp) return false;
+    const daysLeft = (new Date(exp).getTime() - now) / 86400000;
+    return daysLeft >= 0 && daysLeft <= 7;
+  });
+  if (expiring.length) {
+    alerts.push({
+      type: 'danger',
+      icon: '⏰',
+      title: `${expiring.length} abonnement${expiring.length > 1 ? 's' : ''} Pro expire${expiring.length > 1 ? 'nt' : ''} dans les 7 prochains jours`,
+      desc: expiring.slice(0, 3).map(u => sanitize(u.email || u.id)).join(', ') + (expiring.length > 3 ? ` +${expiring.length - 3} autres` : ''),
+      action: `filterByExtra('expiring')`,
+      actionLabel: 'Voir expirations'
+    });
+  }
+
+  // Free users who signed up >30d ago with no subscription attempt
+  const longFree = _users.filter(u => {
+    const s = _subs.find(x => x.user_id === u.id);
+    const isReallyFree = !s || s.plan === 'free';
+    const oldEnough = (now - new Date(u.created_at).getTime()) > 30 * 86400000;
+    return isReallyFree && oldEnough;
+  });
+  if (longFree.length > 5) {
+    alerts.push({
+      type: 'neutral',
+      icon: '💡',
+      title: `${longFree.length} comptes Free actifs depuis >30 jours — opportunité de conversion`,
+      desc: `${Math.round((longFree.length / (_users.length || 1)) * 100)}% de la base utilisateur restent sur Free`,
+      action: `document.querySelector('.filter-pill[data-plan="free"]').click()`,
+      actionLabel: 'Voir Free'
+    });
+  }
+
+  const container = document.getElementById('anomaly-alerts');
+  if (!container) return;
+  if (!alerts.length) { container.style.display = 'none'; return; }
+
+  const typeColors = {
+    warning: { bg:'rgba(247,144,9,.06)', border:'rgba(247,144,9,.3)', iconBg:'rgba(247,144,9,.12)', iconC:'#F79009' },
+    info:    { bg:'rgba(46,144,250,.06)', border:'rgba(46,144,250,.3)', iconBg:'rgba(46,144,250,.12)', iconC:'#2E90FA' },
+    danger:  { bg:'rgba(240,68,56,.06)', border:'rgba(240,68,56,.3)', iconBg:'rgba(240,68,56,.12)', iconC:'#F04438' },
+    neutral: { bg:'rgba(59,23,114,.04)', border:'rgba(59,23,114,.2)', iconBg:'rgba(59,23,114,.1)', iconC:'var(--brand)' },
+  };
+
+  container.style.display = 'block';
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted)">⚡ Alertes & Anomalies</div>
+      <span style="font-size:.625rem;font-weight:700;background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border);padding:1px 7px;border-radius:999px">${alerts.length}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
+      ${alerts.map(a => {
+        const c = typeColors[a.type];
+        return `<div style="background:${c.bg};border:1px solid ${c.border};border-radius:12px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px">
+          <div style="width:32px;height:32px;border-radius:8px;background:${c.iconBg};display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">${a.icon}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.8125rem;font-weight:700;color:var(--text-primary);margin-bottom:3px">${a.title}</div>
+            <div style="font-size:.6875rem;color:var(--text-muted);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.desc}</div>
+            <button onclick="${a.action}" style="font-size:.6875rem;font-weight:700;color:${c.iconC};background:none;border:none;cursor:pointer;padding:0;font-family:inherit">${a.actionLabel} →</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function filterByExtra(extra) {
+  // Unselect all pills
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  // Find the matching pill and activate
+  const pill = document.querySelector(`.filter-pill[data-extra="${extra}"]`);
+  if (pill) pill.classList.add('active');
+  applyFilter('', document.getElementById('srch')?.value || '', extra);
 }
 
 function timeAgo(s) {
