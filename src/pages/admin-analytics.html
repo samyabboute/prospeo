@@ -71,6 +71,18 @@ ul,ol{list-style:none}
 .nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:#F79009;border-radius:0 var(--r-full) var(--r-full) 0}
 .nav-item svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;opacity:.7}
 .nav-item:hover svg,.nav-item.active svg{opacity:1}
+/* ── SIDEBAR TOGGLE ─────────────────────────────────────────── */
+.sb-toggle-btn{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;color:rgba(255,255,255,.35);transition:all 120ms ease;flex-shrink:0}
+.sb-toggle-btn:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.75)}
+.sb-toggle-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sidebar{transition:width 220ms cubic-bezier(.4,0,.2,1)}
+.sidebar.sb-collapsed{width:64px;overflow:hidden;flex-shrink:0}
+.sidebar.sb-collapsed .sidebar-section{font-size:0!important;height:6px;padding:3px 0!important;overflow:hidden}
+.sidebar.sb-collapsed .sidebar-logo-text,.sidebar.sb-collapsed .sidebar-logo-sub{display:none!important}
+.sidebar.sb-collapsed .user-name,.sidebar.sb-collapsed .user-role,.sidebar.sb-collapsed .user-chevron{display:none!important}
+.sidebar.sb-collapsed .user-avatar{margin:0 auto}
+.sidebar.sb-collapsed .nav-item,.sidebar.sb-collapsed .admin-nav-item{font-size:0!important;justify-content:center;padding:10px 0;margin:2px auto;width:44px;gap:0}
+.sidebar.sb-collapsed .nav-item svg,.sidebar.sb-collapsed .admin-nav-item svg{opacity:.7;width:18px;height:18px;flex-shrink:0}
 
 /* TOPBAR BUTTON */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:var(--r-md);cursor:pointer;font-family:'Sora',sans-serif;font-size:.8125rem;font-weight:600;padding:9px 18px;transition:all var(--t-fast);white-space:nowrap;line-height:1;text-decoration:none}
@@ -304,7 +316,7 @@ function buildSidebar(user) {
     ]},
   ];
 
-  var html = '<div class="sidebar-head"><div class="sidebar-logo-icon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div><div class="sidebar-logo-text">Symphony</div><div class="sidebar-logo-sub">Docline — Back Office</div></div></div>';
+  var html = '<div class="sidebar-head" style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:10px"><div class="sidebar-logo-icon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div><div class="sidebar-logo-text">Symphony</div><div class="sidebar-logo-sub">Docline — Back Office</div></div></div><button class="sb-toggle-btn" onclick="_sbToggle()" title="Réduire"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div>';
 
   sections.forEach(function(sec) {
     html += '<div class="sidebar-section">' + sec.label + '</div>';
@@ -350,6 +362,7 @@ document.addEventListener('click', function(e) {
     /* Build sidebar */
     var sb = document.getElementById('admin-sidebar');
     if (sb) sb.innerHTML = buildSidebar(session.user);
+    _sbRestoreState();
     var chip = document.getElementById('admin-chip-email');
     if (chip) chip.innerHTML = '<svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' + sanitize((session.user.email||'').split('@')[0]);
 
@@ -475,6 +488,29 @@ document.addEventListener('click', function(e) {
     console.error('[Analytics]', err);
   }
 })();
+
+/* ── Sidebar collapse toggle ─────────────────────────────────── */
+function _sbToggle() {
+  var sb = document.getElementById('admin-sidebar');
+  var app = document.querySelector('.app');
+  if (!sb) return;
+  var collapsed = sb.classList.toggle('sb-collapsed');
+  if (app) {
+    app.style.gridTemplateColumns = collapsed ? '64px 1fr' : '';
+  }
+  try { localStorage.setItem('symphony_sb_collapsed', collapsed ? '1' : '0'); } catch(e) {}
+}
+function _sbRestoreState() {
+  try {
+    var pref = localStorage.getItem('symphony_sb_collapsed');
+    if (pref === '1') {
+      var sb = document.getElementById('admin-sidebar');
+      var app = document.querySelector('.app');
+      if (sb) sb.classList.add('sb-collapsed');
+      if (app) app.style.gridTemplateColumns = '64px 1fr';
+    }
+  } catch(e) {}
+}
 </script>
 </body>
 </html>
