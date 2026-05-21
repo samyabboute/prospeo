@@ -952,19 +952,14 @@ ul,ol{list-style:none}
       <span class="nav-badge" id="kyc-badge" style="display:none">0</span>
     </button>
 
-    <button class="nav-item" id="nav-medecins" onclick="showSection('medecins')">
-      <svg class="ni-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <a class="nav-item" href="/admin-users">
+      <svg class="ni-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
       Médecins & Cliniques
-    </button>
+    </a>
 
     <a class="nav-item" href="/admin-featured">
       <svg class="ni-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       Médecins En Vedette
-    </a>
-
-    <a class="nav-item" href="/admin-users">
-      <svg class="ni-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      Gestion Utilisateurs
     </a>
 
     <!-- GROUP : REVENUS -->
@@ -1009,10 +1004,10 @@ ul,ol{list-style:none}
       Sécurité & Logs
     </a>
 
-    <button class="nav-item" id="nav-parametres" onclick="showSection('parametres')">
+    <a class="nav-item" id="nav-parametres" href="/admin-settings">
       <svg class="ni-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
       Paramètres
-    </button>
+    </a>
 
     <div class="sidebar-footer">
       <div class="sidebar-user-menu" id="sidebarUserMenu" onclick="toggleUserMenu()">
@@ -1193,6 +1188,14 @@ ul,ol{list-style:none}
           <div class="kpi-label">Inscrits (7 jours)</div>
           <div class="kpi-value" id="kpi-new7">—</div>
           <div class="kpi-sub">nouvelles inscriptions</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--info-bg)">
+            <svg viewBox="0 0 24 24" style="stroke:var(--info)"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <div class="kpi-label">Taux connexion 7j</div>
+          <div class="kpi-value" id="kpi-conn-rate">—</div>
+          <div class="kpi-sub" id="kpi-conn-sub">médecins actifs</div>
         </div>
       </div>
 
@@ -1854,6 +1857,11 @@ async function init() {
     showSection('kyc');
   } else {
     loadDashboard();
+    // Check for ?tab= URL parameter to deep-link into a section
+    const _initTab = new URLSearchParams(window.location.search).get('tab');
+    if (_initTab && ['kyc', 'paiements', 'equipe'].includes(_initTab)) {
+      showSection(_initTab);
+    }
   }
 }
 
@@ -2022,6 +2030,18 @@ async function loadDashboard() {
     setEl('kpi-pending', pendingCount ?? '0');
     setEl('kpi-approved', approvedCount ?? '0');
     setEl('kpi-new7', new7 ?? '0');
+
+    // Connection rate (last 7 days)
+    try {
+      const sevenDaysAgo = new Date(Date.now() - 7*86400000).toISOString();
+      const [{ count: active }, { count: total }] = await Promise.all([
+        _sb.from('profiles').select('id',{count:'exact',head:true}).gt('last_seen_at', sevenDaysAgo),
+        _sb.from('profiles').select('id',{count:'exact',head:true})
+      ]);
+      const rate = total > 0 ? Math.round((active / total) * 100) : 0;
+      setEl('kpi-conn-rate', rate + '%');
+      setEl('kpi-conn-sub', active + ' / ' + total + ' médecins actifs');
+    } catch(_) { setEl('kpi-conn-rate', '—'); }
 
     // Pending alert + sidebar badge + QA strip badge
     const alertEl = document.getElementById('pending-alert');
