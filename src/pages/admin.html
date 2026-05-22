@@ -1140,6 +1140,41 @@ ul,ol{list-style:none}
         </div>
       </div>
 
+      <!-- ── KPI GROUP NPS : Satisfaction & NPS ── (all roles) -->
+      <div class="kpi-group-label" style="margin-top:18px">Satisfaction &amp; NPS</div>
+      <div class="kpi-grid anim-fade-up stagger" id="kpi-grid-nps" style="margin-bottom:0">
+        <div class="kpi kpi-brand kpi-card">
+          <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+          <div class="kpi-label">NPS Score</div>
+          <div class="kpi-value" id="kpi-nps">—</div>
+          <div class="kpi-sub" id="kpi-nps-sub">Net Promoter Score</div>
+        </div>
+        <div class="kpi kpi-success kpi-card">
+          <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+          <div class="kpi-label">Promoteurs</div>
+          <div class="kpi-value" id="kpi-nps-promoters">—</div>
+          <div class="kpi-sub" id="kpi-nps-promoters-sub">score 9–10</div>
+        </div>
+        <div class="kpi kpi-warning kpi-card">
+          <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          <div class="kpi-label">Passifs</div>
+          <div class="kpi-value" id="kpi-nps-passives">—</div>
+          <div class="kpi-sub" id="kpi-nps-passives-sub">score 7–8</div>
+        </div>
+        <div class="kpi kpi-danger kpi-card">
+          <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg></div>
+          <div class="kpi-label">Détracteurs</div>
+          <div class="kpi-value" id="kpi-nps-detractors">—</div>
+          <div class="kpi-sub" id="kpi-nps-detractors-sub">score 0–6</div>
+        </div>
+        <div class="kpi kpi-info kpi-card">
+          <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <div class="kpi-label">Réponses NPS</div>
+          <div class="kpi-value" id="kpi-nps-total">—</div>
+          <div class="kpi-sub" id="kpi-nps-total-sub">sur 30 jours</div>
+        </div>
+      </div>
+
       <!-- ── KPI GROUP 2 : Revenus & Abonnements ── (billing, sales, direction, super_admin) -->
       <div class="kpi-group-label" id="kpi-group-revenue-label" style="display:none">Revenus &amp; Abonnements</div>
       <div class="kpi-grid anim-fade-up stagger" id="kpi-grid-revenue" style="display:none;margin-bottom:0">
@@ -1985,6 +2020,43 @@ async function loadDashboard() {
       setEl('kpi-conn-rate', rate + '%');
       setEl('kpi-conn-sub', active + ' / ' + total + ' médecins actifs');
     } catch(_) { setEl('kpi-conn-rate', '—'); }
+
+    // NPS Score — 30 derniers jours (formule corporate : Promoteurs% - Détracteurs%)
+    try {
+      const d30 = new Date(); d30.setDate(d30.getDate() - 30);
+      const { data: npsData } = await _sb.from('feedback')
+        .select('nps_score')
+        .not('nps_score', 'is', null)
+        .gte('created_at', d30.toISOString());
+
+      const npsRows = (npsData || []).filter(f => f.nps_score !== null);
+      const nTotal  = npsRows.length;
+
+      if (nTotal > 0) {
+        const nProm = npsRows.filter(f => f.nps_score >= 9).length;
+        const nPass = npsRows.filter(f => f.nps_score >= 7 && f.nps_score <= 8).length;
+        const nDet  = npsRows.filter(f => f.nps_score <= 6).length;
+        const nps   = Math.round(((nProm / nTotal) - (nDet / nTotal)) * 100);
+        const npsLabel = nps > 70 ? 'Classe mondiale' : nps > 50 ? 'Excellent' : nps > 30 ? 'Bon' : nps > 0 ? 'Correct' : 'A améliorer';
+        const npsColor = nps > 50 ? 'var(--success)' : nps > 0 ? 'var(--warning)' : 'var(--danger)';
+
+        const npsEl = document.getElementById('kpi-nps');
+        if (npsEl) { npsEl.textContent = (nps > 0 ? '+' : '') + nps; npsEl.style.color = npsColor; }
+        setEl('kpi-nps-sub', npsLabel);
+        setEl('kpi-nps-promoters', nProm);
+        setEl('kpi-nps-promoters-sub', Math.round((nProm/nTotal)*100) + '% — score 9–10');
+        setEl('kpi-nps-passives', nPass);
+        setEl('kpi-nps-passives-sub', Math.round((nPass/nTotal)*100) + '% — score 7–8');
+        setEl('kpi-nps-detractors', nDet);
+        setEl('kpi-nps-detractors-sub', Math.round((nDet/nTotal)*100) + '% — score 0–6');
+        setEl('kpi-nps-total', nTotal);
+        setEl('kpi-nps-total-sub', nTotal + ' réponse' + (nTotal > 1 ? 's' : '') + ' (30j)');
+      } else {
+        setEl('kpi-nps', '—');
+        setEl('kpi-nps-sub', 'Aucune réponse encore');
+        setEl('kpi-nps-total', '0');
+      }
+    } catch(_) { setEl('kpi-nps', '—'); }
 
     // Pending alert + sidebar badge + QA strip badge
     const alertEl = document.getElementById('pending-alert');

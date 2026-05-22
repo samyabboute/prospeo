@@ -205,7 +205,7 @@ ul,ol{list-style:none}
           <div class="kpi-trend trend-flat" id="kpi-mrr-trend">Chargement…</div>
         </div>
         <div class="kpi kpi-warning">
-          <div class="kpi-label">Feedback moyen</div>
+          <div class="kpi-label">NPS Score</div>
           <div class="kpi-value" id="kpi-rating">—</div>
           <div class="kpi-trend trend-flat" id="kpi-rating-trend">Chargement…</div>
         </div>
@@ -231,18 +231,43 @@ ul,ol{list-style:none}
         </div>
       </div>
 
-      <!-- FEEDBACK -->
+      <!-- NPS SECTION -->
       <div class="table-card" style="margin-bottom:24px">
-        <div class="table-head">Feedback utilisateurs</div>
+        <div class="table-head" style="display:flex;align-items:center;justify-content:space-between">
+          <span>Net Promoter Score (NPS)</span>
+          <span style="font-size:.6875rem;font-weight:500;color:var(--text-muted)">30 derniers jours · Formule : Promoteurs% − Détracteurs%</span>
+        </div>
         <div style="padding:20px">
-          <div class="feedback-grid" id="feedback-grid">
-            <div class="fb-col"><div class="fb-count" id="fb-1">—</div><div class="fb-label">Terrible</div></div>
-            <div class="fb-col"><div class="fb-count" id="fb-2">—</div><div class="fb-label">Mauvais</div></div>
-            <div class="fb-col"><div class="fb-count" id="fb-3">—</div><div class="fb-label">Moyen</div></div>
-            <div class="fb-col"><div class="fb-count" id="fb-4">—</div><div class="fb-label">Bien</div></div>
-            <div class="fb-col"><div class="fb-count" id="fb-5">—</div><div class="fb-label">Excellent</div></div>
+
+          <!-- Score + segmentation -->
+          <div style="display:flex;align-items:center;gap:32px;margin-bottom:24px;flex-wrap:wrap">
+            <div style="text-align:center;min-width:96px">
+              <div style="font-size:3.25rem;font-weight:900;letter-spacing:-2px;line-height:1" id="nps-gauge-score">—</div>
+              <div style="font-size:.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-top:4px">NPS Score</div>
+              <div style="font-size:.75rem;margin-top:4px;font-weight:600" id="nps-gauge-label">—</div>
+            </div>
+            <div style="flex:1;min-width:220px">
+              <div style="height:10px;border-radius:99px;overflow:hidden;display:flex;margin-bottom:12px">
+                <div id="nps-bar-det"  style="background:#DC2626;height:100%;width:0%;transition:width .6s ease"></div>
+                <div id="nps-bar-pass" style="background:#D97706;height:100%;width:0%;transition:width .6s ease .1s"></div>
+                <div id="nps-bar-prom" style="background:#059669;height:100%;width:0%;transition:width .6s ease .2s"></div>
+              </div>
+              <div style="display:flex;gap:18px;flex-wrap:wrap">
+                <div style="display:flex;align-items:center;gap:5px;font-size:.6875rem"><span style="width:8px;height:8px;border-radius:50%;background:#059669;flex-shrink:0"></span><span style="color:var(--text-muted)">Promoteurs</span><strong id="nps-pct-prom">—</strong></div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:.6875rem"><span style="width:8px;height:8px;border-radius:50%;background:#D97706;flex-shrink:0"></span><span style="color:var(--text-muted)">Passifs</span><strong id="nps-pct-pass">—</strong></div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:.6875rem"><span style="width:8px;height:8px;border-radius:50%;background:#DC2626;flex-shrink:0"></span><span style="color:var(--text-muted)">Détracteurs</span><strong id="nps-pct-det">—</strong></div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:.6875rem"><span style="color:var(--text-muted)">Total</span><strong id="nps-total-count">—</strong></div>
+              </div>
+            </div>
           </div>
-          <div id="feedback-comments"></div>
+
+          <!-- Distribution 0–10 -->
+          <div style="font-size:.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:8px">Distribution des scores</div>
+          <div style="display:flex;align-items:flex-end;gap:5px;height:64px" id="nps-dist-chart"></div>
+          <div style="display:flex;gap:5px;margin-top:4px" id="nps-dist-labels"></div>
+
+          <!-- Verbatim comments -->
+          <div id="nps-comments" style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px"></div>
         </div>
       </div>
 
@@ -370,7 +395,7 @@ document.addEventListener('click', function(e) {
     var [profRes, subRes, fbRes, auditRes] = await Promise.all([
       _supa.from('profiles').select('id,email,created_at').eq('role','doctor'),
       _supa.from('subscriptions').select('plan,status,interval,payment_status'),
-      _supa.from('feedback').select('rating,comment,created_at').order('created_at',{ascending:false}).limit(50),
+      _supa.from('feedback').select('rating,nps_score,category,comment,created_at').order('created_at',{ascending:false}).limit(200),
       _supa.from('audit_log').select('event,created_at,metadata').order('created_at',{ascending:false}).limit(20)
     ]);
 
@@ -388,7 +413,18 @@ document.addEventListener('click', function(e) {
       var amt = (amounts[s.plan]||{})[s.interval||'month'] || 0;
       return acc + (s.interval === 'year' ? Math.round(amt/12) : amt);
     }, 0);
-    var avgRating  = feedback.length ? (feedback.reduce(function(a,f){ return a + f.rating; }, 0) / feedback.length) : 0;
+    var npsRows   = feedback.filter(function(f){ return f.nps_score !== null && f.nps_score !== undefined; });
+    var nTotal    = npsRows.length;
+    var npsVal    = null;
+    var npsColor  = 'var(--text-primary)';
+    if (nTotal > 0) {
+      var nProm = npsRows.filter(function(f){ return f.nps_score >= 9; }).length;
+      var nPass = npsRows.filter(function(f){ return f.nps_score >= 7 && f.nps_score <= 8; }).length;
+      var nDet  = npsRows.filter(function(f){ return f.nps_score <= 6; }).length;
+      npsVal    = Math.round(((nProm / nTotal) - (nDet / nTotal)) * 100);
+      npsColor  = npsVal > 50 ? '#059669' : npsVal > 0 ? '#D97706' : '#DC2626';
+    }
+    var avgRating  = 0; // legacy
     var aiRequests = audit.filter(function(a){ return (a.event||'').includes('ai'); }).length;
     var convRate   = totalUsers ? Math.round((proUsers / totalUsers) * 100) : 0;
 
@@ -404,9 +440,10 @@ document.addEventListener('click', function(e) {
     document.getElementById('kpi-mrr-trend').textContent   = proUsers + ' × abonnement';
     document.getElementById('kpi-mrr-trend').className     = 'kpi-trend ' + (MRR_DA > 0 ? 'trend-up' : 'trend-flat');
 
-    document.getElementById('kpi-rating').textContent      = avgRating ? avgRating.toFixed(1) + ' / 5' : '—';
-    document.getElementById('kpi-rating-trend').textContent = feedback.length + ' réponses';
-    document.getElementById('kpi-rating-trend').className  = 'kpi-trend ' + (avgRating >= 4 ? 'trend-up' : avgRating >= 3 ? 'trend-flat' : 'trend-down');
+    var npsKpiEl = document.getElementById('kpi-rating');
+    if (npsKpiEl) { npsKpiEl.textContent = npsVal !== null ? (npsVal > 0 ? '+' : '') + npsVal : '—'; npsKpiEl.style.color = npsColor; }
+    document.getElementById('kpi-rating-trend').textContent = nTotal ? nTotal + ' réponses NPS' : 'Aucune donnée';
+    document.getElementById('kpi-rating-trend').className  = 'kpi-trend ' + (npsVal > 30 ? 'trend-up' : npsVal > 0 ? 'trend-flat' : 'trend-down');
 
     document.getElementById('kpi-ai').textContent = aiRequests;
 
@@ -435,24 +472,86 @@ document.addEventListener('click', function(e) {
       options:{ responsive:true, maintainAspectRatio:false, cutout:'68%', plugins:{ legend:{ position:'bottom', labels:{ font:{size:11}, padding:14, color:'#4A5068' }}}}
     });
 
-    /* ── Feedback ───────────────────────────────────────── */
-    var fbCounts = {1:0,2:0,3:0,4:0,5:0};
-    feedback.forEach(function(f){ fbCounts[f.rating]=(fbCounts[f.rating]||0)+1; });
-    [1,2,3,4,5].forEach(function(r){ var el=document.getElementById('fb-'+r); if(el) el.textContent=fbCounts[r]; });
+    /* ── NPS Visualization ──────────────────────────────── */
+    if (nTotal > 0) {
+      var pctProm = Math.round((nProm/nTotal)*100);
+      var pctPass = Math.round((nPass/nTotal)*100);
+      var pctDet  = Math.round((nDet/nTotal)*100);
+      var npsLbl  = npsVal > 70 ? 'Classe mondiale' : npsVal > 50 ? 'Excellent' : npsVal > 30 ? 'Bon' : npsVal > 0 ? 'Correct' : 'A améliorer';
 
-    var comments = feedback.filter(function(f){ return f.comment; }).slice(0,5);
-    if (comments.length) {
-      var html='<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">';
-      html+='<div style="font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:10px">Commentaires récents</div>';
-      html+=comments.map(function(f){
-        return '<div style="padding:10px 0;border-bottom:1px solid var(--border);font-size:.8125rem;color:var(--text-secondary)">'
-          + '<span style="font-weight:700;color:var(--brand);margin-right:8px">' + f.rating + '/5</span>'
-          + sanitize(f.comment)
-          + '<div style="font-size:.625rem;color:var(--text-faint);margin-top:3px">' + ago(f.created_at) + '</div>'
-          + '</div>';
-      }).join('');
-      html+='</div>';
-      document.getElementById('feedback-comments').innerHTML = html;
+      var gaugeEl = document.getElementById('nps-gauge-score');
+      if (gaugeEl) { gaugeEl.textContent = (npsVal > 0 ? '+' : '') + npsVal; gaugeEl.style.color = npsColor; }
+      var lblEl = document.getElementById('nps-gauge-label');
+      if (lblEl) { lblEl.textContent = npsLbl; lblEl.style.color = npsColor; }
+
+      var elPctProm = document.getElementById('nps-pct-prom'); if(elPctProm) elPctProm.textContent = pctProm + '%';
+      var elPctPass = document.getElementById('nps-pct-pass'); if(elPctPass) elPctPass.textContent = pctPass + '%';
+      var elPctDet  = document.getElementById('nps-pct-det');  if(elPctDet)  elPctDet.textContent  = pctDet  + '%';
+      var elCnt = document.getElementById('nps-total-count'); if(elCnt) elCnt.textContent = nTotal + ' rép.';
+
+      var barDet  = document.getElementById('nps-bar-det');
+      var barPass = document.getElementById('nps-bar-pass');
+      var barProm = document.getElementById('nps-bar-prom');
+      setTimeout(function() {
+        if(barDet)  barDet.style.width  = pctDet  + '%';
+        if(barPass) barPass.style.width = pctPass + '%';
+        if(barProm) barProm.style.width = pctProm + '%';
+      }, 100);
+
+      // Distribution histogram 0-10
+      var dist = {};
+      npsRows.forEach(function(f){ dist[f.nps_score] = (dist[f.nps_score]||0)+1; });
+      var maxDist = Math.max.apply(null, Object.keys(dist).map(function(k){ return dist[k]; }).concat([1]));
+      var chartEl = document.getElementById('nps-dist-chart');
+      var labelsEl = document.getElementById('nps-dist-labels');
+      if (chartEl) {
+        var barHTML = ''; var lblHTML = '';
+        for (var sc = 0; sc <= 10; sc++) {
+          var cnt = dist[sc] || 0;
+          var heightPct = Math.round((cnt / maxDist) * 100);
+          var clr = sc >= 9 ? '#059669' : sc >= 7 ? '#D97706' : '#DC2626';
+          barHTML += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">'
+            + '<div style="font-size:.5rem;color:var(--text-muted);line-height:1;min-height:10px">' + (cnt ? cnt : '') + '</div>'
+            + '<div style="width:100%;background:' + clr + ';border-radius:3px 3px 0 0;height:' + Math.max(2, heightPct * 0.5) + 'px;opacity:' + (cnt ? 1 : 0.12) + ';transition:height .5s ease"></div>'
+            + '</div>';
+          lblHTML += '<div style="flex:1;text-align:center;font-size:.5rem;color:var(--text-muted)">' + sc + '</div>';
+        }
+        chartEl.innerHTML = barHTML;
+        if (labelsEl) labelsEl.innerHTML = lblHTML;
+      }
+
+      // Verbatim comments
+      var withComments = npsRows.filter(function(f){ return f.comment; }).slice(0, 6);
+      var commEl = document.getElementById('nps-comments');
+      if (commEl) {
+        if (withComments.length) {
+          var ch = '<div style="font-size:.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:12px">Verbatim récents</div>';
+          ch += withComments.map(function(f) {
+            var sc2 = f.nps_score;
+            var segColor = sc2 >= 9 ? '#059669' : sc2 >= 7 ? '#D97706' : '#DC2626';
+            var segLabel = sc2 >= 9 ? 'Promoteur' : sc2 >= 7 ? 'Passif' : 'Détracteur';
+            return '<div style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px">'
+              + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
+              + '<span style="font-size:.5rem;font-weight:700;background:' + segColor + ';color:#fff;padding:2px 7px;border-radius:99px">' + segLabel + '</span>'
+              + '<span style="font-size:.75rem;font-weight:800;color:' + segColor + '">' + sc2 + '/10</span>'
+              + (f.category ? '<span style="font-size:.5rem;color:var(--text-muted);background:var(--bg-subtle);padding:2px 7px;border-radius:99px;border:1px solid var(--border)">' + f.category + '</span>' : '')
+              + '<span style="font-size:.625rem;color:var(--text-faint);margin-left:auto">' + ago(f.created_at) + '</span>'
+              + '</div>'
+              + '<div style="font-size:.8125rem;color:var(--text-secondary)">' + sanitize(f.comment) + '</div>'
+              + '</div>';
+          }).join('');
+          commEl.innerHTML = ch;
+        } else {
+          commEl.innerHTML = '<div style="font-size:.8125rem;color:var(--text-muted);text-align:center;padding:8px 0">Aucun commentaire pour cette période</div>';
+        }
+      }
+    } else {
+      var gaugeEmpty = document.getElementById('nps-gauge-score');
+      if (gaugeEmpty) gaugeEmpty.textContent = '—';
+      var lblEmpty = document.getElementById('nps-gauge-label');
+      if (lblEmpty) { lblEmpty.textContent = 'Aucune donnée NPS'; lblEmpty.style.color = 'var(--text-muted)'; }
+      var commEmpty = document.getElementById('nps-comments');
+      if (commEmpty) commEmpty.innerHTML = '<div style="font-size:.8125rem;color:var(--text-muted);text-align:center;padding:16px 0">Aucune réponse NPS collectée — utilisez le simulateur pour générer des données de test.</div>';
     }
 
     /* ── Signups table ──────────────────────────────────── */

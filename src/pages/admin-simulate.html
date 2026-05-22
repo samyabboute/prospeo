@@ -242,6 +242,52 @@ body{padding-top:56px}
     </div>
   </div>
 
+  <!-- GÉNÉRATEUR NPS -->
+  <div class="sh" style="margin-top:8px">Générateur de feedback NPS</div>
+  <div class="card" style="margin-bottom:40px">
+    <div class="card-header">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Simulation NPS
+      </div>
+      <span style="font-size:.6875rem;color:var(--warning);font-weight:600;background:var(--warning-bg);padding:3px 8px;border-radius:var(--r-full)">Données de test</span>
+    </div>
+    <div class="card-body" style="padding:20px">
+      <p style="font-size:.8125rem;color:var(--text-secondary);margin-bottom:16px;line-height:1.6">Génère des réponses NPS réalistes pour ce médecin — pour tester les KPIs et visualisations Symphony sans données réelles.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div>
+          <div style="font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:6px">Profil de distribution</div>
+          <select id="nps-preset" onchange="updateNpsDesc()" style="width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;font-size:.8125rem;font-family:inherit;background:#fff;color:var(--text-primary);outline:none;cursor:pointer">
+            <option value="excellent">Excellent — NPS ~ +65</option>
+            <option value="bon" selected>Bon — NPS ~ +38 (marché DZ réaliste)</option>
+            <option value="moyen">Moyen — NPS ~ +12</option>
+            <option value="critique">Critique — NPS ~ −15</option>
+            <option value="custom">Aléatoire pur (distribution uniforme)</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:6px">Nombre de réponses</div>
+          <select id="nps-count" style="width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;font-size:.8125rem;font-family:inherit;background:#fff;color:var(--text-primary);outline:none;cursor:pointer">
+            <option value="5">5 réponses</option>
+            <option value="15" selected>15 réponses</option>
+            <option value="30">30 réponses</option>
+            <option value="50">50 réponses</option>
+          </select>
+        </div>
+      </div>
+      <div id="nps-preset-desc" style="padding:10px 14px;background:var(--bg-subtle);border-radius:var(--r-md);font-size:.75rem;color:var(--text-muted);line-height:1.6;margin-bottom:16px">
+        Profil réaliste pour le marché algérien : promoteurs majoritaires (9–10), passifs modérés (7–8), peu de détracteurs.
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <button onclick="generateNPS()" id="nps-gen-btn" style="display:inline-flex;align-items:center;gap:7px;background:var(--brand);color:#fff;border:none;border-radius:var(--r-md);padding:10px 20px;font-size:.8125rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s">
+          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Générer le feedback NPS
+        </button>
+        <span id="nps-gen-status" style="font-size:.75rem;color:var(--text-muted)"></span>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /content -->
 
 <script>
@@ -412,6 +458,123 @@ function openCrm(){ window.open('/admin-crm?uid='+uid,'_blank'); }
   document.getElementById('loading').style.display='none';
   document.getElementById('content').style.display='block';
 })();
+
+// ── NPS GENERATOR ────────────────────────────────────────────
+const NPS_PRESETS = {
+  excellent: {
+    desc: '75% promoteurs, 15% passifs, 10% détracteurs — early adopters enthousiastes.',
+    weights: {10:26,9:22,8:9,7:8,6:6,5:5,4:4,3:3,2:2,1:2,0:1}
+  },
+  bon: {
+    desc: 'Profil réaliste marché algérien : promoteurs majoritaires, peu de détracteurs.',
+    weights: {10:16,9:19,8:14,7:12,6:9,5:8,4:6,3:4,2:3,1:2,0:1}
+  },
+  moyen: {
+    desc: 'Mix équilibré — promoteurs légèrement majoritaires, signal d\'amélioration nécessaire.',
+    weights: {10:10,9:12,8:14,7:13,6:12,5:11,4:10,3:8,2:5,1:3,0:2}
+  },
+  critique: {
+    desc: 'Insatisfaction forte — détracteurs majoritaires, indique des problèmes sérieux.',
+    weights: {10:5,9:7,8:9,7:10,6:12,5:12,4:11,3:11,2:10,1:7,0:6}
+  },
+  custom: {
+    desc: 'Distribution uniforme — tous les scores (0–10) ont la même probabilité.',
+    weights: {10:1,9:1,8:1,7:1,6:1,5:1,4:1,3:1,2:1,1:1,0:1}
+  }
+};
+
+const NPS_COMMENTS = {
+  promoter: [
+    'Interface très intuitive, gain de temps énorme au cabinet.',
+    "L'agenda en ligne a transformé ma pratique. Mes patients adorent.",
+    'Excellent outil, je le recommande à tous mes confrères.',
+    'Très professionnel, tout fonctionne parfaitement.',
+    'La gestion des dossiers patients est remarquable.',
+    'Simplicité et efficacité. Exactement ce qu'il me fallait.',
+    null, null, null
+  ],
+  passive: [
+    'Bon produit mais quelques lenteurs par moment.',
+    'Bien dans l\'ensemble, manque quelques fonctionnalités.',
+    'Utilisation quotidienne satisfaisante, quelques bugs mineurs.',
+    'Correct, mais l\'application mobile ferait la différence.',
+    null, null, null
+  ],
+  detractor: [
+    'Trop lent, l\'application plante parfois.',
+    'Interface à améliorer, pas toujours intuitive.',
+    'Problèmes de synchronisation récurrents.',
+    'Le support client est difficile à joindre.',
+    null, null
+  ]
+};
+
+const NPS_CATS = ['ui','performance','feature','bug','support','autre'];
+
+function updateNpsDesc() {
+  const key = document.getElementById('nps-preset')?.value || 'bon';
+  const el = document.getElementById('nps-preset-desc');
+  if (el && NPS_PRESETS[key]) el.textContent = NPS_PRESETS[key].desc;
+}
+
+function _wRand(weights) {
+  const keys = Object.keys(weights).map(Number);
+  const total = keys.reduce((s,k) => s + weights[k], 0);
+  let r = Math.random() * total, cum = 0;
+  for (const k of keys) { cum += weights[k]; if (r <= cum) return k; }
+  return keys[keys.length-1];
+}
+
+function _pick(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+
+function _randDate(daysBack) {
+  const d = new Date();
+  d.setDate(d.getDate() - Math.floor(Math.random()*daysBack));
+  d.setHours(8+Math.floor(Math.random()*13), Math.floor(Math.random()*60));
+  return d.toISOString();
+}
+
+async function generateNPS() {
+  if (!uid) { alert('UID médecin requis'); return; }
+  const btn = document.getElementById('nps-gen-btn');
+  const status = document.getElementById('nps-gen-status');
+  btn.disabled = true; btn.textContent = 'Génération en cours…';
+  if (status) { status.textContent = ''; status.style.color = ''; }
+
+  const presetKey = document.getElementById('nps-preset')?.value || 'bon';
+  const count     = parseInt(document.getElementById('nps-count')?.value || '15');
+  const preset    = NPS_PRESETS[presetKey];
+
+  const rows = [];
+  for (let i = 0; i < count; i++) {
+    const score   = _wRand(preset.weights);
+    const segment = score >= 9 ? 'promoter' : score >= 7 ? 'passive' : 'detractor';
+    const comment = _pick(NPS_COMMENTS[segment]);
+    const cat     = Math.random() > 0.45 ? _pick(NPS_CATS) : null;
+    const rating  = score >= 9 ? 5 : score >= 7 ? 4 : score >= 5 ? 3 : score >= 3 ? 2 : 1;
+    rows.push({
+      user_id: uid, nps_score: score, rating,
+      category: cat, comment: comment || null,
+      page: 'dashboard', created_at: _randDate(60)
+    });
+  }
+
+  const { error } = await _sb.from('feedback').insert(rows);
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Générer le feedback NPS';
+
+  if (error) {
+    if (status) { status.textContent = 'Erreur : ' + error.message; status.style.color = 'var(--danger)'; }
+  } else {
+    const nP = rows.filter(r => r.nps_score >= 9).length;
+    const nD = rows.filter(r => r.nps_score <= 6).length;
+    const nps = Math.round(((nP/count)-(nD/count))*100);
+    if (status) {
+      status.textContent = count + ' réponses insérées — NPS simulé : ' + (nps > 0 ? '+' : '') + nps;
+      status.style.color = nps > 30 ? 'var(--success)' : nps > 0 ? 'var(--warning)' : 'var(--danger)';
+    }
+  }
+}
 </script>
 </body>
 </html>
