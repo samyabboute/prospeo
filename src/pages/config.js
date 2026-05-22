@@ -69,8 +69,8 @@ function getRedirectUrl(email) {
 // Stratégie garantie : on cache <html> IMMÉDIATEMENT via opacity:0 (synchrone,
 // aucune manipulation DOM risquée). Le fetch vérifie maintenance_mode depuis la
 // DB. Résultat : opacity:1 (page visible) ou redirect vers /maintenance.
-// Les admins Docline bypassent via leur session Supabase dans localStorage.
-// Pages exemptées : /maintenance, /symphony*, /login (inaccessibles pendant maintenance).
+// BYPASS : tout utilisateur authentifié (médecin OU admin) passe — seuls les
+// visiteurs anonymes sont bloqués. Pages exemptées : /maintenance, /symphony*, /login.
 (function _maintGuard() {
   try {
     var p = window.location.pathname;
@@ -99,21 +99,18 @@ function getRedirectUrl(email) {
       window.location.replace(dest);
     }
 
-    // ── Lire l'email admin depuis le localStorage Supabase v2 ────────────────
-    function _getStoredEmail() {
+    // ── Vérifie si un utilisateur authentifié est présent (médecin OU admin) ───
+    // Les médecins Docline ont TOUJOURS accès, même en mode maintenance.
+    // Seuls les visiteurs anonymes sont redirigés vers /maintenance.
+    function _isAuthorized() {
       try {
         var proj = 'ferkzwzypmdtuypxribz';
         var raw  = localStorage.getItem('sb-' + proj + '-auth-token');
-        if (!raw) return '';
+        if (!raw) return false;
         var s = JSON.parse(raw);
-        // Format Supabase v2 : session.user.email
-        return (s && s.user && s.user.email) ? s.user.email.toLowerCase() : '';
-      } catch (e) { return ''; }
-    }
-
-    function _isAdmin() {
-      var email = _getStoredEmail();
-      return email !== '' && ADMIN_EMAILS.indexOf(email) >= 0;
+        // N'importe quel compte authentifié (médecin ou admin) bypass la maintenance
+        return !!(s && s.user && s.user.email);
+      } catch (e) { return false; }
     }
 
     // ── Vérifier maintenance_mode depuis Supabase REST (lecture anon publique) ─
@@ -130,10 +127,10 @@ function getRedirectUrl(email) {
               || (val === 'true')
               || (typeof val === 'string' && val.replace(/"/g, '') === 'true');
 
-      if (!isOn)     { _show(); return; }    // Maintenance OFF  → afficher
-      if (_isAdmin()) { _show(); return; }   // Admin connecté   → bypass
+      if (!isOn)          { _show(); return; }  // Maintenance OFF         → afficher
+      if (_isAuthorized()) { _show(); return; }  // Médecin/admin connecté  → bypass
 
-      _redirect();                           // Visiteur         → maintenance
+      _redirect();                               // Visiteur anonyme        → maintenance
     })
     .catch(function() {
       _show(); // Erreur réseau → fail open (ne jamais bloquer sans raison)

@@ -272,6 +272,30 @@ body{
 </div>
 
 <script>
+// ── Si la maintenance est désactivée, rediriger vers l'accueil ──────────────
+(function _checkMaintenanceActive() {
+  try {
+    fetch(SUPA_URL + '/rest/v1/app_settings?key=eq.maintenance_mode&select=value', {
+      headers: { 'apikey': SUPA_KEY, 'Cache-Control': 'no-cache, no-store' }
+    })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(rows) {
+      if (!rows || !rows.length) { _goHome(); return; }
+      var val  = rows[0].value;
+      var isOn = (val === true) || (val === 'true')
+              || (typeof val === 'string' && val.replace(/"/g, '') === 'true');
+      if (!isOn) _goHome();
+    })
+    .catch(function() {});
+  } catch(e) {}
+
+  function _goHome() {
+    var dest = '/';
+    if (typeof ghpNav === 'function') dest = ghpNav('/dashboard');
+    window.location.replace(dest);
+  }
+})();
+
 async function submit(e) {
   e.preventDefault();
   var btn    = document.getElementById('btn');

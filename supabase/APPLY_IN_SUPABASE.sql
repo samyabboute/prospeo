@@ -180,7 +180,36 @@ CREATE TRIGGER trg_user_metadata_updated
 -- Index pour filtrage rapide par statut KYC
 CREATE INDEX IF NOT EXISTS idx_user_metadata_kyc ON public.user_metadata(kyc_status);
 
+-- ── 9. Table email_logs ──────────────────────────────────────────────────────
+-- Trace de tous les emails envoyés par la plateforme (visible dans Symphony)
+CREATE TABLE IF NOT EXISTS public.email_logs (
+  id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  type            text        NOT NULL,
+  recipient_email text        NOT NULL,
+  recipient_name  text,
+  subject         text,
+  status          text        NOT NULL DEFAULT 'sent'
+                              CHECK (status IN ('sent', 'failed')),
+  triggered_by    text,       -- email de l'admin ou utilisateur déclencheur
+  metadata        jsonb       DEFAULT '{}',
+  created_at      timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.email_logs ENABLE ROW LEVEL SECURITY;
+
+-- Seuls les admins Docline peuvent lire les logs d'emails
+DROP POLICY IF EXISTS "email_logs_admin" ON public.email_logs;
+CREATE POLICY "email_logs_admin" ON public.email_logs
+  FOR ALL
+  USING  (auth.jwt() ->> 'email' IN ('samyabboute5@gmail.com', 'contact@docline.health'))
+  WITH CHECK (auth.jwt() ->> 'email' IN ('samyabboute5@gmail.com', 'contact@docline.health'));
+
+-- Index pour filtrage par type et date
+CREATE INDEX IF NOT EXISTS idx_email_logs_type    ON public.email_logs(type, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_email_logs_date    ON public.email_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_email_logs_to      ON public.email_logs(recipient_email);
+
 -- ═══════════════════════════════════════════════════════════════════════════
--- ✓ Après exécution : simulation NPS, validation KYC et maintenance_notify
---   fonctionnent sans aucune autre action.
+-- ✓ Après exécution : simulation NPS, validation KYC, maintenance_notify
+--   et email_logs fonctionnent sans aucune autre action.
 -- ═══════════════════════════════════════════════════════════════════════════

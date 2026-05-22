@@ -231,7 +231,7 @@ ul,ol{list-style:none}
             <div class="setting-row">
               <div class="setting-info">
                 <div class="setting-label">Mode maintenance</div>
-                <div class="setting-desc">Bloque l'accès public — seuls les admins peuvent se connecter.</div>
+                <div class="setting-desc">Bloque le grand public — les médecins et admins gardent toujours l'accès.</div>
               </div>
               <label class="toggle">
                 <input type="checkbox" id="toggle-maintenance" onchange="setSetting('maintenance_mode', this.checked)">
@@ -627,9 +627,10 @@ async function setSetting(key, value) {
   if (key.startsWith('payment_')) renderPaymentMethods();
   Toast.success('Enregistré', key + ' → ' + value);
 
-  // ── Auto-notify subscribers when maintenance is lifted ─────────
-  if (key === 'maintenance_mode' && !value && wasOn) {
-    _sendMaintenanceResumeNotifs();
+  // ── Auto-notify when maintenance state changes ────────────────
+  if (key === 'maintenance_mode') {
+    if (value && !wasOn)  _sendMaintenanceActivatedNotifs(); // OFF → ON
+    if (!value && wasOn)  _sendMaintenanceResumeNotifs();    // ON  → OFF
   }
 }
 
@@ -650,16 +651,42 @@ async function _sendMaintenanceResumeNotifs() {
     if (res.ok) {
       if (json.total > 0) {
         Toast.success(
-          '📬 Notifications envoyées',
+          'Notifications envoyées',
           json.sent + ' abonné' + (json.sent > 1 ? 's' : '') + ' notifié' + (json.sent > 1 ? 's' : '') + ' · liste purgée'
         );
       }
-      // else: no subscribers — silent
     } else {
       console.warn('maintenance_resume:', json.error || res.status);
     }
   } catch (e) {
     console.warn('maintenance_resume error', e);
+  }
+}
+
+async function _sendMaintenanceActivatedNotifs() {
+  try {
+    const jwt = _session?.access_token;
+    if (!jwt) return;
+    const res = await fetch(EDGE_BASE + '/send-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + jwt,
+        'apikey': ANON_KEY
+      },
+      body: JSON.stringify({ type: 'maintenance_activated' })
+    });
+    const json = await res.json().catch(() => ({}));
+    if (res.ok) {
+      Toast.success(
+        'Médecins notifiés',
+        json.sent + ' médecin' + (json.sent > 1 ? 's informés' : ' informé') + ' de la maintenance'
+      );
+    } else {
+      console.warn('maintenance_activated:', json.error || res.status);
+    }
+  } catch (e) {
+    console.warn('maintenance_activated error', e);
   }
 }
 
