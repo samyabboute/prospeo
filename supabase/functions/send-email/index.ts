@@ -325,6 +325,59 @@ serve(async (req) => {
     await supabase.from("profiles").update({ welcome_email_sent: true }).eq("id", user.id);
   }
 
+  // ── maintenance_resume — notify all subscribers that the platform is back ──
+  if (type === "maintenance_resume") {
+    // Only Docline admins may trigger this
+    const callerEmail = user.email ?? "";
+    const ADMIN_EMAILS = ["samyabboute5@gmail.com", "contact@docline.health"];
+    if (!ADMIN_EMAILS.includes(callerEmail)) {
+      return new Response(JSON.stringify({ error: "Accès refusé" }), { status: 403, headers: CORS });
+    }
+
+    // Use service role to bypass RLS on maintenance_notify
+    const adminSupa = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const { data: subscribers, error: fetchErr } = await adminSupa
+      .from("maintenance_notify")
+      .select("prenom, nom, email");
+
+    if (fetchErr) {
+      return new Response(JSON.stringify({ error: fetchErr.message }), { status: 500, headers: CORS });
+    }
+
+    const list = subscribers ?? [];
+    let sent = 0;
+    let failed = 0;
+
+    for (const sub of list) {
+      const subHtml = buildBaseEmail(
+        "🚀 Docline est de retour — on a construit quelque chose d'extraordinaire",
+        `Bonjour ${sub.prenom},\n\nBonne nouvelle : **Docline est de retour en ligne** et nous avons travaillé dur pour vous offrir une expérience encore meilleure.\n\nDurant cette période, notre équipe a apporté des améliorations importantes à la plateforme. Nous sommes impatients de vous retrouver et de continuer à construire ensemble l'avenir de la santé numérique en Algérie.\n\nMerci pour votre patience — elle signifie beaucoup pour nous. On est juste au début d'un long chemin, et vous en faites partie.`,
+        { text: "Accéder à Docline →", url: APP_URL },
+        "NOUS SOMMES DE RETOUR"
+      );
+
+      const mailOk = await sendEmail(
+        sub.email,
+        "🚀 Docline est de retour — on construit un empire",
+        subHtml.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"),
+        "contact@docline.health"
+      );
+      if (mailOk) sent++; else failed++;
+    }
+
+    // Purge the notification list after sending
+    await adminSupa.from("maintenance_notify").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+
+    return new Response(JSON.stringify({ sent, failed, total: list.length }), {
+      status: 200,
+      headers: { ...CORS, "Content-Type": "application/json" },
+    });
+  }
+
   return new Response(JSON.stringify({ success: ok }), {
     status: ok ? 200 : 500,
     headers: { ...CORS, "Content-Type": "application/json" },

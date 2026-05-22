@@ -65,6 +65,53 @@ Shell = (function () {
       icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="23" y2="8"/><line x1="21" y1="6" x2="21" y2="10"/>' },
   ];
 
+  // ── SYMPHONY NAV (admin platform) ────────────────────────────
+  var SYMPHONY_NAV = [
+    // ── Vue générale
+    { section: 'Vue générale' },
+    { href:'/symphony',          key:'symphony',          label:'Hub Symphony',
+      icon:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>' },
+    { href:'/symphony-analytics',key:'symphony-analytics',label:'Analytics',
+      icon:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>' },
+
+    // ── Clients & CRM
+    { section: 'Clients & CRM' },
+    { href:'/symphony-kyc',      key:'symphony-kyc',      label:'KYC & Onboarding',
+      icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>' },
+    { href:'/symphony-users',    key:'symphony-users',    label:'Médecins & Cliniques',
+      icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>' },
+    { href:'/symphony-crm',      key:'symphony-crm',      label:'CRM Médecin',
+      icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>' },
+    { href:'/symphony-featured', key:'symphony-featured', label:'Médecins En Vedette',
+      icon:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>' },
+
+    // ── Revenus & Finance
+    { section: 'Revenus & Finance' },
+    { href:'/symphony-revenue',  key:'symphony-revenue',  label:'Revenus & Finance',
+      icon:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6"/>' },
+
+    // ── Marketing
+    { section: 'Marketing' },
+    { href:'/symphony-ads',      key:'symphony-ads',      label:'Régie Publicitaire',
+      icon:'<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>' },
+    { href:'/symphony-emails',   key:'symphony-emails',   label:'Emails & Modèles',
+      icon:'<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>' },
+
+    // ── Équipe Symphony
+    { section: 'Équipe' },
+    { href:'/symphony-agents',   key:'symphony-agents',   label:'Agents & Équipe',
+      icon:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
+    { href:'/symphony-simulate', key:'symphony-simulate', label:'Simulation',
+      icon:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>' },
+
+    // ── Système
+    { section: 'Système' },
+    { href:'/symphony-security', key:'symphony-security', label:'Sécurité & Logs',
+      icon:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>' },
+    { href:'/symphony-settings', key:'symphony-settings', label:'Paramètres',
+      icon:'<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/>' },
+  ];
+
   // ── CSS ───────────────────────────────────────────────────────
   var CSS = `<style id="shell-css">
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -733,7 +780,8 @@ button{font-family:inherit;cursor:pointer}
     var pct = isPro ? 0 : Math.min(100, Math.round((patientCount / patientLimit) * 100));
 
     // ── Sidebar nav
-    var navHTML = NAV.map(function (n) {
+    var _navSource = opts.isSymphony ? SYMPHONY_NAV : NAV;
+    var navHTML = _navSource.map(function (n) {
       if (n.section) return '<div class="sb-section">' + n.section + '</div>';
       var isLocked = n.pro && !isPro;
       var cls = 'sb-item' + (n.featured ? ' featured' : '') + (n.key === page ? ' active' : '') + (isLocked ? ' locked-clickable' : '');
@@ -754,8 +802,8 @@ button{font-family:inherit;cursor:pointer}
         + '</a>';
     }).join('');
 
-    // ── Usage block (free only)
-    var usageHTML = !isPro
+    // ── Usage block (free only, hidden in Symphony mode)
+    var usageHTML = opts.isSymphony ? '' : !isPro
       ? '<div class="sb-divider"></div>'
         + '<div class="sb-usage">'
         +   '<div class="sb-usage-label"><span>Patients</span><strong>' + patientCount + ' / ' + patientLimit + '</strong></div>'
@@ -768,11 +816,14 @@ button{font-family:inherit;cursor:pointer}
       : '';
 
     // ── Sidebar
+    var _wordmark = opts.isSymphony ? 'Symphony' : 'Docline';
+    var _planLabel = opts.isSymphony ? 'ADMIN' : plan.toUpperCase();
+    var _planCls   = opts.isSymphony ? 'enterprise' : plan;
     var sidebar =
         '<div class="sb-head">'
       +   LOGO
-      +   '<span class="sb-wordmark">Docline</span>'
-      +   '<span class="sb-plan ' + plan + '">' + plan.toUpperCase() + '</span>'
+      +   '<span class="sb-wordmark">' + _wordmark + '</span>'
+      +   '<span class="sb-plan ' + _planCls + '">' + _planLabel + '</span>'
       + '</div>'
       + '<nav class="sb-nav">'
       +   navHTML

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<title>Maintenance — Docline</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Sora',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{
+  background:#0A0B11;
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  overflow:hidden;
+  position:relative;
+}
+
+/* ── ANIMATED BACKGROUND ──────────────────────────────────── */
+.bg-glow{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(59,23,114,.22) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(35,167,234,.12) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(91,45,176,.08) 0%, transparent 70%);
+}
+.bg-grid{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+}
+
+/* Floating orbs */
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);opacity:.35;animation:drift 18s ease-in-out infinite}
+.orb-1{width:400px;height:400px;background:radial-gradient(circle,#6D28D9,transparent);top:-120px;left:-100px;animation-delay:0s}
+.orb-2{width:300px;height:300px;background:radial-gradient(circle,#1D4ED8,transparent);bottom:-80px;right:-60px;animation-delay:-7s}
+.orb-3{width:200px;height:200px;background:radial-gradient(circle,#7C3AED,transparent);top:40%;left:70%;animation-delay:-12s}
+@keyframes drift{
+  0%,100%{transform:translate(0,0) scale(1)}
+  33%{transform:translate(30px,-20px) scale(1.04)}
+  66%{transform:translate(-20px,15px) scale(.97)}
+}
+
+/* ── CONTAINER ─────────────────────────────────────────────── */
+.container{
+  position:relative;z-index:10;
+  display:flex;flex-direction:column;align-items:center;
+  width:100%;max-width:520px;padding:28px 24px;
+  text-align:center;
+}
+
+/* ── LOGO ──────────────────────────────────────────────────── */
+.logo-wrap{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:48px}
+.logo-icon{
+  width:40px;height:40px;border-radius:11px;flex-shrink:0;
+  background:linear-gradient(135deg,#7C3AED,#3B1772);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 24px rgba(124,58,237,.45);
+}
+.logo-icon svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.logo-name{font-size:1.25rem;font-weight:800;color:#fff;letter-spacing:-.4px}
+
+/* ── STATUS CHIP ───────────────────────────────────────────── */
+.status-chip{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(124,58,237,.14);
+  border:1px solid rgba(124,58,237,.35);
+  border-radius:999px;
+  padding:5px 14px 5px 10px;
+  font-size:.6875rem;font-weight:700;letter-spacing:.6px;
+  text-transform:uppercase;color:rgba(200,180,255,.85);
+  margin-bottom:28px;
+}
+.pulse-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#A78BFA;
+  box-shadow:0 0 0 0 rgba(167,139,250,.4);
+  animation:pulse-ring 2s ease infinite;
+}
+@keyframes pulse-ring{
+  0%{box-shadow:0 0 0 0 rgba(167,139,250,.5)}
+  70%{box-shadow:0 0 0 8px rgba(167,139,250,0)}
+  100%{box-shadow:0 0 0 0 rgba(167,139,250,0)}
+}
+
+/* ── HEADLINE ──────────────────────────────────────────────── */
+h1{
+  font-size:clamp(1.75rem,5vw,2.375rem);
+  font-weight:800;
+  letter-spacing:-.6px;
+  line-height:1.15;
+  color:#fff;
+  margin-bottom:14px;
+}
+h1 span{
+  background:linear-gradient(135deg,#A78BFA,#60A5FA);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.subtitle{
+  font-size:.9375rem;font-weight:400;
+  color:rgba(255,255,255,.45);
+  line-height:1.65;
+  max-width:400px;
+  margin:0 auto 36px;
+}
+
+/* ── PROGRESS BAR ──────────────────────────────────────────── */
+.progress-wrap{width:100%;max-width:380px;margin:0 auto 40px}
+.progress-track{
+  height:3px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;
+  margin-bottom:8px;
+}
+.progress-fill{
+  height:100%;border-radius:999px;
+  background:linear-gradient(90deg,#7C3AED,#60A5FA);
+  animation:indeterminate 2.2s cubic-bezier(.4,0,.2,1) infinite;
+  width:40%;
+}
+@keyframes indeterminate{
+  0%{transform:translateX(-150%);width:40%}
+  50%{width:55%}
+  100%{transform:translateX(320%);width:40%}
+}
+.progress-label{font-size:.625rem;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.25);text-align:right}
+
+/* ── DIVIDER ───────────────────────────────────────────────── */
+.divider{
+  display:flex;align-items:center;gap:12px;width:100%;margin-bottom:28px;
+  color:rgba(255,255,255,.18);font-size:.6875rem;font-weight:600;letter-spacing:.4px;text-transform:uppercase;
+}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08)}
+
+/* ── FORM ──────────────────────────────────────────────────── */
+.notify-form{width:100%;display:flex;flex-direction:column;gap:12px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-wrap{display:flex;flex-direction:column;gap:6px;text-align:left}
+.field-label{font-size:.6875rem;font-weight:700;letter-spacing:.3px;color:rgba(255,255,255,.4);text-transform:uppercase}
+.field-input{
+  background:rgba(255,255,255,.05);
+  border:1.5px solid rgba(255,255,255,.1);
+  border-radius:10px;
+  padding:11px 14px;
+  font-family:'Sora',sans-serif;
+  font-size:.875rem;
+  color:#fff;
+  outline:none;
+  transition:border-color 180ms ease,background 180ms ease;
+  width:100%;
+}
+.field-input::placeholder{color:rgba(255,255,255,.2)}
+.field-input:focus{
+  border-color:rgba(124,58,237,.6);
+  background:rgba(124,58,237,.07);
+}
+
+.btn-notify{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:linear-gradient(135deg,#7C3AED,#5B21B6);
+  color:#fff;border:none;border-radius:10px;
+  padding:13px 24px;font-family:'Sora',sans-serif;
+  font-size:.875rem;font-weight:700;letter-spacing:.1px;
+  cursor:pointer;transition:all 180ms ease;
+  box-shadow:0 4px 18px rgba(124,58,237,.4);
+  width:100%;margin-top:4px;
+}
+.btn-notify:hover:not(:disabled){
+  background:linear-gradient(135deg,#8B5CF6,#6D28D9);
+  box-shadow:0 6px 22px rgba(124,58,237,.5);
+  transform:translateY(-1px);
+}
+.btn-notify:active{transform:translateY(0)}
+.btn-notify:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-notify svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-notify.loading .spinner{display:block}
+.btn-notify.loading .btn-lbl,.btn-notify.loading svg{display:none}
+
+/* ── SUCCESS STATE ─────────────────────────────────────────── */
+.success-state{
+  display:none;
+  flex-direction:column;align-items:center;gap:14px;
+  background:rgba(16,185,129,.07);
+  border:1px solid rgba(16,185,129,.25);
+  border-radius:16px;padding:24px;width:100%;
+}
+.success-state.show{display:flex}
+.success-icon{
+  width:48px;height:48px;border-radius:50%;
+  background:rgba(16,185,129,.15);
+  display:flex;align-items:center;justify-content:center;
+}
+.success-icon svg{width:22px;height:22px;stroke:#10B981;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.success-title{font-size:1rem;font-weight:800;color:#fff}
+.success-msg{font-size:.8125rem;color:rgba(255,255,255,.5);line-height:1.6}
+
+/* ── ERROR MSG ─────────────────────────────────────────────── */
+.err-msg{display:none;font-size:.75rem;color:#F87171;margin-top:4px;text-align:center}
+.err-msg.show{display:block}
+
+/* ── FOOTER ────────────────────────────────────────────────── */
+.footer-note{
+  margin-top:44px;
+  font-size:.6875rem;color:rgba(255,255,255,.2);
+  display:flex;align-items:center;gap:6px;
+}
+.footer-note a{color:rgba(165,130,255,.5);text-decoration:none}
+.footer-note a:hover{color:rgba(165,130,255,.8)}
+
+@media(max-width:480px){
+  .form-row{grid-template-columns:1fr}
+  h1{font-size:1.625rem}
+  .logo-wrap{margin-bottom:36px}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+<div class="bg-grid"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<div class="container">
+
+  <!-- Logo -->
+  <div class="logo-wrap">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    </div>
+    <span class="logo-name">Docline</span>
+  </div>
+
+  <!-- Status chip -->
+  <div class="status-chip">
+    <span class="pulse-dot"></span>
+    Maintenance en cours
+  </div>
+
+  <!-- Headline -->
+  <h1>On construit quelque chose<br><span>d'extraordinaire.</span></h1>
+  <p class="subtitle">Docline sera de retour très prochainement avec de nouvelles fonctionnalités. Inscrivez-vous pour être les premiers informés de la reprise.</p>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill"></div></div>
+    <div class="progress-label">Travaux en cours…</div>
+  </div>
+
+  <!-- Divider -->
+  <div class="divider">Être notifié au retour</div>
+
+  <!-- Form -->
+  <form class="notify-form" id="notifyForm" onsubmit="submitNotify(event)" autocomplete="off">
+    <div class="form-row">
+      <div class="field-wrap">
+        <label class="field-label" for="f-prenom">Prénom</label>
+        <input class="field-input" id="f-prenom" type="text" placeholder="Karim" required autocomplete="given-name">
+      </div>
+      <div class="field-wrap">
+        <label class="field-label" for="f-nom">Nom</label>
+        <input class="field-input" id="f-nom" type="text" placeholder="Benali" required autocomplete="family-name">
+      </div>
+    </div>
+    <div class="field-wrap">
+      <label class="field-label" for="f-email">Adresse e-mail</label>
+      <input class="field-input" id="f-email" type="email" placeholder="karim@clinique.dz" required autocomplete="email">
+    </div>
+    <button class="btn-notify" id="submitBtn" type="submit">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="btn-lbl">Me notifier au retour</span>
+      <div class="spinner"></div>
+    </button>
+    <div class="err-msg" id="errMsg"></div>
+  </form>
+
+  <!-- Success -->
+  <div class="success-state" id="successState">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="success-title" id="successTitle">Vous serez notifié en premier !</div>
+    <div class="success-msg">Dès que Docline est de retour, vous recevrez un email personnalisé à <strong id="successEmail"></strong>. Merci pour votre patience — l'attente en vaut la peine.</div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-note">
+    <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;opacity:.6"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    <a href="mailto:contact@docline.health">contact@docline.health</a>
+    &nbsp;·&nbsp; © 2025 Docline
+  </div>
+
+</div>
+
+<script>
+async function submitNotify(e) {
+  e.preventDefault();
+  const btn  = document.getElementById('submitBtn');
+  const err  = document.getElementById('errMsg');
+  const prenom = document.getElementById('f-prenom').value.trim();
+  const nom    = document.getElementById('f-nom').value.trim();
+  const email  = document.getElementById('f-email').value.trim().toLowerCase();
+
+  err.textContent = '';
+  err.classList.remove('show');
+  btn.disabled = true;
+  btn.classList.add('loading');
+
+  try {
+    // Insert into maintenance_notify via Supabase REST API
+    const res = await fetch(SUPA_URL + '/rest/v1/maintenance_notify', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ prenom, nom, email })
+    });
+
+    if (!res.ok && res.status !== 409) {
+      // 409 = duplicate email (unique constraint) — treat as success
+      const body = await res.text();
+      throw new Error(body || 'Erreur réseau');
+    }
+
+    // Show success
+    document.getElementById('notifyForm').style.display = 'none';
+    document.getElementById('successTitle').textContent =
+      'Parfait ' + prenom + ' — vous serez notifié en premier !';
+    document.getElementById('successEmail').textContent = email;
+    document.getElementById('successState').classList.add('show');
+
+  } catch (ex) {
+    err.textContent = 'Une erreur est survenue. Réessayez dans un instant.';
+    err.classList.add('show');
+    btn.disabled = false;
+    btn.classList.remove('loading');
+  }
+}
+</script>
+</body>
+</html>
