@@ -362,14 +362,9 @@ tr:hover td{background:#FAFBFF}
 <!-- ── Sidebar inline HTML ── -->
 <template id="sidebar-tpl">
   <div class="sidebar-head" style="display:flex;align-items:center;justify-content:space-between">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div style="width:28px;height:28px;background:linear-gradient(135deg,#3B1772,#7C3AED);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-      </div>
-      <div>
-        <div class="sidebar-logo-text">Symphony</div>
-        <div class="sidebar-logo-sub">Docline — Back Office</div>
-      </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <img src="docline-logo-white.svg" alt="Docline" style="height:22px;width:auto;display:block;max-width:120px;flex-shrink:0">
+      <span style="background:rgba(247,144,9,.18);color:#F59E0B;border:1px solid rgba(247,144,9,.28);font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;letter-spacing:.4px;white-space:nowrap">ADMIN</span>
     </div>
   </div>
   <!-- nav injected by JS -->
@@ -459,9 +454,9 @@ function renderSidebar(email) {
   var handle   = email.split('@')[0];
   var curPath  = window.location.pathname;
 
-  var html = '<div class="sidebar-head" style="display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--sidebar-border);padding:16px">'
-    + '<div style="width:28px;height:28px;background:linear-gradient(135deg,#3B1772,#7C3AED);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>'
-    + '<div><div class="sidebar-logo-text">Symphony</div><div class="sidebar-logo-sub">Docline — Back Office</div></div>'
+  var html = '<div class="sidebar-head" style="display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--sidebar-border);padding:16px">'
+    + '<img src="docline-logo-white.svg" alt="Docline" style="height:22px;width:auto;display:block;max-width:120px;flex-shrink:0">'
+    + '<span style="background:rgba(247,144,9,.18);color:#F59E0B;border:1px solid rgba(247,144,9,.28);font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;letter-spacing:.4px;white-space:nowrap">ADMIN</span>'
     + '</div>';
 
   sections.forEach(function(sec) {

@@ -299,7 +299,7 @@ const AdminSidebar = {
         ['/symphony-settings',  'symphony-settings', 'Paramètres',             '<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/>'],
       ]},
     ];
-    let html = `<div class="sidebar-head" style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:10px"><div class="sidebar-logo-icon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div><div class="sidebar-logo-text">Symphony</div><div class="sidebar-logo-sub">Docline — Back Office</div></div></div><button class="sb-toggle-btn" onclick="_sbToggle()" title="Réduire"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div>`;
+    let html = `<div class="sidebar-head" style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:10px"><img src="docline-logo-white.svg" alt="Docline" style="height:22px;width:auto;display:block;max-width:120px"><span style="background:rgba(247,144,9,.18);color:#F59E0B;border:1px solid rgba(247,144,9,.28);font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;letter-spacing:.4px;white-space:nowrap">ADMIN</span></div><button class="sb-toggle-btn" onclick="_sbToggle()" title="Réduire"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div>`;
     sections.forEach(sec => {
       html += `<div class="sidebar-section">${sec.label}</div>`;
       sec.items.forEach(([href,key,label,icon]) => {

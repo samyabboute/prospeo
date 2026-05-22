@@ -816,14 +816,16 @@ button{font-family:inherit;cursor:pointer}
       : '';
 
     // ── Sidebar
-    var _wordmark = opts.isSymphony ? 'Symphony' : 'Docline';
     var _planLabel = opts.isSymphony ? 'ADMIN' : plan.toUpperCase();
     var _planCls   = opts.isSymphony ? 'enterprise' : plan;
+    var _headInner = opts.isSymphony
+      ? '<img src="docline-logo-white.svg" alt="Docline" style="height:22px;width:auto;display:block;max-width:120px;flex-shrink:0">'
+        + '<span class="sb-plan enterprise" style="margin-left:6px">ADMIN</span>'
+      : LOGO + '<span class="sb-wordmark">Docline</span>'
+        + '<span class="sb-plan ' + _planCls + '">' + _planLabel + '</span>';
     var sidebar =
         '<div class="sb-head">'
-      +   LOGO
-      +   '<span class="sb-wordmark">' + _wordmark + '</span>'
-      +   '<span class="sb-plan ' + _planCls + '">' + _planLabel + '</span>'
+      +   _headInner
       + '</div>'
       + '<nav class="sb-nav">'
       +   navHTML
