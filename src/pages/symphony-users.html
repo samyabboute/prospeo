@@ -540,6 +540,10 @@
     <div class="modal-foot">
       <button class="btn btn-secondary" onclick="closeModal()">Fermer</button>
       <button class="btn btn-secondary btn-sm" onclick="sendPasswordReset(document.getElementById('modal-email').textContent)">Réinitialiser MDP</button>
+      <button class="btn btn-secondary btn-sm" id="simulate-btn" onclick="openSimulate(_selectedUser)">
+        <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Simuler
+      </button>
       <button class="btn btn-danger btn-sm" id="block-btn" onclick="blockUser()">Désactiver</button>
     </div>
   </div>
@@ -905,6 +909,10 @@ function renderTable(){
       <td style="font-size:.6875rem;color:var(--text-muted)">${formatDate(u.created_at)}</td>
       <td style="white-space:nowrap;display:flex;align-items:center;gap:4px;padding:8px 16px">
         <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openCrm('${u.id}')" title="Ouvrir le CRM complet">CRM</button>
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openSimulate('${u.id}')" title="Voir l'espace du médecin en simulation">
+          <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Simuler
+        </button>
         <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();viewUser('${u.id}')">Détail</button>
         ${u.email?`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();sendPasswordReset('${sanitize(u.email)}')" title="Réinitialiser mot de passe">MDP</button>`:''}
       </td>
@@ -914,6 +922,10 @@ function renderTable(){
 
 function openCrm(uid) {
   window.open(ghpNav('/symphony-crm') + '?uid=' + encodeURIComponent(uid), '_blank');
+}
+
+function openSimulate(uid) {
+  window.open(ghpNav('/symphony-simulate') + '?uid=' + encodeURIComponent(uid), '_blank');
 }
 
 /* ── ANOMALY ALERTS ─────────────────────────────────── */
