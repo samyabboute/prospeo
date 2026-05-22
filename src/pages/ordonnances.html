@@ -165,43 +165,86 @@
   body>*:not(#print-area){display:none !important}
   #print-area{display:block !important}
 
-  /* ── A5 page ── */
+  /* ── Outer page frame ── */
   .print-page{
     font-family:'Times New Roman',Georgia,serif;
     font-size:10pt;
     width:148mm;
     min-height:210mm;
-    padding:10mm 12mm 8mm 12mm;
     box-sizing:border-box;
-    position:relative;
     background:#fff;
     color:#111;
+    border:2pt solid #3B1772;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ── Purple top stripe ── */
+  .print-top-stripe{
+    background:linear-gradient(90deg,#3B1772 0%,#5B21B6 60%,#7C3AED 100%);
+    padding:2mm 8mm;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-shrink:0;
+  }
+  .print-top-stripe-text{
+    color:rgba(255,255,255,.75);
+    font-size:6pt;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    font-family:Arial,sans-serif;
+  }
+  .print-top-stripe-right{
+    color:#fff;
+    font-size:7pt;
+    font-weight:bold;
+    font-family:Arial,sans-serif;
+    letter-spacing:.05em;
+  }
+
+  /* ── Inner content padding ── */
+  .print-inner{
+    padding:5mm 9mm 6mm 9mm;
+    flex:1;
+    display:flex;
+    flex-direction:column;
   }
 
   /* ── Header ── */
   .print-header{
     display:grid;
     grid-template-columns:1fr auto;
-    gap:8mm;
+    gap:6mm;
     padding-bottom:4mm;
     margin-bottom:4mm;
     border-bottom:1.5pt solid #3B1772;
   }
-  .print-doc-name{font-size:13pt;font-weight:bold;color:#3B1772;margin-bottom:1.5mm}
-  .print-doc-specialty{font-size:9pt;color:#555;margin-bottom:1mm;font-style:italic}
+  .print-doc-name{font-size:12.5pt;font-weight:bold;color:#3B1772;margin-bottom:1mm;font-family:Arial,sans-serif}
+  .print-doc-specialty{font-size:8.5pt;color:#5B21B6;font-style:italic;font-weight:bold;margin-bottom:1.5mm}
   .print-doc-info{font-size:8pt;color:#555;line-height:1.7}
-  .print-header-right{text-align:right;min-width:32mm}
-  .print-clinic-name{font-size:9pt;font-weight:bold;color:#3B1772}
+  .print-agrement{
+    font-size:7.5pt;color:#3B1772;font-weight:bold;
+    margin-top:2mm;border-top:0.5pt solid #DDD6FE;
+    padding-top:1.5mm;font-family:Arial,sans-serif;
+  }
+  .print-header-right{text-align:right;min-width:34mm}
   .print-header-badge{
     display:inline-block;
-    background:#3B1772;
-    color:#fff;
-    font-size:7.5pt;
-    font-weight:bold;
-    padding:1.5mm 3mm;
-    border-radius:3mm;
-    letter-spacing:.04em;
-    margin-bottom:2mm;
+    background:#3B1772;color:#fff;
+    font-size:7pt;font-weight:bold;
+    padding:1.5mm 3mm;border-radius:2mm;
+    letter-spacing:.04em;margin-bottom:2mm;
+    font-family:Arial,sans-serif;
+  }
+  .print-clinic-name{font-size:7.5pt;color:#6B7280;margin-bottom:2mm;font-style:italic}
+  .print-ord-ref{
+    display:inline-block;
+    background:#F5F3FF;border:0.75pt solid #C4B5FD;
+    color:#3B1772;font-size:7.5pt;font-weight:bold;
+    padding:1mm 2.5mm;border-radius:1.5mm;
+    font-family:'Courier New',monospace;
+    letter-spacing:.05em;
   }
 
   /* ── Title row ── */
@@ -211,174 +254,141 @@
     align-items:center;
     margin-bottom:4mm;
     padding-bottom:3mm;
-    border-bottom:0.5pt solid #ddd;
+    border-bottom:0.75pt solid #DDD6FE;
   }
   .print-ord-title{
-    font-size:16pt;
-    font-weight:bold;
-    color:#3B1772;
-    letter-spacing:2px;
-    text-transform:uppercase;
+    font-size:17pt;font-weight:bold;color:#3B1772;
+    letter-spacing:3px;text-transform:uppercase;
+    font-family:Arial,sans-serif;
   }
   .print-date-box{
-    font-size:8.5pt;
-    color:#333;
-    text-align:right;
-    border:0.5pt solid #bbb;
-    border-radius:2mm;
-    padding:2mm 3mm;
-    line-height:1.5;
+    font-size:8pt;color:#333;text-align:right;
+    border:0.75pt solid #C4B5FD;border-radius:2mm;
+    padding:2mm 3mm;line-height:1.65;background:#FAF5FF;
   }
-  .print-date-label{font-size:7pt;color:#888;text-transform:uppercase;letter-spacing:.06em}
+  .print-date-label{font-size:6.5pt;color:#888;text-transform:uppercase;letter-spacing:.06em}
 
-  /* ── Patient ── */
-  .print-patient-row{
-    display:flex;
-    align-items:baseline;
-    gap:3mm;
-    margin-bottom:4mm;
-    padding:2.5mm 4mm;
-    background:#F3EFFF;
-    border-radius:2mm;
-    border-left:2pt solid #3B1772;
+  /* ── Patient box ── */
+  .print-patient-box{
+    background:linear-gradient(135deg,#F5F3FF 0%,#EDE9FE 100%);
+    border:1pt solid #C4B5FD;border-radius:2mm;
+    padding:3mm 5mm;margin-bottom:4mm;
   }
-  .print-patient-label{font-size:8pt;color:#3B1772;font-weight:bold;white-space:nowrap;text-transform:uppercase;letter-spacing:.06em}
-  .print-patient-name{font-size:12pt;font-weight:bold;color:#111}
-
-  /* ── Rx body ── */
-  .print-rx-header{
-    display:flex;
-    align-items:center;
-    gap:3mm;
-    margin-bottom:3mm;
-  }
-  .print-rx-symbol{
-    font-size:18pt;
-    font-weight:bold;
-    color:#3B1772;
-    font-style:italic;
-    line-height:1;
-  }
-  .print-rx-line{flex:1;border-bottom:0.5pt solid #ccc}
-
-  /* ── Medications ── */
-  .print-med-item{
-    margin-bottom:4mm;
-    padding-left:6mm;
-    position:relative;
-  }
-  .print-med-num{
-    position:absolute;left:0;top:0;
-    font-size:9pt;font-weight:bold;color:#3B1772;
-  }
-  .print-med-name{font-size:10.5pt;font-weight:bold;color:#111;margin-bottom:0.5mm}
-  .print-med-dosage{font-size:9pt;color:#333;font-style:italic;padding-left:4mm}
-  .print-med-dosage::before{content:'→ ';color:#3B1772}
-
-  /* ── Instructions ── */
-  .print-instructions{
-    margin-top:3mm;
-    padding:3mm 4mm;
-    border:0.5pt solid #ddd;
-    border-radius:2mm;
-    font-size:9pt;
-    line-height:1.6;
-    color:#333;
-  }
-  .print-instructions-label{font-weight:bold;color:#3B1772;margin-bottom:1mm;font-size:8pt;text-transform:uppercase;letter-spacing:.05em}
-
-  /* ── Signature ── */
-  .print-signature{
-    position:absolute;
-    bottom:12mm;
-    left:12mm;
-    right:12mm;
-    display:flex;
-    justify-content:flex-end;
-  }
-  .print-sig-box{width:45mm;text-align:center}
-  .print-sig-area{height:18mm;border-bottom:1pt solid #333;margin-bottom:1.5mm}
-  .print-sig-label{font-size:7.5pt;color:#666;text-align:center}
-
-  /* ── Footer ── */
-  .print-footer{
-    position:absolute;
-    bottom:5mm;
-    left:12mm;
-    right:12mm;
-    font-size:6.5pt;
-    color:#aaa;
-    text-align:center;
-    border-top:0.5pt solid #eee;
-    padding-top:1.5mm;
-  }
-
-  /* ── Algeria: Ordonnance sécurisée banner ── */
-  .print-secure-banner{
-    background:#FEF2F2;
-    border:1.5pt solid #DC2626;
-    border-radius:2mm;
-    padding:2mm 4mm;
-    margin-bottom:3mm;
-    display:flex;
-    align-items:center;
-    gap:3mm;
-  }
-  .print-secure-icon{font-size:11pt;color:#DC2626}
-  .print-secure-text{font-size:9pt;font-weight:bold;color:#DC2626;text-transform:uppercase;letter-spacing:.06em}
-  .print-secure-sub{font-size:7.5pt;color:#B91C1C}
-
-  /* ── Algeria: Patient NSS / assurance row ── */
-  .print-dz-row{
-    display:flex;align-items:center;gap:6mm;
-    font-size:8pt;color:#444;margin-bottom:3mm;flex-wrap:wrap;
-  }
+  .print-patient-row{display:flex;align-items:baseline;gap:3mm;margin-bottom:1.5mm}
+  .print-patient-label{font-size:7.5pt;color:#5B21B6;font-weight:bold;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;font-family:Arial,sans-serif}
+  .print-patient-name{font-size:12.5pt;font-weight:bold;color:#1E0A3C}
+  .print-dz-row{display:flex;align-items:center;gap:4mm;flex-wrap:wrap;font-size:7.5pt;color:#555}
   .print-dz-chip{
-    display:inline-flex;align-items:center;gap:1.5mm;
-    background:#F0FDF4;border:0.5pt solid #86EFAC;
-    border-radius:2mm;padding:1mm 2.5mm;
-    font-size:7.5pt;font-weight:bold;color:#166534;
+    display:inline-flex;align-items:center;
+    background:#ECFDF5;border:0.5pt solid #86EFAC;
+    border-radius:1.5mm;padding:0.5mm 2.5mm;
+    font-size:7pt;font-weight:bold;color:#166534;font-family:Arial,sans-serif;
   }
   .print-dz-chip.cami{background:#EFF6FF;border-color:#BFDBFE;color:#1E40AF}
   .print-dz-chip.casnos{background:#FFF7ED;border-color:#FED7AA;color:#9A3412}
   .print-dz-chip.none{background:#F9FAFB;border-color:#D1D5DB;color:#6B7280}
 
-  /* ── Algeria: agrément in doctor header ── */
-  .print-agrement{font-size:7.5pt;color:#3B1772;font-weight:bold;margin-top:0.5mm}
+  /* ── Rx header ── */
+  .print-rx-header{display:flex;align-items:center;gap:3mm;margin-bottom:3mm}
+  .print-rx-symbol{font-size:22pt;font-weight:bold;color:#3B1772;font-style:italic;line-height:1}
+  .print-rx-line{flex:1;border-bottom:0.75pt solid #C4B5FD}
 
-  /* ── Algeria: boîtes per med ── */
-  .print-med-boites{
-    display:inline-flex;align-items:center;gap:1.5mm;
-    margin-left:4mm;margin-top:1mm;
-    font-size:8pt;font-weight:bold;color:#3B1772;
-    border:0.5pt solid #C4B5FD;border-radius:1.5mm;
-    padding:0.5mm 2mm;background:#F5F3FF;
+  /* ── Medications ── */
+  .print-meds{flex:1}
+  .print-med-item{
+    margin-bottom:3.5mm;
+    padding:2.5mm 4mm 2.5mm 10mm;
+    position:relative;
+    border-bottom:0.5pt dotted #E9D5FF;
   }
-  .print-med-boites::before{content:'□ '}
+  .print-med-item:last-child{border-bottom:none}
+  .print-med-num{
+    position:absolute;left:1mm;top:2.5mm;
+    width:6mm;height:6mm;
+    background:#3B1772;color:#fff;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:7pt;font-weight:bold;font-family:Arial,sans-serif;
+  }
+  .print-med-name{font-size:10.5pt;font-weight:bold;color:#1E0A3C;margin-bottom:0.5mm}
+  .print-med-dosage{font-size:9pt;color:#333;font-style:italic;padding-left:3mm}
+  .print-med-dosage::before{content:'→ ';color:#5B21B6;font-style:normal}
+  .print-med-boites{
+    display:inline-block;
+    margin-left:3mm;margin-top:0.5mm;
+    font-size:7.5pt;font-weight:bold;color:#3B1772;
+    border:0.5pt solid #C4B5FD;border-radius:1.5mm;
+    padding:0.3mm 2mm;background:#F5F3FF;
+    font-family:Arial,sans-serif;
+  }
 
-  /* ── Algeria: validity + CNAS footer ── */
+  /* ── Instructions ── */
+  .print-instructions{
+    margin-top:3mm;margin-bottom:3mm;
+    padding:2.5mm 4mm;
+    border-left:2pt solid #7C3AED;
+    border-top:0.5pt solid #E9D5FF;
+    border-right:0.5pt solid #E9D5FF;
+    border-bottom:0.5pt solid #E9D5FF;
+    border-radius:0 2mm 2mm 0;
+    font-size:8.5pt;line-height:1.65;color:#333;background:#FAF5FF;
+  }
+  .print-instructions-label{font-weight:bold;color:#3B1772;margin-bottom:1.5mm;font-size:7.5pt;text-transform:uppercase;letter-spacing:.05em;font-family:Arial,sans-serif}
+
+  /* ── Secure banner ── */
+  .print-secure-banner{
+    background:#FEF2F2;border:1.5pt solid #DC2626;border-radius:2mm;
+    padding:2mm 4mm;margin-bottom:4mm;
+    display:flex;align-items:center;gap:3mm;
+  }
+  .print-secure-icon{font-size:10pt;color:#DC2626}
+  .print-secure-text{font-size:9pt;font-weight:bold;color:#DC2626;text-transform:uppercase;letter-spacing:.05em;font-family:Arial,sans-serif}
+  .print-secure-sub{font-size:7pt;color:#B91C1C;margin-top:0.5mm}
+
+  /* ── Validity ── */
   .print-validity{
-    margin-top:2mm;padding:2mm 4mm;
-    border:0.5pt solid #D1FAE5;border-radius:2mm;
+    margin-top:3mm;padding:2mm 4mm;
+    border:0.5pt solid #BBF7D0;border-radius:2mm;
     background:#F0FDF4;font-size:7.5pt;
     display:flex;align-items:center;justify-content:space-between;gap:4mm;
   }
-  .print-validity-text{color:#166534;font-weight:bold}
+  .print-validity-text{color:#166534;font-weight:bold;font-family:Arial,sans-serif}
   .print-validity-cnas{color:#6B7280;font-style:italic}
 
-  /* ── Algeria: signature / cachet box (larger) ── */
-  .print-signature{
-    position:absolute;
-    bottom:18mm;
-    left:12mm;
-    right:12mm;
+  /* ── Bottom: legal + signature ── */
+  .print-bottom{
+    margin-top:5mm;
     display:flex;
-    justify-content:flex-end;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:4mm;
   }
-  .print-sig-box{width:55mm;text-align:center}
-  .print-sig-area{height:26mm;border:1pt solid #aaa;border-radius:2mm;margin-bottom:1.5mm;background:#FAFAFA}
-  .print-sig-label{font-size:7.5pt;color:#555;text-align:center;font-weight:bold}
-  .print-sig-sub{font-size:6.5pt;color:#aaa;text-align:center;margin-top:0.5mm}
+  .print-legal{font-size:6pt;color:#999;max-width:60mm;line-height:1.6;font-style:italic}
+  .print-sig-box{width:52mm;text-align:center;flex-shrink:0}
+  .print-sig-area{
+    height:22mm;
+    border:1pt dashed #aaa;
+    border-radius:2mm;
+    margin-bottom:1.5mm;
+    background:#FAFAFA;
+    display:flex;align-items:center;justify-content:center;
+    color:#ccc;font-size:6.5pt;text-transform:uppercase;letter-spacing:.06em;
+    font-family:Arial,sans-serif;
+  }
+  .print-sig-label{font-size:7.5pt;color:#444;font-weight:bold;font-family:Arial,sans-serif}
+  .print-sig-sub{font-size:6.5pt;color:#888;margin-top:0.5mm}
+
+  /* ── Footer strip ── */
+  .print-footer-strip{
+    background:#F5F3FF;
+    border-top:1pt solid #DDD6FE;
+    padding:1.5mm 9mm;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-shrink:0;
+  }
+  .print-footer-left{font-size:6pt;color:#666;font-family:Arial,sans-serif}
+  .print-footer-right{font-size:6pt;color:#7C3AED;font-weight:bold;font-family:Arial,sans-serif}
 }
 
 /* ── PATIENT AUTOCOMPLETE ─────────────────────────── */
@@ -447,6 +457,32 @@
 .mac-item:last-child{border-bottom:none}
 .mac-item:hover,.mac-item.hi{background:var(--brand-subtle,#F3EFFF);color:var(--brand);font-weight:600}
 .mac-item mark{background:none;color:var(--brand);font-weight:900}
+
+/* ── Medication chips in list cards ─────────────────── */
+.ord-med-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.ord-med-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:var(--rfull);
+  font-size:11px;font-weight:600;
+  background:var(--brand-light);color:var(--brand);
+  border:1px solid var(--brand-border);
+  white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis;
+}
+.ord-med-chip.more{background:var(--surface2);color:var(--text3);border-color:var(--border);font-style:italic}
+.ord-assurance-chip{
+  display:inline-flex;align-items:center;
+  padding:2px 8px;border-radius:var(--rfull);
+  font-size:10px;font-weight:700;
+  background:#ECFDF5;color:#166534;border:1px solid #86EFAC;
+}
+.ord-assurance-chip.cami{background:#EFF6FF;color:#1E40AF;border-color:#BFDBFE}
+.ord-assurance-chip.casnos{background:#FFF7ED;color:#9A3412;border-color:#FED7AA}
+.ord-secure-chip{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:2px 7px;border-radius:var(--rfull);
+  font-size:10px;font-weight:700;
+  background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;
+}
 
 /* Toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:#1E3A5F;color:#fff;padding:11px 22px;border-radius:var(--rfull);font-size:13px;font-weight:600;opacity:0;transition:all .26s var(--ease);z-index:9999;white-space:nowrap;max-width:90vw;box-shadow:0 6px 20px rgba(0,0,0,.2)}
@@ -961,17 +997,31 @@ function renderList() {
     var medPreview = meds.slice(0,3).map(function(m){return m.name||m.description||'';}).filter(Boolean).join(', ');
     if (meds.length > 3) medPreview += ' +' + (meds.length-3);
 
+    // Algeria meta for chips
+    var ordMeta = _getOrdMeta(allItemsR);
+    var assuranceCls2 = ordMeta.assurance==='CAMI'?'cami':ordMeta.assurance==='CASNOS'?'casnos':'';
+    var chipsMedHTML = meds.slice(0,4).map(function(m){
+      return '<span class="ord-med-chip">'+esc((m.name||m.description||'').replace(/\s+\d+mg|\s+\d+g/i,'').substring(0,22))+'</span>';
+    }).join('');
+    if (meds.length > 4) chipsMedHTML += '<span class="ord-med-chip more">+' + (meds.length-4) + ' autres</span>';
+
     return '<div class="ord-card '+statusMeta.cardCls+'" id="oc-'+o.id+'">'+
       '<div class="ord-card-head" onclick="toggleDetail(\''+o.id+'\')">'+
         '<div class="ord-num-badge '+statusMeta.numCls+'">'+num+'</div>'+
         '<div class="ord-info">'+
-          '<div class="ord-patient">'+esc(o.client_name||'Patient inconnu')+'</div>'+
+          '<div class="ord-patient">'+esc(o.client_name||'Patient inconnu')+
+            (ordMeta.assurance&&ordMeta.assurance!=='Sans'&&ordMeta.assurance!==''
+              ? ' <span class="ord-assurance-chip '+assuranceCls2+'">'+esc(ordMeta.assurance)+'</span>'
+              : '')+
+            (ordMeta.secure ? ' <span class="ord-secure-chip">🔴 Sécurisée</span>' : '')+
+          '</div>'+
           '<div class="ord-title">'+(o.project_title&&o.project_title!=='Ordonnance'?esc(o.project_title):(medPreview?esc(medPreview):'<em style="color:var(--text4)">Sans titre</em>'))+'</div>'+
           '<div class="ord-meta">'+
             '<span class="status-badge '+statusMeta.cls+'">'+statusMeta.label+'</span>'+
             '<span class="ord-date">'+dateStr+'</span>'+
             (meds.length?'<span class="med-count">'+meds.length+' méd.</span>':'')+
           '</div>'+
+          (meds.length ? '<div class="ord-med-chips">'+chipsMedHTML+'</div>' : '')+
         '</div>'+
         '<div class="ord-actions" onclick="event.stopPropagation()">'+
           '<button class="btn-icon print" onclick="printOrd(\''+o.id+'\')" title="Imprimer">'+
@@ -1322,10 +1372,10 @@ function printOrd(id) {
     var dosage  = esc(m.quantity || m.posologie || '');
     var boites  = parseInt(m.boites,10) || 1;
     return '<div class="print-med-item">'
-      + '<span class="print-med-num">'+(i+1)+'.</span>'
+      + '<div class="print-med-num">'+(i+1)+'</div>'
       + '<div class="print-med-name">'+name+'</div>'
       + (dosage ? '<div class="print-med-dosage">'+dosage+'</div>' : '')
-      + '<div class="print-med-boites">'+boites+' boîte'+(boites>1?'s':'')+'</div>'
+      + '<div><span class="print-med-boites">'+boites+' bo&#238;te'+(boites>1?'s':'')+'</span></div>'
       + '</div>';
   }).join('');
 
@@ -1336,90 +1386,116 @@ function printOrd(id) {
       + '</div>'
     : '';
 
-  // ── Patient DZ row ──
-  var dzRowHTML = (meta.nss || meta.assurance)
+  // ── Patient DZ row (inside patient box) ──
+  var dzRowHTML = (meta.nss || (meta.assurance && meta.assurance !== ''))
     ? '<div class="print-dz-row">'
-      + (meta.nss ? '<span><strong>NSS :</strong> '+esc(meta.nss)+'</span>' : '')
+      + (meta.nss ? '<span><strong>NSS&nbsp;:</strong>&nbsp;'+esc(meta.nss)+'</span>' : '')
       + (meta.assurance ? '<span class="print-dz-chip '+assuranceCls+'">'+esc(meta.assurance)+'</span>' : '')
       + '</div>'
     : '';
 
+  // Short ordonnance reference number
+  var ordRef = 'ORD-' + o.id.slice(0,8).toUpperCase();
+
   document.getElementById('print-area').innerHTML =
     '<div class="print-page">'
+
+    // ── Top purple stripe ──
+    + '<div class="print-top-stripe">'
+    +   '<span class="print-top-stripe-text">Ordonnance Médicale — Document Confidentiel</span>'
+    +   '<span class="print-top-stripe-right">DOCLINE HEALTH</span>'
+    + '</div>'
+
+    + '<div class="print-inner">'
 
     // ── Ordonnance sécurisée banner ──
     + (meta.secure
       ? '<div class="print-secure-banner">'
         + '<span class="print-secure-icon">&#9888;</span>'
-        + '<div>'
-          + '<div class="print-secure-text">Ordonnance sécurisée</div>'
-          + '<div class="print-secure-sub">Médicaments soumis à prescription sécurisée — Liste I / II</div>'
-        + '</div>'
+        + '<div><div class="print-secure-text">Ordonnance sécurisée — Liste I / II</div>'
+        + '<div class="print-secure-sub">Stupéfiants et psychotropes soumis à prescription sécurisée</div></div>'
         + '</div>'
       : '')
 
-    // ── Header ──
+    // ── Doctor header ──
     + '<div class="print-header">'
     +   '<div>'
     +     '<div class="print-doc-name">'+esc(doctorName)+'</div>'
     +     '<div class="print-doc-specialty">'+esc(speciality)+'</div>'
     +     (address ? '<div class="print-doc-info">'+esc(address)+'</div>' : '')
-    +     (phone   ? '<div class="print-doc-info">&#128222; '+esc(phone)+'</div>' : '')
-    +     (agrement ? '<div class="print-agrement">Agrément N° '+esc(agrement)+'</div>' : '')
+    +     (phone   ? '<div class="print-doc-info">&#9990; '+esc(phone)+'</div>' : '')
+    +     (agrement ? '<div class="print-agrement">N° Agrément : '+esc(agrement)+'</div>' : '')
     +   '</div>'
     +   '<div class="print-header-right">'
-    +     (clinicName ? '<div class="print-header-badge">'+esc(clinicName)+'</div><br>' : '')
-    +     '<div class="print-clinic-name">République Algérienne</div>'
+    +     (clinicName ? '<div class="print-header-badge">'+esc(clinicName)+'</div>' : '')
+    +     '<div class="print-clinic-name">République Algérienne<br>Démocratique et Populaire</div>'
+    +     '<div class="print-ord-ref">'+ordRef+'</div>'
     +   '</div>'
     + '</div>'
 
     // ── Title row ──
     + '<div class="print-title-row">'
-    +   '<div class="print-ord-title">'+(meta.secure?'Ord. Sécurisée':'Ordonnance')+'</div>'
+    +   '<div class="print-ord-title">'+(meta.secure?'Ordonnance Sécurisée':'Ordonnance')+'</div>'
     +   '<div class="print-date-box">'
     +     '<div class="print-date-label">Date d\'établissement</div>'
-    +     '<div>'+dateStr+'</div>'
+    +     '<strong>'+dateStr+'</strong>'
     +   '</div>'
     + '</div>'
 
-    // ── Patient ──
-    + '<div class="print-patient-row">'
-    +   '<span class="print-patient-label">Patient :</span>'
-    +   '<span class="print-patient-name">'+esc(o.client_name||'')+'</span>'
+    // ── Patient box ──
+    + '<div class="print-patient-box">'
+    +   '<div class="print-patient-row">'
+    +     '<span class="print-patient-label">Patient :</span>'
+    +     '<span class="print-patient-name">'+esc(o.client_name||'')+'</span>'
+    +   '</div>'
+    +   dzRowHTML
     + '</div>'
-    + dzRowHTML
 
-    // ── Rx + medications ──
+    // ── Rx header ──
     + '<div class="print-rx-header">'
     +   '<span class="print-rx-symbol">&#8478;</span>'
     +   '<div class="print-rx-line"></div>'
     + '</div>'
-    + (meds.length ? medsHTML : '<div style="font-size:9pt;color:#999;font-style:italic;padding-left:6mm">Aucun médicament prescrit</div>')
+
+    // ── Medications ──
+    + '<div class="print-meds">'
+    + (meds.length ? medsHTML : '<div style="font-size:9pt;color:#999;font-style:italic;padding-left:10mm">Aucun médicament prescrit</div>')
+    + '</div>'
 
     // ── Instructions ──
     + instructHTML
 
-    // ── Validity + CNAS ──
+    // ── Validity ──
     + '<div class="print-validity">'
-    +   '<span class="print-validity-text">&#128197; Valable 3 mois — expire le '+validStr+'</span>'
+    +   '<span class="print-validity-text">Valable 3 mois &mdash; Expire le '+validStr+'</span>'
     +   (meta.assurance && meta.assurance!=='Sans' && meta.assurance!==''
-        ? '<span class="print-validity-cnas">Conserver pour remboursement '+esc(meta.assurance)+'</span>'
-        : '')
+        ? '<span class="print-validity-cnas">A conserver pour remboursement '+esc(meta.assurance)+'</span>'
+        : '<span class="print-validity-cnas">Ordonnance non remboursable</span>')
     + '</div>'
 
-    // ── Signature / Cachet ──
-    + '<div class="print-signature">'
+    // ── Bottom: legal mention + cachet ──
+    + '<div class="print-bottom">'
+    +   '<div class="print-legal">'
+    +     'Ce document est établi sous la responsabilité du médecin prescripteur.<br>'
+    +     'Valable 3 mois à compter de la date d\'établissement.<br>'
+    +     'À présenter en original au pharmacien.'
+    +   '</div>'
     +   '<div class="print-sig-box">'
-    +     '<div class="print-sig-area"></div>'
+    +     '<div class="print-sig-area">Cachet Médecin</div>'
     +     '<div class="print-sig-label">Cachet &amp; Signature du Médecin</div>'
-    +     '<div class="print-sig-sub">Dr. '+esc((firstName+' '+lastName).trim())+'</div>'
+    +     '<div class="print-sig-sub">'+esc(doctorName)+'</div>'
     +   '</div>'
     + '</div>'
 
-    // ── Footer ──
-    + '<div class="print-footer">Document officiel à conserver — Généré via Docline Health · '+dateStr+'</div>'
+    + '</div>' // end print-inner
 
-    + '</div>';
+    // ── Footer strip ──
+    + '<div class="print-footer-strip">'
+    +   '<span class="print-footer-left">Document confidentiel &nbsp;&bull;&nbsp; Généré via Docline Health</span>'
+    +   '<span class="print-footer-right">'+ordRef+' &nbsp;&bull;&nbsp; '+dateStr+'</span>'
+    + '</div>'
+
+    + '</div>'; // end print-page
 
   document.getElementById('print-area').style.display = 'block';
   window.print();
