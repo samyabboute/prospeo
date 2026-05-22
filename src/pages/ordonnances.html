@@ -133,14 +133,23 @@
 
 /* Med builder */
 .meds-builder{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
-.med-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center}
+.med-row{display:grid;grid-template-columns:1fr 1fr 72px auto;gap:8px;align-items:center}
 .med-row input{border:1.5px solid var(--border);border-radius:var(--r);padding:9px 11px;font-size:13px;color:var(--text);background:var(--surface);font-family:inherit;outline:none;transition:border-color .15s;width:100%}
 .med-row input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(59,23,114,.07)}
+.med-row input[type=number]{text-align:center;padding:9px 6px}
 .btn-del-med{width:30px;height:30px;border-radius:8px;border:none;background:rgba(220,38,38,.07);color:#DC2626;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .14s}
 .btn-del-med:hover{background:rgba(220,38,38,.18)}
 .btn-del-med svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
-.med-header{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding:0 0 4px}
+.med-header{display:grid;grid-template-columns:1fr 1fr 72px auto;gap:8px;padding:0 0 4px}
 .med-header span{font-size:10px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.06em}
+
+/* ── Algeria-specific form fields ── */
+.dz-section{background:rgba(0,100,60,.04);border:1.5px solid rgba(0,150,80,.2);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.dz-section-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#06603a;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.secure-toggle{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.secure-toggle input[type=checkbox]{width:16px;height:16px;accent-color:#B91C1C;cursor:pointer;flex-shrink:0}
+.secure-toggle-label{font-size:13px;font-weight:600;color:var(--text2)}
+.secure-toggle-sub{font-size:11px;color:var(--text4);margin-top:2px}
 .btn-add-med{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;border-radius:var(--r);border:1.5px dashed var(--border);background:none;color:var(--text3);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;width:100%}
 .btn-add-med:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-light)}
 
@@ -303,6 +312,73 @@
     border-top:0.5pt solid #eee;
     padding-top:1.5mm;
   }
+
+  /* ── Algeria: Ordonnance sécurisée banner ── */
+  .print-secure-banner{
+    background:#FEF2F2;
+    border:1.5pt solid #DC2626;
+    border-radius:2mm;
+    padding:2mm 4mm;
+    margin-bottom:3mm;
+    display:flex;
+    align-items:center;
+    gap:3mm;
+  }
+  .print-secure-icon{font-size:11pt;color:#DC2626}
+  .print-secure-text{font-size:9pt;font-weight:bold;color:#DC2626;text-transform:uppercase;letter-spacing:.06em}
+  .print-secure-sub{font-size:7.5pt;color:#B91C1C}
+
+  /* ── Algeria: Patient NSS / assurance row ── */
+  .print-dz-row{
+    display:flex;align-items:center;gap:6mm;
+    font-size:8pt;color:#444;margin-bottom:3mm;flex-wrap:wrap;
+  }
+  .print-dz-chip{
+    display:inline-flex;align-items:center;gap:1.5mm;
+    background:#F0FDF4;border:0.5pt solid #86EFAC;
+    border-radius:2mm;padding:1mm 2.5mm;
+    font-size:7.5pt;font-weight:bold;color:#166534;
+  }
+  .print-dz-chip.cami{background:#EFF6FF;border-color:#BFDBFE;color:#1E40AF}
+  .print-dz-chip.casnos{background:#FFF7ED;border-color:#FED7AA;color:#9A3412}
+  .print-dz-chip.none{background:#F9FAFB;border-color:#D1D5DB;color:#6B7280}
+
+  /* ── Algeria: agrément in doctor header ── */
+  .print-agrement{font-size:7.5pt;color:#3B1772;font-weight:bold;margin-top:0.5mm}
+
+  /* ── Algeria: boîtes per med ── */
+  .print-med-boites{
+    display:inline-flex;align-items:center;gap:1.5mm;
+    margin-left:4mm;margin-top:1mm;
+    font-size:8pt;font-weight:bold;color:#3B1772;
+    border:0.5pt solid #C4B5FD;border-radius:1.5mm;
+    padding:0.5mm 2mm;background:#F5F3FF;
+  }
+  .print-med-boites::before{content:'□ '}
+
+  /* ── Algeria: validity + CNAS footer ── */
+  .print-validity{
+    margin-top:2mm;padding:2mm 4mm;
+    border:0.5pt solid #D1FAE5;border-radius:2mm;
+    background:#F0FDF4;font-size:7.5pt;
+    display:flex;align-items:center;justify-content:space-between;gap:4mm;
+  }
+  .print-validity-text{color:#166534;font-weight:bold}
+  .print-validity-cnas{color:#6B7280;font-style:italic}
+
+  /* ── Algeria: signature / cachet box (larger) ── */
+  .print-signature{
+    position:absolute;
+    bottom:18mm;
+    left:12mm;
+    right:12mm;
+    display:flex;
+    justify-content:flex-end;
+  }
+  .print-sig-box{width:55mm;text-align:center}
+  .print-sig-area{height:26mm;border:1pt solid #aaa;border-radius:2mm;margin-bottom:1.5mm;background:#FAFAFA}
+  .print-sig-label{font-size:7.5pt;color:#555;text-align:center;font-weight:bold}
+  .print-sig-sub{font-size:6.5pt;color:#aaa;text-align:center;margin-top:0.5mm}
 }
 
 /* ── PATIENT AUTOCOMPLETE ─────────────────────────── */
@@ -381,7 +457,7 @@
 @media(max-width:600px){
   .kpi-row{grid-template-columns:1fr 1fr}
   .form-row{grid-template-columns:1fr}
-  .med-row{grid-template-columns:1fr auto}
+  .med-row{grid-template-columns:1fr 58px auto}
   .toolbar{flex-direction:column;align-items:stretch}
   /* Modal mobile */
   .modal-overlay{padding:0;align-items:flex-end}
@@ -517,6 +593,16 @@
               </div>
               <div class="form-row">
                 <div class="form-group">
+                  <label class="form-label">NSS <span style="font-weight:400;text-transform:none;letter-spacing:0">(Sécurité Sociale)</span></label>
+                  <input class="form-input" id="np-nss" type="text" placeholder="1 87 03 16 001 123 45" maxlength="20" autocomplete="off">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Wilaya</label>
+                  <input class="form-input" id="np-wilaya" type="text" placeholder="Alger, Oran, Constantine…" maxlength="60">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
                   <label class="form-label">Sexe</label>
                   <select class="form-select" id="np-sexe">
                     <option value="">Non précisé</option>
@@ -556,13 +642,49 @@
             </select>
           </div>
         </div>
+
+        <!-- ── Champs Algérie ── -->
+        <div class="dz-section">
+          <div class="dz-section-title">
+            <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            Informations CNAS / Assurance
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">NSS du patient <span style="font-weight:400;text-transform:none;letter-spacing:0">(Numéro Sécurité Sociale)</span></label>
+              <input class="form-input" id="f-nss" type="text" placeholder="1 87 03 16 001 123 45" maxlength="20" pattern="[0-9 ]{13,20}" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Type d'assurance</label>
+              <select class="form-select" id="f-assurance">
+                <option value="">Non précisé</option>
+                <option value="CNAS">CNAS — Salarié du secteur privé</option>
+                <option value="CAMI">CAMI — Fonctionnaire</option>
+                <option value="CASNOS">CASNOS — Travailleur indépendant</option>
+                <option value="Mutuelle">Mutuelle / Complémentaire</option>
+                <option value="Privé">Assurance privée</option>
+                <option value="Sans">Sans assurance</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row full" style="margin-bottom:0">
+            <label class="secure-toggle" for="f-secure">
+              <input type="checkbox" id="f-secure">
+              <div>
+                <div class="secure-toggle-label">🔴 Ordonnance sécurisée (stupéfiants / psychotropes)</div>
+                <div class="secure-toggle-sub">Cocher pour les médicaments de liste I et II soumis à prescription sécurisée</div>
+              </div>
+            </label>
+          </div>
+        </div>
       </div>
 
       <div class="modal-section">
         <div class="modal-section-title">Médicaments prescrits</div>
         <div class="med-header">
           <span>Médicament / DCI</span>
-          <span>Posologie</span>
+          <span>Posologie &amp; durée</span>
+          <span>Boîtes</span>
           <span style="opacity:0">×</span>
         </div>
         <div class="meds-builder" id="meds-builder"></div>
@@ -833,8 +955,9 @@ function renderList() {
       signed: {label:'Signée',    cls:'st-signed', cardCls:'status-ready', numCls:'ready'},
     }[o.status] || {label:o.status, cls:'st-draft', cardCls:'status-draft', numCls:''};
 
-    var meds = [];
-    try { meds = typeof o.line_items==='string'?JSON.parse(o.line_items):(o.line_items||[]); } catch(e){}
+    var allItemsR = [];
+    try { allItemsR = typeof o.line_items==='string'?JSON.parse(o.line_items):(o.line_items||[]); } catch(e){}
+    var meds = _getOrdMeds(allItemsR);
     var medPreview = meds.slice(0,3).map(function(m){return m.name||m.description||'';}).filter(Boolean).join(', ');
     if (meds.length > 3) medPreview += ' +' + (meds.length-3);
 
@@ -867,9 +990,9 @@ function renderList() {
       '</div>'+
       '<div class="ord-body" id="ob-'+o.id+'">'+
         (meds.length?
-          '<table class="meds-table"><thead><tr><th>#</th><th>Médicament / DCI</th><th>Posologie</th></tr></thead><tbody>'+
+          '<table class="meds-table"><thead><tr><th>#</th><th>Médicament / DCI</th><th>Posologie</th><th>Boîtes</th></tr></thead><tbody>'+
           meds.map(function(m,i){
-            return '<tr><td style="color:var(--text4);font-size:12px">'+(i+1)+'</td><td><strong>'+esc(m.name||m.description||'—')+'</strong></td><td>'+esc(m.quantity||m.posologie||'—')+'</td></tr>';
+            return '<tr><td style="color:var(--text4);font-size:12px">'+(i+1)+'</td><td><strong>'+esc(m.name||m.description||'—')+'</strong></td><td>'+esc(m.quantity||m.posologie||'—')+'</td><td style="font-size:12px;font-weight:700;color:var(--brand)">'+(m.boites||1)+'</td></tr>';
           }).join('')+'</tbody></table>':'')+
         (o.description?'<div class="ord-instructions"><strong style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)">Instructions</strong><br>'+esc(o.description)+'</div>':'')+
       '</div>'+
@@ -897,9 +1020,15 @@ function openModal(id) {
   document.getElementById('f-instructions').value = o ? (o.description||'') : '';
   var builder = document.getElementById('meds-builder');
   builder.innerHTML = '';
-  var meds = [];
-  if (o && o.line_items) { try { meds = typeof o.line_items==='string'?JSON.parse(o.line_items):(o.line_items||[]); } catch(e){} }
-  if (meds.length) { meds.forEach(function(m){ addMedRow(m.name||m.description||'', m.quantity||m.posologie||''); }); }
+  var allItems = [];
+  if (o && o.line_items) { try { allItems = typeof o.line_items==='string'?JSON.parse(o.line_items):(o.line_items||[]); } catch(e){} }
+  var meta = _getOrdMeta(allItems);
+  var meds = _getOrdMeds(allItems);
+  // Populate Algeria fields
+  document.getElementById('f-nss').value       = meta.nss || '';
+  document.getElementById('f-assurance').value = meta.assurance || '';
+  document.getElementById('f-secure').checked  = !!meta.secure;
+  if (meds.length) { meds.forEach(function(m){ addMedRow(m.name||m.description||'', m.quantity||m.posologie||'', m.boites||1); }); }
   else { addMedRow(); }
   document.getElementById('btn-save').disabled = false;
   document.getElementById('btn-save').textContent = 'Enregistrer';
@@ -926,7 +1055,9 @@ function showNewPatientBox(fullName) {
 }
 function hideNewPatientBox() {
   document.getElementById('new-patient-box').style.display = 'none';
-  ['np-prenom','np-nom','np-dob','np-phone'].forEach(function(id){ document.getElementById(id).value=''; });
+  ['np-prenom','np-nom','np-dob','np-phone','np-nss','np-wilaya'].forEach(function(id){
+    var el = document.getElementById(id); if(el) el.value='';
+  });
   document.getElementById('np-sexe').value = '';
   document.getElementById('np-blood').value = '';
 }
@@ -988,7 +1119,7 @@ function initMedAC(inp) {
   });
 }
 
-function addMedRow(name, posologie) {
+function addMedRow(name, posologie, boites) {
   var builder = document.getElementById('meds-builder');
   var row = document.createElement('div');
   row.className = 'med-row';
@@ -1006,9 +1137,20 @@ function addMedRow(name, posologie) {
 
   var posInp = document.createElement('input');
   posInp.type = 'text';
-  posInp.placeholder = '1 cp × 3/j — 7 jours';
+  posInp.placeholder = '1 cp × 3/j — 7 j';
   posInp.value = posologie || '';
   posInp.maxLength = 120;
+
+  // Boîtes (Algeria)
+  var boitesInp = document.createElement('input');
+  boitesInp.type = 'number';
+  boitesInp.min = '1';
+  boitesInp.max = '12';
+  boitesInp.step = '1';
+  boitesInp.placeholder = '1';
+  boitesInp.title = 'Nombre de boîtes';
+  boitesInp.value = boites || '1';
+  boitesInp.style.cssText = 'width:100%;text-align:center;padding:9px 4px';
 
   var delBtn = document.createElement('button');
   delBtn.className = 'btn-del-med';
@@ -1018,6 +1160,7 @@ function addMedRow(name, posologie) {
 
   row.appendChild(acWrap);
   row.appendChild(posInp);
+  row.appendChild(boitesInp);
   row.appendChild(delBtn);
   builder.appendChild(row);
 
@@ -1028,11 +1171,22 @@ function getMeds() {
   var meds = [];
   document.querySelectorAll('#meds-builder .med-row').forEach(function(row) {
     var inputs = row.querySelectorAll('input');
-    var name = inputs[0] ? inputs[0].value.trim() : '';
-    var pos  = inputs[1] ? inputs[1].value.trim() : '';
-    if (name) meds.push({ name:name, quantity:pos });
+    var name   = inputs[0] ? inputs[0].value.trim() : '';
+    var pos    = inputs[1] ? inputs[1].value.trim() : '';
+    var boites = inputs[2] ? (parseInt(inputs[2].value,10)||1) : 1;
+    if (name) meds.push({ name:name, quantity:pos, boites:boites });
   });
   return meds;
+}
+
+// ── Algeria metadata helpers ──────────────────────────────────
+function _getOrdMeta(items) {
+  if (items && items.length && items[0]._meta) return items[0];
+  return { nss:'', assurance:'', secure:false };
+}
+function _getOrdMeds(items) {
+  if (!items || !items.length) return [];
+  return items.filter(function(m){ return !m._meta; });
 }
 
 async function saveOrd() {
@@ -1079,10 +1233,24 @@ async function saveOrd() {
     _selPatientId = newP.id;
     _patients.push(newP);
     patient = prenom + ' ' + nom;
+    // Pre-fill NSS from new-patient form if not already set
+    if (!document.getElementById('f-nss').value.trim()) {
+      var npNss = document.getElementById('np-nss') ? document.getElementById('np-nss').value.trim() : '';
+      document.getElementById('f-nss').value = npNss;
+    }
   }
 
   btn.disabled = true; btn.textContent = 'Enregistrement…';
   var meds = getMeds();
+
+  // ── Algeria metadata: store as first element of line_items ──
+  var nssVal       = document.getElementById('f-nss').value.trim();
+  var assuranceVal = document.getElementById('f-assurance').value;
+  var secureVal    = document.getElementById('f-secure').checked;
+  var lineItems = [
+    { _meta:true, nss:nssVal, assurance:assuranceVal, secure:secureVal }
+  ].concat(meds);
+
   var payload = {
     user_id: _uid, client_name: patient,
     client_id: _selPatientId || null,
@@ -1090,7 +1258,7 @@ async function saveOrd() {
     project_title: document.getElementById('f-title').value.trim()||'Ordonnance',
     project_type: 'ordonnance',
     description: document.getElementById('f-instructions').value.trim()||null,
-    line_items: meds,
+    line_items: lineItems,
     status: document.getElementById('f-status').value,
     due_date: document.getElementById('f-date').value||null,
     share_token: _editId
@@ -1124,26 +1292,40 @@ async function deleteOrd(id) {
 function printOrd(id) {
   var o = _ords.find(function(x){return x.id===id;});
   if (!o) return;
-  var meds = [];
-  try { meds = typeof o.line_items==='string'?JSON.parse(o.line_items):(o.line_items||[]); } catch(e){}
+  var allItems = [];
+  try { allItems = typeof o.line_items==='string'?JSON.parse(o.line_items):(o.line_items||[]); } catch(e){}
+  var meta = _getOrdMeta(allItems);
+  var meds = _getOrdMeds(allItems);
+
   var clinic = _clinicProfile || {};
-  var firstName = (clinic.first_name||'').trim();
-  var lastName  = (clinic.last_name||'').trim();
+  var firstName  = (clinic.first_name||'').trim();
+  var lastName   = (clinic.last_name||'').trim();
   var doctorName = 'Dr. ' + (firstName + ' ' + lastName).trim();
   var speciality = clinic.speciality || clinic.specialty || 'Médecin';
   var clinicName = clinic.clinic_name || '';
   var address    = [clinic.address, clinic.city, clinic.wilaya].filter(Boolean).join(', ');
   var phone      = clinic.phone_public || clinic.phone || '';
+  var agrement   = clinic.numero_agrement || clinic.agrement || clinic.agreement_number || '';
+
   var d = o.due_date ? new Date(o.due_date+'T00:00:00') : new Date(o.created_at);
   var dateStr = d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
+  // Validity: +3 months
+  var dValid = new Date(d); dValid.setMonth(dValid.getMonth()+3);
+  var validStr = dValid.getDate()+' '+MONTHS[dValid.getMonth()]+' '+dValid.getFullYear();
 
+  // Assurance chip class
+  var assuranceCls = meta.assurance==='CAMI'?'cami':meta.assurance==='CASNOS'?'casnos':(!meta.assurance||meta.assurance==='Sans')?'none':'';
+
+  // ── Medications HTML ──
   var medsHTML = meds.map(function(m, i) {
     var name    = esc(m.name || m.description || '');
     var dosage  = esc(m.quantity || m.posologie || '');
+    var boites  = parseInt(m.boites,10) || 1;
     return '<div class="print-med-item">'
       + '<span class="print-med-num">'+(i+1)+'.</span>'
       + '<div class="print-med-name">'+name+'</div>'
       + (dosage ? '<div class="print-med-dosage">'+dosage+'</div>' : '')
+      + '<div class="print-med-boites">'+boites+' boîte'+(boites>1?'s':'')+'</div>'
       + '</div>';
   }).join('');
 
@@ -1154,8 +1336,27 @@ function printOrd(id) {
       + '</div>'
     : '';
 
+  // ── Patient DZ row ──
+  var dzRowHTML = (meta.nss || meta.assurance)
+    ? '<div class="print-dz-row">'
+      + (meta.nss ? '<span><strong>NSS :</strong> '+esc(meta.nss)+'</span>' : '')
+      + (meta.assurance ? '<span class="print-dz-chip '+assuranceCls+'">'+esc(meta.assurance)+'</span>' : '')
+      + '</div>'
+    : '';
+
   document.getElementById('print-area').innerHTML =
     '<div class="print-page">'
+
+    // ── Ordonnance sécurisée banner ──
+    + (meta.secure
+      ? '<div class="print-secure-banner">'
+        + '<span class="print-secure-icon">&#9888;</span>'
+        + '<div>'
+          + '<div class="print-secure-text">Ordonnance sécurisée</div>'
+          + '<div class="print-secure-sub">Médicaments soumis à prescription sécurisée — Liste I / II</div>'
+        + '</div>'
+        + '</div>'
+      : '')
 
     // ── Header ──
     + '<div class="print-header">'
@@ -1163,19 +1364,20 @@ function printOrd(id) {
     +     '<div class="print-doc-name">'+esc(doctorName)+'</div>'
     +     '<div class="print-doc-specialty">'+esc(speciality)+'</div>'
     +     (address ? '<div class="print-doc-info">'+esc(address)+'</div>' : '')
-    +     (phone   ? '<div class="print-doc-info">Tél : '+esc(phone)+'</div>' : '')
+    +     (phone   ? '<div class="print-doc-info">&#128222; '+esc(phone)+'</div>' : '')
+    +     (agrement ? '<div class="print-agrement">Agrément N° '+esc(agrement)+'</div>' : '')
     +   '</div>'
     +   '<div class="print-header-right">'
     +     (clinicName ? '<div class="print-header-badge">'+esc(clinicName)+'</div><br>' : '')
-    +     '<div class="print-clinic-name">Algérie</div>'
+    +     '<div class="print-clinic-name">République Algérienne</div>'
     +   '</div>'
     + '</div>'
 
     // ── Title row ──
     + '<div class="print-title-row">'
-    +   '<div class="print-ord-title">Ordonnance</div>'
+    +   '<div class="print-ord-title">'+(meta.secure?'Ord. Sécurisée':'Ordonnance')+'</div>'
     +   '<div class="print-date-box">'
-    +     '<div class="print-date-label">Date</div>'
+    +     '<div class="print-date-label">Date d\'établissement</div>'
     +     '<div>'+dateStr+'</div>'
     +   '</div>'
     + '</div>'
@@ -1185,6 +1387,7 @@ function printOrd(id) {
     +   '<span class="print-patient-label">Patient :</span>'
     +   '<span class="print-patient-name">'+esc(o.client_name||'')+'</span>'
     + '</div>'
+    + dzRowHTML
 
     // ── Rx + medications ──
     + '<div class="print-rx-header">'
@@ -1196,16 +1399,25 @@ function printOrd(id) {
     // ── Instructions ──
     + instructHTML
 
-    // ── Signature ──
+    // ── Validity + CNAS ──
+    + '<div class="print-validity">'
+    +   '<span class="print-validity-text">&#128197; Valable 3 mois — expire le '+validStr+'</span>'
+    +   (meta.assurance && meta.assurance!=='Sans' && meta.assurance!==''
+        ? '<span class="print-validity-cnas">Conserver pour remboursement '+esc(meta.assurance)+'</span>'
+        : '')
+    + '</div>'
+
+    // ── Signature / Cachet ──
     + '<div class="print-signature">'
     +   '<div class="print-sig-box">'
     +     '<div class="print-sig-area"></div>'
-    +     '<div class="print-sig-label">Signature &amp; cachet du médecin</div>'
+    +     '<div class="print-sig-label">Cachet &amp; Signature du Médecin</div>'
+    +     '<div class="print-sig-sub">Dr. '+esc((firstName+' '+lastName).trim())+'</div>'
     +   '</div>'
     + '</div>'
 
     // ── Footer ──
-    + '<div class="print-footer">Document à conserver — Généré via Docline</div>'
+    + '<div class="print-footer">Document officiel à conserver — Généré via Docline Health · '+dateStr+'</div>'
 
     + '</div>';
 
