@@ -66,12 +66,14 @@ function getRedirectUrl(email) {
 }
 
 // ── MAINTENANCE GUARD ─────────────────────────────────────────────────────────
-// Stratégie garantie : on cache <html> IMMÉDIATEMENT via opacity:0 (synchrone).
-// Deux requêtes parallèles : vérification maintenance_mode ET validation du token
-// via /auth/v1/user (API Supabase officielle — fiable même si le token est expiré).
-// BYPASS : session Supabase valide (médecin OU admin) → page affichée.
-// Visiteur anonyme ou token invalide → redirect /maintenance.
-// Pages exemptées : /maintenance, /symphony*, /login.
+// Stratégie :
+//  1. Cacher la page immédiatement (opacity:0 — synchrone, zéro flash)
+//  2. Vérifier localStorage pour un refresh_token Supabase (synchrone, instantané)
+//     → refresh_token présent = utilisateur connecté (même si access_token expiré)
+//     → bypass immédiat, aucun appel API nécessaire
+//  3. Si visiteur anonyme (pas de refresh_token) → vérifier maintenance_mode en DB
+//     → ON : redirect /maintenance  |  OFF : afficher la page
+//  Pages exemptées : /maintenance, /symphony*, /login
 (function _maintGuard() {
   try {
     var p = window.location.pathname;
@@ -82,77 +84,57 @@ function getRedirectUrl(email) {
       if (p.indexOf(exempt[i]) >= 0) return;
     }
 
-    // ── BLOQUER IMMÉDIATEMENT — avant tout rendu ─────────────────────────────
-    // opacity:0 sur <html> cache absolument tout, synchrone, aucun flash possible
+    // ── Cacher la page avant tout rendu ──────────────────────────────────────
     var html = document.documentElement;
     html.style.opacity    = '0';
-    html.style.transition = 'none';
     html.style.visibility = 'hidden';
+    html.style.transition = 'none';
 
     function _show() {
       html.style.opacity    = '1';
       html.style.visibility = 'visible';
     }
-
     function _redirect() {
       var dest = '/maintenance';
       if (typeof ghpNav === 'function') dest = ghpNav(dest);
       window.location.replace(dest);
     }
 
-    // ── Extraire le token d'accès depuis localStorage (Supabase v2) ────────────
-    function _getAccessToken() {
+    // ── Détection de session Supabase (synchrone, sans appel réseau) ─────────
+    // Supabase v2 stocke dans localStorage :
+    //   { access_token, refresh_token, expires_at, token_type, user: {...} }
+    // La présence du refresh_token suffit : même si l'access_token est expiré,
+    // le SDK Supabase le renouvelle automatiquement au prochain init.
+    // Un visiteur anonyme n'a JAMAIS de refresh_token → check fiable à 100%.
+    function _hasSession() {
       try {
-        var proj = 'ferkzwzypmdtuypxribz';
-        var raw  = localStorage.getItem('sb-' + proj + '-auth-token');
-        if (!raw) return null;
+        var raw = localStorage.getItem('sb-ferkzwzypmdtuypxribz-auth-token');
+        if (!raw) return false;
         var s = JSON.parse(raw);
-        // Supabase v2 stocke : { access_token, refresh_token, expires_at, user: {...} }
-        return (s && s.access_token) ? s.access_token : null;
-      } catch (e) { return null; }
+        return !!(s && s.refresh_token);
+      } catch (e) { return false; }
     }
 
-    // ── Vérifier maintenance ET authentification en parallèle ───────────────────
-    // On appelle /auth/v1/user avec le token stocké pour confirmer que la session
-    // est réellement valide (le localStorage seul peut contenir un token expiré).
-    // Les deux requêtes partent simultanément — latence = max(maint, auth) pas la somme.
-    var token = _getAccessToken();
+    // ── Utilisateur connecté → bypass immédiat, pas d'appel API ─────────────
+    if (_hasSession()) { _show(); return; }
 
-    var maintFetch = fetch(SUPA_URL + '/rest/v1/app_settings?key=eq.maintenance_mode&select=value', {
+    // ── Visiteur anonyme → vérifier maintenance_mode ──────────────────────────
+    fetch(SUPA_URL + '/rest/v1/app_settings?key=eq.maintenance_mode&select=value', {
       headers: { 'apikey': SUPA_KEY, 'Cache-Control': 'no-cache, no-store' }
-    }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
-
-    // Si aucun token en localStorage, pas besoin d'appeler l'API auth
-    var authFetch = token
-      ? fetch(SUPA_URL + '/auth/v1/user', {
-          headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + token }
-        }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; })
-      : Promise.resolve(null);
-
-    Promise.all([maintFetch, authFetch])
-    .then(function(results) {
-      var rows     = results[0];
-      var authUser = results[1];
-
-      if (!rows || !rows.length) { _show(); return; } // Table vide → open
-
+    })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(rows) {
+      if (!rows || !rows.length) { _show(); return; }
       var val  = rows[0].value;
       var isOn = (val === true)
               || (val === 'true')
               || (typeof val === 'string' && val.replace(/"/g, '') === 'true');
-
-      if (!isOn)                             { _show(); return; }  // Maintenance OFF        → afficher
-      if (authUser && authUser.email)        { _show(); return; }  // Session valide vérifiée → bypass
-      if (authUser && authUser.id)           { _show(); return; }  // Fallback id sans email  → bypass
-
-      _redirect();                                                  // Visiteur anonyme       → maintenance
+      if (isOn) _redirect();
+      else      _show();
     })
-    .catch(function() {
-      _show(); // Erreur réseau → fail open (ne jamais bloquer sans raison)
-    });
+    .catch(function() { _show(); }); // Erreur réseau → fail open
 
   } catch (e) {
-    // Sécurité ultime — si erreur JS inattendue, toujours afficher la page
-    try { document.documentElement.style.opacity = '1'; document.documentElement.style.visibility = 'visible'; } catch (_) {}
+    try { document.documentElement.style.opacity='1'; document.documentElement.style.visibility='visible'; } catch(_){}
   }
 })();
