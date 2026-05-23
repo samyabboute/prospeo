@@ -66,14 +66,12 @@ function getRedirectUrl(email) {
 }
 
 // ── MAINTENANCE GUARD ─────────────────────────────────────────────────────────
-// Stratégie :
-//  1. Cacher la page immédiatement (opacity:0 — synchrone, zéro flash)
-//  2. Vérifier localStorage pour un refresh_token Supabase (synchrone, instantané)
-//     → refresh_token présent = utilisateur connecté (même si access_token expiré)
-//     → bypass immédiat, aucun appel API nécessaire
-//  3. Si visiteur anonyme (pas de refresh_token) → vérifier maintenance_mode en DB
-//     → ON : redirect /maintenance  |  OFF : afficher la page
-//  Pages exemptées : /maintenance, /symphony*, /login
+// Maintenance ON → TOUT le monde est redirigé vers /maintenance.
+// Seules exceptions (toujours accessibles) :
+//   - /maintenance  (la page elle-même)
+//   - /symphony*    (accès admin Symphony — gestion de la maintenance)
+//   - /login        (connexion)
+// Fail-open : erreur réseau → page affichée (ne jamais bloquer sans raison).
 (function _maintGuard() {
   try {
     var p = window.location.pathname;
@@ -100,25 +98,7 @@ function getRedirectUrl(email) {
       window.location.replace(dest);
     }
 
-    // ── Détection de session Supabase (synchrone, sans appel réseau) ─────────
-    // Supabase v2 stocke dans localStorage :
-    //   { access_token, refresh_token, expires_at, token_type, user: {...} }
-    // La présence du refresh_token suffit : même si l'access_token est expiré,
-    // le SDK Supabase le renouvelle automatiquement au prochain init.
-    // Un visiteur anonyme n'a JAMAIS de refresh_token → check fiable à 100%.
-    function _hasSession() {
-      try {
-        var raw = localStorage.getItem('sb-ferkzwzypmdtuypxribz-auth-token');
-        if (!raw) return false;
-        var s = JSON.parse(raw);
-        return !!(s && s.refresh_token);
-      } catch (e) { return false; }
-    }
-
-    // ── Utilisateur connecté → bypass immédiat, pas d'appel API ─────────────
-    if (_hasSession()) { _show(); return; }
-
-    // ── Visiteur anonyme → vérifier maintenance_mode ──────────────────────────
+    // ── Vérifier maintenance_mode depuis Supabase (lecture anon publique) ─────
     fetch(SUPA_URL + '/rest/v1/app_settings?key=eq.maintenance_mode&select=value', {
       headers: { 'apikey': SUPA_KEY, 'Cache-Control': 'no-cache, no-store' }
     })
