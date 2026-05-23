@@ -66,11 +66,12 @@ function getRedirectUrl(email) {
 }
 
 // ── MAINTENANCE GUARD ─────────────────────────────────────────────────────────
-// Stratégie garantie : on cache <html> IMMÉDIATEMENT via opacity:0 (synchrone,
-// aucune manipulation DOM risquée). Le fetch vérifie maintenance_mode depuis la
-// DB. Résultat : opacity:1 (page visible) ou redirect vers /maintenance.
-// BYPASS : tout utilisateur authentifié (médecin OU admin) passe — seuls les
-// visiteurs anonymes sont bloqués. Pages exemptées : /maintenance, /symphony*, /login.
+// Stratégie garantie : on cache <html> IMMÉDIATEMENT via opacity:0 (synchrone).
+// Deux requêtes parallèles : vérification maintenance_mode ET validation du token
+// via /auth/v1/user (API Supabase officielle — fiable même si le token est expiré).
+// BYPASS : session Supabase valide (médecin OU admin) → page affichée.
+// Visiteur anonyme ou token invalide → redirect /maintenance.
+// Pages exemptées : /maintenance, /symphony*, /login.
 (function _maintGuard() {
   try {
     var p = window.location.pathname;
@@ -99,38 +100,52 @@ function getRedirectUrl(email) {
       window.location.replace(dest);
     }
 
-    // ── Vérifie si un utilisateur authentifié est présent (médecin OU admin) ───
-    // Les médecins Docline ont TOUJOURS accès, même en mode maintenance.
-    // Seuls les visiteurs anonymes sont redirigés vers /maintenance.
-    function _isAuthorized() {
+    // ── Extraire le token d'accès depuis localStorage (Supabase v2) ────────────
+    function _getAccessToken() {
       try {
         var proj = 'ferkzwzypmdtuypxribz';
         var raw  = localStorage.getItem('sb-' + proj + '-auth-token');
-        if (!raw) return false;
+        if (!raw) return null;
         var s = JSON.parse(raw);
-        // N'importe quel compte authentifié (médecin ou admin) bypass la maintenance
-        return !!(s && s.user && s.user.email);
-      } catch (e) { return false; }
+        // Supabase v2 stocke : { access_token, refresh_token, expires_at, user: {...} }
+        return (s && s.access_token) ? s.access_token : null;
+      } catch (e) { return null; }
     }
 
-    // ── Vérifier maintenance_mode depuis Supabase REST (lecture anon publique) ─
-    fetch(SUPA_URL + '/rest/v1/app_settings?key=eq.maintenance_mode&select=value', {
+    // ── Vérifier maintenance ET authentification en parallèle ───────────────────
+    // On appelle /auth/v1/user avec le token stocké pour confirmer que la session
+    // est réellement valide (le localStorage seul peut contenir un token expiré).
+    // Les deux requêtes partent simultanément — latence = max(maint, auth) pas la somme.
+    var token = _getAccessToken();
+
+    var maintFetch = fetch(SUPA_URL + '/rest/v1/app_settings?key=eq.maintenance_mode&select=value', {
       headers: { 'apikey': SUPA_KEY, 'Cache-Control': 'no-cache, no-store' }
-    })
-    .then(function(r) { return r.ok ? r.json() : null; })
-    .then(function(rows) {
+    }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
+
+    // Si aucun token en localStorage, pas besoin d'appeler l'API auth
+    var authFetch = token
+      ? fetch(SUPA_URL + '/auth/v1/user', {
+          headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + token }
+        }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; })
+      : Promise.resolve(null);
+
+    Promise.all([maintFetch, authFetch])
+    .then(function(results) {
+      var rows     = results[0];
+      var authUser = results[1];
+
       if (!rows || !rows.length) { _show(); return; } // Table vide → open
 
       var val  = rows[0].value;
-      // La valeur jsonb peut être : boolean true, string "true", ou string '"true"'
       var isOn = (val === true)
               || (val === 'true')
               || (typeof val === 'string' && val.replace(/"/g, '') === 'true');
 
-      if (!isOn)          { _show(); return; }  // Maintenance OFF         → afficher
-      if (_isAuthorized()) { _show(); return; }  // Médecin/admin connecté  → bypass
+      if (!isOn)                             { _show(); return; }  // Maintenance OFF        → afficher
+      if (authUser && authUser.email)        { _show(); return; }  // Session valide vérifiée → bypass
+      if (authUser && authUser.id)           { _show(); return; }  // Fallback id sans email  → bypass
 
-      _redirect();                               // Visiteur anonyme        → maintenance
+      _redirect();                                                  // Visiteur anonyme       → maintenance
     })
     .catch(function() {
       _show(); // Erreur réseau → fail open (ne jamais bloquer sans raison)
