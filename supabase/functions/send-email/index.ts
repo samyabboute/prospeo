@@ -293,13 +293,19 @@ serve(async (req) => {
   const jwt = req.headers.get("Authorization")?.replace("Bearer ", "");
   if (!jwt) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: CORS });
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: `Bearer ${jwt}` } } }
-  );
-  // Valider le JWT directement (plus fiable que les headers globaux)
-  const { data: { user } } = await supabase.auth.getUser(jwt);
-  if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: CORS });
+  // Utiliser l'apikey envoyée par le client (forcément correcte) plutôt que
+  // les secrets env qui peuvent être overridés avec de mauvaises valeurs
+  const apiKey = req.headers.get("apikey") ?? Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const supaUrl = Deno.env.get("SUPABASE_URL") ?? "https://ferkzwzypmdtuypxribz.supabase.co";
+
+  const supabase = createClient(supaUrl, apiKey, {
+    global: { headers: { Authorization: `Bearer ${jwt}` } }
+  });
+  const { data: { user }, error: authErr } = await supabase.auth.getUser(jwt);
+  if (!user) {
+    const detail = authErr?.message ?? "jwt invalide ou expiré";
+    return new Response(JSON.stringify({ error: "Unauthorized", detail }), { status: 401, headers: CORS });
+  }
 
   const body = await req.json();
   const { type, payload } = body;
