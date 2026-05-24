@@ -4,11 +4,18 @@ import { captureException } from "../_shared/sentry.ts";
 
 const RESEND_KEY = Deno.env.get("RESEND_API_KEY")!;
 const APP_URL = Deno.env.get("APP_URL") ?? "https://docline.health";
-const CORS = {
-  "Access-Control-Allow-Origin": Deno.env.get("ALLOWED_ORIGIN") ?? "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+
+// CORS : on renvoie l'origine de la requête (permet docline.health, GHP et localhost dev)
+// La sécurité repose sur le JWT, pas sur l'origine.
+function buildCors(req: Request) {
+  const origin = req.headers.get("origin") ?? Deno.env.get("ALLOWED_ORIGIN") ?? "*";
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Credentials": "true",
+  };
+}
 
 // ── Brand palette ─────────────────────────────────────────────
 const BRAND      = "#3B1772";
@@ -280,6 +287,7 @@ function buildInvoiceEmail(inv: any, from: string): string {
 
 // ── Request handler ───────────────────────────────────────────
 serve(async (req) => {
+  const CORS = buildCors(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
   const jwt = req.headers.get("Authorization")?.replace("Bearer ", "");
