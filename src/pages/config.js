@@ -66,20 +66,45 @@ function getRedirectUrl(email) {
 }
 
 // ── MAINTENANCE GUARD ─────────────────────────────────────────────────────────
-// Maintenance ON → TOUT le monde est redirigé vers /maintenance.
-// Seules exceptions (toujours accessibles) :
-//   - /maintenance  (la page elle-même)
-//   - /symphony*    (accès admin Symphony — gestion de la maintenance)
-//   - /login        (connexion)
-// Fail-open : erreur réseau → page affichée (ne jamais bloquer sans raison).
+// Maintenance ON :
+//   • Pages publiques (/find-doctor, /book, /pricing…) → bloquées pour TOUS
+//   • Pages doctor app (/dashboard, /calendar, /patients…) → accessibles aux
+//     médecins connectés (refresh_token présent), bloquées pour les anonymes
+//   • Symphony (/symphony*) → toujours accessible (admin)
+//   • /login, /maintenance → toujours accessibles
+// Fail-open : erreur réseau → page affichée.
 (function _maintGuard() {
   try {
     var p = window.location.pathname;
 
-    // ── Pages toujours accessibles ───────────────────────────────────────────
-    var exempt = ['maintenance', 'symphony', 'login'];
-    for (var i = 0; i < exempt.length; i++) {
-      if (p.indexOf(exempt[i]) >= 0) return;
+    // ── Toujours accessibles (jamais bloquées) ───────────────────────────────
+    var alwaysOk = ['maintenance', 'symphony', 'login'];
+    for (var i = 0; i < alwaysOk.length; i++) {
+      if (p.indexOf(alwaysOk[i]) >= 0) return;
+    }
+
+    // ── Pages espace médecin (accessibles aux connectés pendant maintenance) ──
+    var doctorPages = [
+      '/dashboard', '/app', '/calendar', '/mes-rdv',
+      '/patients', '/clients', '/consultations', '/ordonnances',
+      '/queue', '/labo', '/staff', '/onboarding',
+      '/timer', '/paiement', '/invoices', '/proposals'
+    ];
+    function _isDoctorPage() {
+      for (var j = 0; j < doctorPages.length; j++) {
+        if (p.indexOf(doctorPages[j]) >= 0) return true;
+      }
+      return false;
+    }
+
+    // ── Session connectée (refresh_token = médecin ou admin) ─────────────────
+    function _hasSession() {
+      try {
+        var raw = localStorage.getItem('sb-ferkzwzypmdtuypxribz-auth-token');
+        if (!raw) return false;
+        var s = JSON.parse(raw);
+        return !!(s && s.refresh_token);
+      } catch(e) { return false; }
     }
 
     // ── Cacher la page avant tout rendu ──────────────────────────────────────
@@ -98,7 +123,7 @@ function getRedirectUrl(email) {
       window.location.replace(dest);
     }
 
-    // ── Vérifier maintenance_mode depuis Supabase (lecture anon publique) ─────
+    // ── Vérifier maintenance_mode ─────────────────────────────────────────────
     fetch(SUPA_URL + '/rest/v1/app_settings?key=eq.maintenance_mode&select=value', {
       headers: { 'apikey': SUPA_KEY, 'Cache-Control': 'no-cache, no-store' }
     })
@@ -109,12 +134,19 @@ function getRedirectUrl(email) {
       var isOn = (val === true)
               || (val === 'true')
               || (typeof val === 'string' && val.replace(/"/g, '') === 'true');
-      if (isOn) _redirect();
-      else      _show();
+
+      if (!isOn) { _show(); return; } // Maintenance OFF → tout le monde passe
+
+      // Maintenance ON :
+      // Page doctor app + médecin connecté → laisser passer
+      if (_isDoctorPage() && _hasSession()) { _show(); return; }
+
+      // Tout le reste (pages publiques, anonymes sur pages doctor) → maintenance
+      _redirect();
     })
     .catch(function() { _show(); }); // Erreur réseau → fail open
 
-  } catch (e) {
+  } catch(e) {
     try { document.documentElement.style.opacity='1'; document.documentElement.style.visibility='visible'; } catch(_){}
   }
 })();
