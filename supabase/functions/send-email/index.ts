@@ -297,11 +297,15 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!,
     { global: { headers: { Authorization: `Bearer ${jwt}` } } }
   );
-  const { data: { user } } = await supabase.auth.getUser();
+  // Valider le JWT directement (plus fiable que les headers globaux)
+  const { data: { user } } = await supabase.auth.getUser(jwt);
   if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: CORS });
 
   const body = await req.json();
   const { type, payload } = body;
+
+  // email fiable : user.email (standard) ou fallback sur user_metadata
+  const userEmail: string = (user.email ?? user.user_metadata?.email ?? "").toLowerCase();
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -338,7 +342,7 @@ serve(async (req) => {
     const html = buildInvoiceEmail(payload, senderName);
     const subject = `Facture ${payload.invoice_number} — ${senderName}`;
     ok = await sendEmail(payload.client_email, subject, html, profile?.email);
-    await logEmail({ type, to: payload.client_email, name: payload.client_name, subject, status: ok ? "sent" : "failed", triggeredBy: user.email, metadata: { invoice_number: payload.invoice_number } });
+    await logEmail({ type, to: payload.client_email, name: payload.client_name, subject, status: ok ? "sent" : "failed", triggeredBy: userEmail, metadata: { invoice_number: payload.invoice_number } });
     return new Response(JSON.stringify({ success: ok }), {
       status: ok ? 200 : 500,
       headers: { ...CORS, "Content-Type": "application/json" },
@@ -347,7 +351,7 @@ serve(async (req) => {
 
   // ── maintenance_activated — notifier tous les médecins ────────────────────
   if (type === "maintenance_activated") {
-    const callerEmail = user.email ?? "";
+    const callerEmail = userEmail;
     if (!ADMIN_EMAILS_LIST.includes(callerEmail)) {
       return new Response(JSON.stringify({ error: "Accès refusé" }), { status: 403, headers: CORS });
     }
@@ -400,7 +404,7 @@ Nous nous excusons pour la gêne occasionnée et vous remercions de votre confia
 
   // ── maintenance_resume — notifier les abonnés à la liste d'attente ────────
   if (type === "maintenance_resume") {
-    const callerEmail = user.email ?? "";
+    const callerEmail = userEmail;
     if (!ADMIN_EMAILS_LIST.includes(callerEmail)) {
       return new Response(JSON.stringify({ error: "Accès refusé" }), { status: 403, headers: CORS });
     }
@@ -487,11 +491,11 @@ Merci pour votre patience — elle signifie beaucoup pour nous. On est juste au 
   const html = buildBaseEmail(heading, introText, cta, badgeMap[type]);
 
   // recipient: test target, or the authenticated user's email
-  const recipient = payload?.to ?? user.email!;
+  const recipient = payload?.to ?? userEmail;
   ok = await sendEmail(recipient, subject, html);
 
   // Log the email
-  await logEmail({ type, to: recipient, name: firstName, subject, status: ok ? "sent" : "failed", triggeredBy: user.email });
+  await logEmail({ type, to: recipient, name: firstName, subject, status: ok ? "sent" : "failed", triggeredBy: userEmail });
 
   // Mark welcome as sent
   if (type === "welcome" && ok) {
