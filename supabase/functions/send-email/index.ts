@@ -10,10 +10,13 @@ const BRAND      = "#3B1772";
 const BRAND_MID  = "#5B21B6";
 const ADMIN_EMAILS_LIST = ["samyabboute5@gmail.com", "contact@docline.health"];
 
-// Logo wordmark blanc — hébergé sur Netlify, visible dans Gmail/Apple Mail/Yahoo
-// Outlook Desktop ne supporte pas SVG → fallback via alt text "Docline"
-const LOGO_URL     = "https://docline.health/docline-logo-white.svg";
-const LOGO_ICON_URL = "https://docline.health/icon-512.png"; // icône carrée pour facture
+// ── Logo Docline — wordmark blanc embarqué en base64 ─────────────
+// Source : docline-logo-white.svg  viewBox 0 0 1000 187.3
+// Embarqué directement → rendu garanti dans Gmail, Apple Mail, Outlook.com,
+// iOS Mail — aucune requête externe, aucun blocage client.
+const _LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 187.3"><path fill="#fff" d="M112.46,9.26C103.11,3.64,92.46.82,80.51.82c-17.66,0-31.86,5.89-42.59,17.66l-2.6-15.06H0v183.89h40.78v-68.05c10.56,10.05,23.8,15.06,39.74,15.06,11.95,0,22.6-2.81,31.95-8.44,9.35-5.63,16.62-13.5,21.82-23.64,5.19-10.13,7.79-21.68,7.79-34.67s-2.6-24.54-7.79-34.67c-5.19-10.13-12.47-18.01-21.82-23.64ZM92.98,91.07c-5.71,5.97-13.08,8.96-22.08,8.96s-16.32-3.03-21.95-9.09c-5.63-6.06-8.44-13.85-8.44-23.38s2.81-17.31,8.44-23.37c5.63-6.06,12.94-9.09,21.95-9.09s16.36,2.99,22.08,8.96c5.71,5.97,8.57,13.81,8.57,23.5s-2.86,17.53-8.57,23.51Z"/><path fill="#fff" d="M230.62.56c-14.54,0-25.97,6.32-34.28,18.96l-3.12-16.1h-35.58v128.3h40.78v-62.33c0-10.73,2.51-18.87,7.53-24.41,5.02-5.54,11.86-8.31,20.52-8.31,3.46,0,6.75.52,9.87,1.56,3.12,1.04,6.49,2.69,10.13,4.94l17.14-29.87c-4.33-4.15-9.44-7.31-15.32-9.48-5.89-2.16-11.78-3.25-17.66-3.25Z"/><path fill="#fff" d="M518.89,63.67c-9.61-6.92-23.6-11.08-41.95-12.46-6.41-.69-10.95-1.73-13.64-3.11-2.69-1.39-4.03-3.38-4.03-5.98,0-6.23,6.58-9.35,19.74-9.35s24.84,2.77,34.54,8.31l15.84-27.27c-6.58-4.32-14.41-7.7-23.5-10.13-9.09-2.42-18.66-3.64-28.7-3.64-17.66,0-31.69,3.77-42.08,11.3-10.39,7.53-15.58,17.71-15.58,30.52,0,11.78,4.8,21.3,14.41,28.57,9.61,7.27,22.55,11.34,38.83,12.21,7.27.52,12.47,1.56,15.58,3.12,3.12,1.56,4.68,3.89,4.68,7.01,0,6.06-5.63,9.09-16.88,9.09-8.14,0-16.32-1.04-24.54-3.11-8.23-2.08-15.45-5.02-21.69-8.83l-15.58,28.05c16.79,11.43,36.53,17.14,59.22,17.14,18.7,0,33.33-3.77,43.89-11.3,10.56-7.53,15.84-17.88,15.84-31.03,0-12.47-4.8-22.16-14.41-29.09Z"/><path fill="#fff" d="M663.75,9.26c-9.35-5.62-20.01-8.44-31.95-8.44-17.66,0-31.86,5.89-42.6,17.66l-2.6-15.06h-35.32v183.89h40.77v-68.05c10.56,10.05,23.8,15.06,39.74,15.06,11.94,0,22.6-2.81,31.95-8.44,9.35-5.63,16.62-13.5,21.81-23.64,5.2-10.13,7.79-21.68,7.79-34.67s-2.6-24.54-7.79-34.67c-5.19-10.13-12.46-18.01-21.81-23.64ZM644.27,91.07c-5.71,5.97-13.07,8.96-22.08,8.96s-16.33-3.03-21.95-9.09c-5.63-6.06-8.44-13.85-8.44-23.38s2.81-17.31,8.44-23.37c5.63-6.06,12.94-9.09,21.95-9.09s16.36,2.99,22.08,8.96c5.71,5.97,8.57,13.81,8.57,23.5s-2.85,17.53-8.57,23.51Z"/><path fill="#fff" d="M814.64,8.48c-10.22-5.28-22.33-7.92-36.36-7.92s-25.71,2.82-36.1,8.44c-10.39,5.63-18.49,13.55-24.28,23.76-5.8,10.22-8.7,21.91-8.7,35.06s2.94,25.54,8.83,35.58c5.88,10.04,14.29,17.79,25.2,23.24,10.91,5.46,23.8,8.18,38.7,8.18,11.25,0,21.85-1.82,31.82-5.45,9.95-3.63,18.57-8.83,25.84-15.58l-21.3-22.85c-4.33,3.46-9.52,6.15-15.58,8.05-6.06,1.91-12.3,2.86-18.7,2.86-9.18,0-16.71-2.03-22.6-6.1-5.89-4.07-9.44-9.39-10.65-15.97h94.28c.86-6.06,1.3-11.17,1.3-15.32,0-12.81-2.73-24.03-8.18-33.63-5.46-9.61-13.29-17.05-23.51-22.34ZM751.01,56.4c.69-7.44,3.59-13.25,8.7-17.4,5.11-4.15,11.73-6.23,19.87-6.23s14.93,2.08,19.87,6.23c4.93,4.15,7.66,9.96,8.18,17.4h-56.62Z"/><path fill="#fff" d="M394.97,32.51c-5.71-10.04-13.94-17.88-24.68-23.51-10.74-5.63-23.2-8.44-37.4-8.44s-26.62,2.82-37.27,8.44c-10.65,5.63-18.83,13.46-24.54,23.51-5.71,10.04-8.57,21.73-8.57,35.06s2.86,25.02,8.57,35.06c5.71,10.04,13.9,17.88,24.54,23.5,10.65,5.63,23.07,8.44,37.27,8.44s26.66-2.82,37.4-8.44c10.73-5.62,18.96-13.46,24.68-23.5,5.71-10.04,8.57-21.73,8.57-35.06s-2.86-25.02-8.57-35.06Z"/><path fill="#fff" d="M867.54,36.2c5.71,10.04,13.9,17.88,24.54,23.5,10.65,5.63,23.07,8.44,37.27,8.44s26.66-2.82,37.4-8.44c10.74-5.62,18.96-13.46,24.68-23.5,5.71-10.04,8.57-21.73,8.57-35.06,0-.38-.03-.75-.03-1.13h-140.97c0,.38-.03.75-.03,1.13,0,13.34,2.86,25.02,8.57,35.06Z"/></svg>`;
+const LOGO_DATA_URI = `data:image/svg+xml;base64,${btoa(_LOGO_SVG)}`;
+const LOGO_ICON_URL = "https://docline.health/icon-512.png"; // icône carrée (facture)
 
 // ── CORS dynamique ───────────────────────────────────────────────
 function buildCors(req: Request) {
@@ -64,189 +67,202 @@ async function logEmail(p: {
 }
 
 // ════════════════════════════════════════════════════════════════
-// EMAIL TEMPLATES
+// EMAIL TEMPLATES — Design system Docline
 // ════════════════════════════════════════════════════════════════
 
-// ── Composants partagés ──────────────────────────────────────────
-const FONT = `font-family:'Helvetica Neue',Arial,sans-serif`;
+const FONT = `font-family:'Helvetica Neue',Helvetica,Arial,sans-serif`;
 
+// ── Shell ────────────────────────────────────────────────────────
+
+const emailWrapper = (inner: string) => `<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Docline</title>
+</head>
+<body style="margin:0;padding:0;background:#EBE5F5;${FONT}">
+<table width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="background:#EBE5F5;padding:48px 16px">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" border="0"
+           style="max-width:600px;width:100%;border-radius:16px;
+                  box-shadow:0 8px 40px rgba(30,11,71,.14)">
+      ${inner}
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+
+// Header : logo wordmark embarqué + ligne accent
 const emailHeader = (badgeText?: string) => `
 <tr>
-  <td style="background:linear-gradient(160deg,#2D1259 0%,#3B1772 45%,#5B21B6 100%);
-             border-radius:20px 20px 0 0;padding:40px 48px 36px;text-align:center">
-    <!-- Logo wordmark blanc — viewBox 0 0 1000 187.3, ratio ~5.34:1 -->
-    <img src="${LOGO_URL}" alt="Docline" width="200" height="38"
+  <td style="background:linear-gradient(150deg,#1A0842 0%,#3B1772 55%,#5B21B6 100%);
+             border-radius:16px 16px 0 0;padding:44px 52px 40px;text-align:center">
+    <img src="${LOGO_DATA_URI}" alt="Docline" width="200" height="38"
          style="display:block;margin:0 auto;border:0;max-width:200px">
-    <div style="color:rgba(255,255,255,.4);font-size:11px;text-transform:uppercase;
-                letter-spacing:2px;margin-top:10px;${FONT}">Votre partenaire médical</div>
     ${badgeText ? `
-    <div style="display:inline-block;margin-top:16px;background:rgba(255,255,255,.12);
-                border:1px solid rgba(255,255,255,.22);border-radius:999px;
-                padding:5px 16px;color:#fff;font-size:10px;font-weight:700;
-                letter-spacing:1.2px;text-transform:uppercase;${FONT}">${badgeText}</div>` : ""}
+    <div style="display:inline-block;margin-top:20px;
+                background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+                border-radius:999px;padding:6px 18px;
+                color:rgba(255,255,255,.9);font-size:11px;font-weight:600;
+                letter-spacing:1px;text-transform:uppercase;${FONT}">${badgeText}</div>` : ""}
   </td>
 </tr>
 <tr>
-  <td style="background:linear-gradient(90deg,#7C3AED,#A78BFA,#7C3AED);height:3px;font-size:0;line-height:0">&nbsp;</td>
+  <td style="background:linear-gradient(90deg,#6D28D9,#A78BFA,#6D28D9);
+             height:2px;font-size:0;line-height:0">&nbsp;</td>
 </tr>`;
 
+// Footer
 const emailFooter = () => `
 <tr>
-  <td style="background:#F7F4FE;border:1px solid #E8DFF5;border-top:none;
-             border-radius:0 0 20px 20px;padding:22px 48px;text-align:center">
-    <p style="margin:0;font-size:11px;color:#9B8CB8;line-height:1.9;${FONT}">
-      Données hébergées en Europe &nbsp;·&nbsp; Conforme RGPD<br>
+  <td style="background:#F9F6FE;border:1px solid #E2D9F3;border-top:none;
+             border-radius:0 0 16px 16px;padding:24px 52px;text-align:center">
+    <p style="margin:0;font-size:11px;color:#A090BF;line-height:2;${FONT}">
+      Données hébergées en Europe &nbsp;&middot;&nbsp; Conforme RGPD
+      <br>
       <a href="${APP_URL}" style="color:#7C3AED;text-decoration:none;font-weight:600">docline.health</a>
-      &nbsp;·&nbsp;
-      <a href="${APP_URL}/privacy" style="color:#9B8CB8;text-decoration:none">Confidentialité</a>
-      &nbsp;·&nbsp;
-      <a href="mailto:contact@docline.health" style="color:#9B8CB8;text-decoration:none">contact@docline.health</a>
+      &nbsp;&middot;&nbsp;
+      <a href="${APP_URL}/privacy" style="color:#A090BF;text-decoration:none">Confidentialité</a>
+      &nbsp;&middot;&nbsp;
+      <a href="mailto:contact@docline.health" style="color:#A090BF;text-decoration:none">contact@docline.health</a>
     </p>
   </td>
 </tr>`;
 
-const emailWrapper = (inner: string) => `<!DOCTYPE html>
-<html lang="fr"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="light">
-</head>
-<body style="margin:0;padding:0;background:#EEE8FA;${FONT}">
-<table width="100%" cellpadding="0" cellspacing="0" border="0"
-       style="background:#EEE8FA;padding:40px 16px 40px">
-<tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" border="0"
-       style="max-width:600px;width:100%;border-radius:20px;
-              box-shadow:0 12px 48px rgba(59,23,114,.13)">
-${inner}
-</table>
-</td></tr>
-</table>
-</body></html>`;
-
-const ctaButton = (text: string, url: string) =>
-  `<div style="text-align:center;margin:32px 0 24px">
-    <a href="${url}"
-       style="display:inline-block;background:linear-gradient(135deg,${BRAND} 0%,${BRAND_MID} 100%);
-              color:#fff;font-weight:700;padding:16px 44px;border-radius:12px;
-              text-decoration:none;font-size:14px;letter-spacing:.2px;
-              box-shadow:0 6px 24px rgba(59,23,114,.38);${FONT}">${text} →</a>
-  </div>`;
-
+// Corps principal
 function bodyRow(content: string) {
   return `<tr>
-  <td style="background:#fff;padding:40px 48px 32px;
-             border-left:1px solid #E8DFF5;border-right:1px solid #E8DFF5">
+  <td style="background:#ffffff;padding:44px 52px 36px;
+             border-left:1px solid #E2D9F3;border-right:1px solid #E2D9F3">
     ${content}
   </td>
 </tr>`;
 }
 
+// Typographie
 function h1(text: string) {
-  return `<h1 style="margin:0 0 20px;font-size:22px;font-weight:900;color:#1A0E2E;
-                     line-height:1.3;letter-spacing:-.4px;${FONT}">${text}</h1>`;
+  return `<h1 style="margin:0 0 18px;font-size:24px;font-weight:800;color:#150930;
+                     line-height:1.25;letter-spacing:-.5px;${FONT}">${text}</h1>`;
 }
 
 function p(text: string) {
   return text.split(/\n\n/).map(t =>
-    `<p style="margin:0 0 16px;color:#4A3D6A;font-size:14px;line-height:1.85;${FONT}">` +
+    `<p style="margin:0 0 16px;color:#3D3157;font-size:15px;line-height:1.8;${FONT}">` +
     t.replace(/\n/g, "<br>")
-     .replace(/\*\*(.+?)\*\*/g, `<strong style="color:#1A0E2E">$1</strong>`) +
+     .replace(/\*\*(.+?)\*\*/g, `<strong style="color:#150930;font-weight:700">$1</strong>`) +
     `</p>`
   ).join("");
 }
 
+// Bouton CTA
+const ctaButton = (text: string, url: string) =>
+  `<div style="text-align:center;margin:36px 0 28px">
+    <a href="${url}"
+       style="display:inline-block;background:linear-gradient(135deg,#3B1772 0%,#6D28D9 100%);
+              color:#ffffff;font-weight:700;padding:15px 48px;border-radius:10px;
+              text-decoration:none;font-size:15px;letter-spacing:.1px;
+              box-shadow:0 4px 20px rgba(59,23,114,.32);${FONT}">${text}</a>
+  </div>`;
+
+// Signature
 function signOff() {
-  return `<div style="border-top:1px solid #EDE5F7;margin-top:28px;padding-top:20px">
-    <p style="margin:0;font-size:13px;color:#7B6DA0;${FONT}">
-      Avec enthousiasme,<br>
-      <strong style="color:#3B1772;font-size:14px">Samy & l'équipe Docline</strong>
+  return `<div style="border-top:1px solid #EDE5F7;margin-top:32px;padding-top:24px">
+    <p style="margin:0;font-size:13px;color:#7A6B9A;${FONT}">
+      Cordialement,<br>
+      <strong style="color:#3B1772;font-size:14px">Samy &amp; l'équipe Docline</strong>
     </p>
   </div>`;
 }
 
-// ── buildBaseEmail — template universel ──────────────────────────
+// Badge statut (sans emoji — point coloré + label)
+function statusBadge(label: string, color: { bg: string; border: string; dot: string; text: string }) {
+  return `<div style="text-align:center;margin-bottom:32px">
+    <span style="display:inline-flex;align-items:center;gap:8px;
+                 padding:9px 20px;background:${color.bg};
+                 border:1px solid ${color.border};border-radius:8px">
+      <span style="width:8px;height:8px;border-radius:50%;
+                   background:${color.dot};display:inline-block;flex-shrink:0"></span>
+      <span style="font-size:12px;font-weight:700;color:${color.text};
+                   letter-spacing:.6px;text-transform:uppercase;${FONT}">${label}</span>
+    </span>
+  </div>`;
+}
+
+// ── buildBaseEmail — template universel ─────────────────────────
 function buildBaseEmail(
   heading: string, content: string,
   cta?: { text: string; url: string },
   badgeLabel?: string
 ): string {
-  const body = bodyRow(
-    h1(heading) +
-    p(content) +
-    (cta ? ctaButton(cta.text, cta.url) : "") +
-    signOff()
+  return emailWrapper(
+    emailHeader(badgeLabel) +
+    bodyRow(h1(heading) + p(content) + (cta ? ctaButton(cta.text, cta.url) : "") + signOff()) +
+    emailFooter()
   );
-  return emailWrapper(emailHeader(badgeLabel) + body + emailFooter());
 }
 
-// ── Template welcome ─────────────────────────────────────────────
+// ── Template : Bienvenue ─────────────────────────────────────────
 function buildWelcomeEmail(firstName: string): string {
   const body = bodyRow(
-    h1(`Bienvenue sur Docline, ${firstName} 👋`) +
-    p(`On est vraiment heureux de vous avoir parmi nous.
+    h1(`Bienvenue sur Docline, ${firstName}.`) +
+    p(`Votre espace médecin est actif. Vous pouvez dès maintenant gérer vos rendez-vous, suivre vos patients, émettre des ordonnances et envoyer des factures — le tout depuis une interface conçue pour aller à l'essentiel.
 
-Votre espace médecin est prêt. Depuis votre tableau de bord, vous pouvez gérer vos rendez-vous, consulter vos patients, émettre des ordonnances et bien plus encore.
-
-Docline est conçu pour les médecins modernes qui veulent soigner sans se noyer dans l'administratif. Tout est pensé pour aller à l'essentiel.`) +
+Docline est pensé pour les médecins qui veulent se concentrer sur ce qui compte : soigner.`) +
     ctaButton("Accéder à mon espace", APP_URL) +
-    `<div style="background:#F7F4FE;border-radius:12px;padding:18px 20px;margin-top:4px">
-      <p style="margin:0;font-size:13px;color:#6B5B9A;line-height:1.7;${FONT}">
-        💬 <strong style="color:#3B1772">Une question ?</strong> Notre équipe est disponible à
-        <a href="mailto:contact@docline.health" style="color:#7C3AED;text-decoration:none">contact@docline.health</a>.
-        On répond vite.
-      </p>
-    </div>` +
+    `<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px">
+      <tr>
+        <td style="background:#F5F2FC;border-radius:10px;padding:18px 22px;
+                   border-left:3px solid #7C3AED">
+          <p style="margin:0;font-size:13px;color:#5A4E80;line-height:1.7;${FONT}">
+            Une question ? Écrivez-nous à
+            <a href="mailto:contact@docline.health"
+               style="color:#6D28D9;text-decoration:none;font-weight:600">contact@docline.health</a>
+            — nous répondons rapidement.
+          </p>
+        </td>
+      </tr>
+    </table>` +
     signOff()
   );
   return emailWrapper(emailHeader("Compte activé") + body + emailFooter());
 }
 
-// ── Template maintenance activée ─────────────────────────────────
+// ── Template : Maintenance activée ──────────────────────────────
 function buildMaintenanceActivatedEmail(firstName: string): string {
   const body = bodyRow(
-    `<div style="text-align:center;margin-bottom:28px">
-      <div style="display:inline-block;background:#FEF3F2;border:1.5px solid #FECDCA;
-                  border-radius:12px;padding:14px 20px">
-        <div style="font-size:28px;margin-bottom:6px">🔧</div>
-        <div style="font-size:13px;font-weight:700;color:#B42318;letter-spacing:.3px;${FONT}">
-          MAINTENANCE EN COURS
-        </div>
-      </div>
-    </div>` +
-    h1(`${firstName}, on fait une pause technique.`) +
-    p(`La plateforme Docline est temporairement en maintenance. Notre équipe travaille en coulisses pour vous offrir une expérience encore meilleure.
+    statusBadge("Maintenance en cours", {
+      bg: "#FEF7ED", border: "#FDE3B0",
+      dot: "#D97706", text: "#92400E"
+    }) +
+    h1(`Bonjour ${firstName}, une pause technique est en cours.`) +
+    p(`La plateforme Docline est temporairement hors ligne pour maintenance. Notre équipe procède à des améliorations et travaille à rétablir le service dans les meilleurs délais.
 
-**Bonne nouvelle : votre espace médecin reste accessible.** Vous pouvez continuer à travailler normalement — rendez-vous, patients, ordonnances — sans aucune interruption.
+**Votre espace médecin reste accessible.** Rendez-vous, patients, ordonnances — aucune interruption pour vous.
 
-On fait vite. Vous recevrez un email dès que tout est de retour.`) +
+Vous recevrez un email dès la reprise.`) +
     ctaButton("Accéder à mon espace", APP_URL) +
     signOff()
   );
   return emailWrapper(emailHeader() + body + emailFooter());
 }
 
-// ── Template reprise après maintenance ───────────────────────────
+// ── Template : Reprise après maintenance ────────────────────────
 function buildMaintenanceResumeEmail(firstName: string): string {
   const body = bodyRow(
-    `<div style="text-align:center;margin-bottom:28px">
-      <div style="display:inline-block;background:#ECFDF5;border:1.5px solid #A7F3D0;
-                  border-radius:12px;padding:14px 24px">
-        <div style="font-size:28px;margin-bottom:6px">✅</div>
-        <div style="font-size:13px;font-weight:700;color:#065F46;letter-spacing:.3px;${FONT}">
-          NOUS SOMMES DE RETOUR
-        </div>
-      </div>
-    </div>` +
-    h1(`${firstName}, Docline est de retour !`) +
-    p(`La maintenance est terminée. L'équipe a bossé dur, et la plateforme est maintenant plus rapide, plus stable et plus complète qu'avant.
+    statusBadge("Plateforme disponible", {
+      bg: "#F0FDF4", border: "#BBF7D0",
+      dot: "#16A34A", text: "#15803D"
+    }) +
+    h1(`Bonjour ${firstName}, Docline est de retour.`) +
+    p(`La maintenance est terminée. La plateforme est à nouveau entièrement disponible.
 
-Merci pour votre patience — ça compte vraiment. Vous étiez parmi les premiers à vouloir être informés, et vous l'êtes.
-
-L'aventure Docline continue. On est juste au début de quelque chose de grand.`) +
-    ctaButton("Découvrir les nouveautés", APP_URL) +
+Merci pour votre patience. Vous figuriez parmi les premiers à vouloir être informé — c'est chose faite.`) +
+    ctaButton("Accéder à la plateforme", APP_URL) +
     signOff()
   );
-  return emailWrapper(emailHeader("Nous sommes de retour") + body + emailFooter());
+  return emailWrapper(emailHeader("Plateforme disponible") + body + emailFooter());
 }
 
 // ── Template facture ─────────────────────────────────────────────
@@ -346,24 +362,23 @@ function buildInvoiceEmail(inv: any, from: string): string {
   );
 
   return emailWrapper(
-    `<tr><td style="background:linear-gradient(160deg,#2D1259 0%,#3B1772 45%,#5B21B6 100%);
-                    border-radius:20px 20px 0 0;padding:32px 48px">
-      <table width="100%"><tr>
+    `<tr><td style="background:linear-gradient(150deg,#1A0842 0%,#3B1772 55%,#5B21B6 100%);
+                    border-radius:16px 16px 0 0;padding:36px 52px">
+      <table width="100%" cellpadding="0" cellspacing="0"><tr>
         <td style="vertical-align:middle">
-          <img src="${LOGO_ICON_URL}" alt="Docline" width="44" height="44"
-               style="display:block;border:0;border-radius:12px;
-                      box-shadow:0 4px 16px rgba(0,0,0,.3)">
+          <img src="${LOGO_DATA_URI}" alt="Docline" width="140" height="26"
+               style="display:block;border:0;max-width:140px">
         </td>
         <td style="text-align:right;vertical-align:middle">
           <div style="color:rgba(255,255,255,.5);font-size:10px;text-transform:uppercase;
                       letter-spacing:1.5px;font-weight:700;${FONT}">Facture</div>
-          <div style="color:#fff;font-size:22px;font-weight:900;margin-top:4px;${FONT}">
+          <div style="color:#fff;font-size:20px;font-weight:800;margin-top:4px;${FONT}">
             ${inv.invoice_number}</div>
         </td>
       </tr></table>
     </td></tr>
-    <tr><td style="background:linear-gradient(90deg,#7C3AED,#A78BFA,#7C3AED);
-                   height:3px;font-size:0;line-height:0">&nbsp;</td></tr>
+    <tr><td style="background:linear-gradient(90deg,#6D28D9,#A78BFA,#6D28D9);
+                   height:2px;font-size:0;line-height:0">&nbsp;</td></tr>
     ${body}
     ${emailFooter()}`
   );
