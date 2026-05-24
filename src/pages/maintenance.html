@@ -61,19 +61,19 @@ body{
 .chip-wrap{display:flex;justify-content:center;margin-bottom:16px}
 .chip{
   display:inline-flex;align-items:center;gap:6px;
-  background:rgba(124,58,237,.08);
-  border:1px solid rgba(124,58,237,.2);
+  background:rgba(59,23,114,.08);
+  border:1px solid rgba(59,23,114,.2);
   border-radius:999px;padding:4px 12px;
   font-size:.625rem;font-weight:800;letter-spacing:.8px;
-  text-transform:uppercase;color:#6D28D9;
+  text-transform:uppercase;color:#3B1772;
 }
 .dot{
-  width:6px;height:6px;border-radius:50%;background:#7C3AED;
+  width:6px;height:6px;border-radius:50%;background:#3B1772;
   animation:pulse 2s ease infinite;flex-shrink:0;
 }
 @keyframes pulse{
-  0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.4)}
-  50%{box-shadow:0 0 0 6px rgba(124,58,237,0)}
+  0%,100%{box-shadow:0 0 0 0 rgba(59,23,114,.4)}
+  50%{box-shadow:0 0 0 6px rgba(59,23,114,0)}
 }
 
 /* ── HEADLINE ────────────────────────────────────────────── */
@@ -98,11 +98,11 @@ body{
 /* ── PROGRESS ────────────────────────────────────────────── */
 .progress-wrap{margin-bottom:20px}
 .progress-track{
-  height:3px;background:#EDE9FE;border-radius:999px;overflow:hidden;margin-bottom:5px;
+  height:3px;background:rgba(59,23,114,.1);border-radius:999px;overflow:hidden;margin-bottom:5px;
 }
 .progress-fill{
   height:100%;border-radius:999px;
-  background:linear-gradient(90deg,#7C3AED,#A78BFA);
+  background:linear-gradient(90deg,#3B1772,#7C3AED);
   animation:slide 2s cubic-bezier(.4,0,.2,1) infinite;
   width:45%;
 }
@@ -148,17 +148,17 @@ body{
 
 .btn{
   display:flex;align-items:center;justify-content:center;gap:7px;
-  background:linear-gradient(135deg,#7C3AED,#5B21B6);
+  background:linear-gradient(135deg,#3B1772,#5B21B6);
   color:#fff;border:none;border-radius:10px;
   padding:11px 20px;
   font-family:'Sora',sans-serif;font-size:.8125rem;font-weight:700;
   cursor:pointer;transition:all 150ms ease;
-  box-shadow:0 4px 14px rgba(124,58,237,.35);
+  box-shadow:0 4px 18px rgba(59,23,114,.4);
   width:100%;margin-top:2px;
 }
 .btn:hover:not(:disabled){
-  background:linear-gradient(135deg,#8B5CF6,#6D28D9);
-  box-shadow:0 6px 18px rgba(124,58,237,.45);
+  background:linear-gradient(135deg,#2D1259,#7C3AED);
+  box-shadow:0 6px 24px rgba(59,23,114,.5);
   transform:translateY(-1px);
 }
 .btn:active{transform:translateY(0)}
@@ -171,17 +171,21 @@ body{
 
 /* ── SUCCESS ─────────────────────────────────────────────── */
 .success{
-  display:none;flex-direction:column;align-items:center;gap:10px;text-align:center;
-  background:#F0FDF4;border:1px solid #BBF7D0;border-radius:14px;padding:20px;
+  display:none;flex-direction:column;align-items:center;gap:12px;text-align:center;
+  background:linear-gradient(135deg,rgba(59,23,114,.06) 0%,rgba(124,58,237,.05) 100%);
+  border:1px solid rgba(59,23,114,.18);border-radius:16px;padding:24px 20px;
 }
 .success.show{display:flex}
 .success-icon{
-  width:40px;height:40px;border-radius:50%;
-  background:#DCFCE7;display:flex;align-items:center;justify-content:center;
+  width:48px;height:48px;border-radius:50%;
+  background:linear-gradient(135deg,#3B1772,#7C3AED);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(59,23,114,.35);
 }
-.success-icon svg{width:18px;height:18px;stroke:#16A34A;fill:none;stroke-width:2.5;stroke-linecap:round}
-.success-title{font-size:.9375rem;font-weight:800;color:#14532D}
-.success-msg{font-size:.75rem;color:#166534;line-height:1.55}
+.success-icon svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.success-title{font-size:.9375rem;font-weight:800;color:#1A0A3C;letter-spacing:-.2px}
+.success-msg{font-size:.75rem;color:#6B7280;line-height:1.6;max-width:340px}
+.success-msg strong{color:#3B1772;font-weight:700}
 
 /* ── ERROR ───────────────────────────────────────────────── */
 .err{display:none;font-size:.6875rem;color:#DC2626;text-align:center;margin-top:2px}
@@ -258,8 +262,8 @@ body{
   <!-- Success state -->
   <div class="success" id="ok">
     <div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-    <div class="success-title" id="ok-title">Vous serez notifié en premier !</div>
-    <div class="success-msg">Dès que Docline reprend, vous recevrez un email à <strong id="ok-email"></strong>. Merci pour votre confiance.</div>
+    <div class="success-title" id="ok-title">Inscription confirmée !</div>
+    <div class="success-msg">Merci pour l'intérêt que vous portez à Docline.<br>Vous serez notifié dès que nous reprenons à <strong id="ok-email"></strong>.</div>
   </div>
 
   <!-- Footer -->
@@ -323,7 +327,7 @@ async function submit(e) {
     if (!res.ok && res.status !== 409) throw new Error('err');
 
     document.getElementById('frm').style.display  = 'none';
-    document.getElementById('ok-title').textContent = 'Parfait ' + prenom + ' — vous serez notifié en premier !';
+    document.getElementById('ok-title').textContent = 'Merci ' + prenom + ' — inscription confirmée !';
     document.getElementById('ok-email').textContent = email;
     document.getElementById('ok').classList.add('show');
 
