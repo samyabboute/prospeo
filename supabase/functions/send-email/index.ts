@@ -10,8 +10,10 @@ const BRAND      = "#3B1772";
 const BRAND_MID  = "#5B21B6";
 const ADMIN_EMAILS_LIST = ["samyabboute5@gmail.com", "contact@docline.health"];
 
-// Logo hébergé sur Netlify (docline.health) — visible dans tous les clients email
-const LOGO_URL = "https://docline.health/icon-512.png";
+// Logo wordmark blanc — hébergé sur Netlify, visible dans Gmail/Apple Mail/Yahoo
+// Outlook Desktop ne supporte pas SVG → fallback via alt text "Docline"
+const LOGO_URL     = "https://docline.health/docline-logo-white.svg";
+const LOGO_ICON_URL = "https://docline.health/icon-512.png"; // icône carrée pour facture
 
 // ── CORS dynamique ───────────────────────────────────────────────
 function buildCors(req: Request) {
@@ -72,14 +74,13 @@ const emailHeader = (badgeText?: string) => `
 <tr>
   <td style="background:linear-gradient(160deg,#2D1259 0%,#3B1772 45%,#5B21B6 100%);
              border-radius:20px 20px 0 0;padding:40px 48px 36px;text-align:center">
-    <img src="${LOGO_URL}" alt="Docline" width="64" height="64"
-         style="display:block;margin:0 auto 16px;border:0;border-radius:16px;
-                box-shadow:0 8px 28px rgba(0,0,0,.35)">
-    <div style="color:#fff;font-size:26px;font-weight:900;letter-spacing:-0.5px;${FONT}">Docline</div>
-    <div style="color:rgba(255,255,255,.45);font-size:11px;text-transform:uppercase;
-                letter-spacing:2px;margin-top:4px;${FONT}">Votre partenaire médical</div>
+    <!-- Logo wordmark blanc — viewBox 0 0 1000 187.3, ratio ~5.34:1 -->
+    <img src="${LOGO_URL}" alt="Docline" width="200" height="38"
+         style="display:block;margin:0 auto;border:0;max-width:200px">
+    <div style="color:rgba(255,255,255,.4);font-size:11px;text-transform:uppercase;
+                letter-spacing:2px;margin-top:10px;${FONT}">Votre partenaire médical</div>
     ${badgeText ? `
-    <div style="display:inline-block;margin-top:18px;background:rgba(255,255,255,.12);
+    <div style="display:inline-block;margin-top:16px;background:rgba(255,255,255,.12);
                 border:1px solid rgba(255,255,255,.22);border-radius:999px;
                 padding:5px 16px;color:#fff;font-size:10px;font-weight:700;
                 letter-spacing:1.2px;text-transform:uppercase;${FONT}">${badgeText}</div>` : ""}
@@ -349,7 +350,7 @@ function buildInvoiceEmail(inv: any, from: string): string {
                     border-radius:20px 20px 0 0;padding:32px 48px">
       <table width="100%"><tr>
         <td style="vertical-align:middle">
-          <img src="${LOGO_URL}" alt="Docline" width="48" height="48"
+          <img src="${LOGO_ICON_URL}" alt="Docline" width="44" height="44"
                style="display:block;border:0;border-radius:12px;
                       box-shadow:0 4px 16px rgba(0,0,0,.3)">
         </td>
