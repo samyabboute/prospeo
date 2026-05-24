@@ -541,6 +541,14 @@ serve(async (req) => {
     if (!ADMIN_EMAILS_LIST.includes(userEmail)) {
       return new Response(JSON.stringify({ error: "Accès refusé" }), { status: 403, headers: CORS });
     }
+    // ── Mode test : envoyer à une adresse précise ────────────────
+    if (payload?.to) {
+      const fn  = String(payload.firstName || "Docteur");
+      const sub = "Maintenance en cours — Votre accès est préservé";
+      const ok  = await sendEmail(String(payload.to), sub, buildMaintenanceActivatedEmail(fn));
+      await logEmail({ type, to: String(payload.to), name: fn, subject: sub, status: ok ? "sent" : "failed", triggeredBy: userEmail });
+      return new Response(JSON.stringify({ success: ok, sent: ok ? 1 : 0 }), { status: ok ? 200 : 500, headers: { ...CORS, "Content-Type": "application/json" } });
+    }
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { data: doctors, error: e } = await admin.from("profiles").select("first_name, last_name, email").not("email", "is", null);
     if (e) return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: CORS });
@@ -550,7 +558,7 @@ serve(async (req) => {
       const pn      = doc.first_name || "Docteur";
       const subject = "Maintenance en cours — Votre accès est préservé";
       const html    = buildMaintenanceActivatedEmail(pn);
-      const mailOk  = await sendEmail(doc.email, subject, html, "contact@docline.health");
+      const mailOk  = await sendEmail(doc.email, subject, html);
       await logEmail({ type: "maintenance_activated", to: doc.email, name: `${pn} ${doc.last_name ?? ""}`.trim(), subject, status: mailOk ? "sent" : "failed", triggeredBy: userEmail });
       if (mailOk) sent++; else failed++;
     }
@@ -563,6 +571,14 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Accès refusé" }), { status: 403, headers: CORS });
     }
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    // ── Mode test : envoyer à une adresse précise ────────────────
+    if (payload?.to) {
+      const fn  = String(payload.firstName || "Docteur");
+      const sub = "La plateforme Docline est de retour";
+      const ok  = await sendEmail(String(payload.to), sub, buildMaintenanceResumeEmail(fn));
+      await logEmail({ type, to: String(payload.to), name: fn, subject: sub, status: ok ? "sent" : "failed", triggeredBy: userEmail });
+      return new Response(JSON.stringify({ success: ok, sent: ok ? 1 : 0 }), { status: ok ? 200 : 500, headers: { ...CORS, "Content-Type": "application/json" } });
+    }
 
     // ── Durée de la maintenance ──────────────────────────────────
     let duration: string | undefined;
@@ -611,6 +627,51 @@ serve(async (req) => {
     return new Response(JSON.stringify({ sent, failed, total: list.length, duration }), {
       status: 200, headers: { ...CORS, "Content-Type": "application/json" }
     });
+  }
+
+  // ── Occasions spéciales & Newsletter ────────────────────────
+  if (["eid_alfitr", "eid_aladha", "ramadan", "newsletter"].includes(type)) {
+    if (!ADMIN_EMAILS_LIST.includes(userEmail)) {
+      return new Response(JSON.stringify({ error: "Accès refusé" }), { status: 403, headers: CORS });
+    }
+
+    function occasionEmail(fn: string): { html: string; subject: string } {
+      if (type === "eid_alfitr")  return { html: buildEidAlFitrEmail(fn),  subject: "Eid Moubarak — De la part de Docline" };
+      if (type === "eid_aladha")  return { html: buildEidAlAdhaEmail(fn),  subject: "Eid Moubarak — De la part de Docline" };
+      if (type === "ramadan")     return { html: buildRamadanEmail(fn),     subject: "Ramadan Kareem — De la part de Docline" };
+      // newsletter
+      return {
+        html:    buildNewsletterEmail(payload?.subject || "Actualités Docline", payload?.heading || "Les actualités Docline.", payload?.body || "Retrouvez ici les dernières nouveautés de la plateforme.", payload?.cta),
+        subject: payload?.subject || "Actualités Docline",
+      };
+    }
+
+    // Mode test : une seule adresse
+    if (payload?.to && !payload?.broadcast) {
+      const fn = String(payload.firstName || "Docteur");
+      const { html, subject } = occasionEmail(fn);
+      const ok = await sendEmail(String(payload.to), subject, html);
+      await logEmail({ type, to: String(payload.to), name: fn, subject, status: ok ? "sent" : "failed", triggeredBy: userEmail });
+      return new Response(JSON.stringify({ success: ok, sent: ok ? 1 : 0 }), { status: ok ? 200 : 500, headers: { ...CORS, "Content-Type": "application/json" } });
+    }
+
+    // Mode diffusion : tous les médecins
+    if (payload?.broadcast) {
+      const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      const { data: doctors } = await admin.from("profiles").select("first_name, last_name, email").not("email", "is", null);
+      const list = (doctors ?? []).filter((d: any) => d.email);
+      let sent = 0, failed = 0;
+      for (const doc of list) {
+        const fn = doc.first_name || "Docteur";
+        const { html, subject } = occasionEmail(fn);
+        const ok = await sendEmail(doc.email, subject, html);
+        await logEmail({ type, to: doc.email, name: `${doc.first_name ?? ""} ${doc.last_name ?? ""}`.trim(), subject, status: ok ? "sent" : "failed", triggeredBy: userEmail });
+        if (ok) sent++; else failed++;
+      }
+      return new Response(JSON.stringify({ sent, failed, total: list.length }), { status: 200, headers: { ...CORS, "Content-Type": "application/json" } });
+    }
+
+    return new Response(JSON.stringify({ error: "Specify payload.to or payload.broadcast:true" }), { status: 400, headers: CORS });
   }
 
   // ── Templates DB (welcome, trial_granted, etc.) ──────────────

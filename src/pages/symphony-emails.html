@@ -311,6 +311,54 @@ textarea.form-input{resize:vertical;min-height:110px;line-height:1.6}
   </div>
 </div>
 
+<!-- Send Modal -->
+<div class="modal-overlay" id="send-modal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="send-modal-title">Envoyer l'email</div>
+        <div style="font-size:.75rem;color:var(--text-muted);margin-top:2px" id="send-modal-subject"></div>
+      </div>
+      <button class="modal-close" onclick="closeSendModal()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom:8px">
+        <label class="form-label">Destinataire</label>
+        <div style="position:relative">
+          <input class="form-input" id="send-search" type="text" autocomplete="off"
+                 placeholder="Nom, prénom ou adresse email…"
+                 oninput="searchUsers(this.value)" onkeydown="onSearchKey(event)">
+          <div id="send-ac" style="position:absolute;top:calc(100% + 4px);left:0;right:0;
+               background:var(--bg-raised);border:1px solid var(--border);border-radius:var(--r-md);
+               box-shadow:var(--shadow-md);z-index:600;display:none;max-height:220px;overflow-y:auto"></div>
+        </div>
+      </div>
+      <div id="send-chip" style="display:none;align-items:center;gap:8px;
+           padding:8px 12px;background:var(--brand-light);border-radius:var(--r-md);margin-top:8px">
+        <svg style="width:14px;height:14px;fill:none;stroke:var(--brand);stroke-width:2;flex-shrink:0" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span id="send-chip-label" style="font-size:.8125rem;font-weight:600;color:var(--brand);flex:1"></span>
+        <button onclick="clearSendSelection()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:0;line-height:1;font-size:1rem">&times;</button>
+      </div>
+      <div id="send-diffusion-info" style="display:none;margin-top:12px;padding:10px 14px;
+           background:var(--warning-bg);border:1px solid var(--warning-border);border-radius:var(--r-md);
+           font-size:.8rem;color:#6B4D00;line-height:1.6">
+        <strong>Diffusion</strong> — envoie cet email à <span id="send-doctor-count">tous</span> les médecins inscrits sur Docline.
+      </div>
+    </div>
+    <div class="modal-footer" style="gap:8px">
+      <button class="btn btn-secondary" onclick="closeSendModal()">Annuler</button>
+      <button class="btn btn-secondary" id="btn-diffusion" onclick="sendDiffusion()" style="display:none">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Diffusion — tous les médecins
+      </button>
+      <button class="btn btn-primary" id="btn-send-to" onclick="sendToSelected()" disabled>
+        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Envoyer
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Preview Modal -->
 <div class="modal-overlay" id="preview-modal">
   <div class="modal preview-modal">
@@ -762,26 +810,143 @@ function previewFromEdit() {
   document.getElementById('preview-modal').classList.add('open');
 }
 
-// ── SEND TEST ─────────────────────────────────────────────────
-async function sendTest() {
-  if (!_currentPreviewId) return;
-  await sendTestFor(_currentPreviewId);
+// ── SEND TEST → ouvre le modal ────────────────────────────────
+function sendTest() {
+  if (_currentPreviewId) openSendModal(_currentPreviewId);
 }
 
-async function sendTestFor(id) {
-  const btn = document.getElementById('btn-send-test');
-  if (btn) btn.disabled = true;
-  showToast('Envoi du test en cours…', 'success');
+function sendTestFor(id) {
+  openSendModal(id);
+}
+
+// ── SEND MODAL ────────────────────────────────────────────────
+var _sendTargetId   = null;
+var _sendSelEmail   = null;
+var _sendSelName    = null;
+var _sendSelFirst   = null;
+var _searchTimer    = null;
+
+// Templates qui supportent la diffusion (broadcast)
+const BROADCAST_TYPES = ['eid_alfitr','eid_aladha','ramadan','newsletter','maintenance_activated','maintenance_resume'];
+
+function openSendModal(id) {
+  _sendTargetId = id;
+  _sendSelEmail = _sendSelName = _sendSelFirst = null;
+
+  const t = _templates.find(x => x.id === id) || HARDCODED_TEMPLATES.find(x => x.id === id);
+  document.getElementById('send-modal-title').textContent   = t?.name || id;
+  document.getElementById('send-modal-subject').textContent = t?.subject ? 'Sujet : ' + t.subject : '';
+  document.getElementById('send-search').value = '';
+  document.getElementById('send-ac').style.display  = 'none';
+  document.getElementById('send-chip').style.display = 'none';
+  document.getElementById('btn-send-to').disabled = true;
+
+  const showDiff = BROADCAST_TYPES.includes(id);
+  document.getElementById('btn-diffusion').style.display        = showDiff ? 'inline-flex' : 'none';
+  document.getElementById('send-diffusion-info').style.display  = showDiff ? 'block' : 'none';
+
+  document.getElementById('send-modal').classList.add('open');
+  setTimeout(() => document.getElementById('send-search').focus(), 80);
+}
+
+function closeSendModal() {
+  document.getElementById('send-modal').classList.remove('open');
+  _sendTargetId = null;
+}
+
+async function searchUsers(q) {
+  clearTimeout(_searchTimer);
+  const ac = document.getElementById('send-ac');
+  if (!q || q.length < 2) { ac.style.display = 'none'; return; }
+  _searchTimer = setTimeout(async () => {
+    const { data } = await _supa.from('profiles')
+      .select('first_name, last_name, email')
+      .or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%,email.ilike.%${q}%`)
+      .not('email', 'is', null)
+      .limit(8);
+    const results = data || [];
+    // Ajouter l'email saisi directement s'il ressemble à un email
+    if (q.includes('@') && !results.find(r => r.email?.toLowerCase() === q.toLowerCase())) {
+      results.push({ first_name: '', last_name: '', email: q });
+    }
+    if (!results.length) { ac.style.display = 'none'; return; }
+    ac.innerHTML = results.map((r, i) => {
+      const name = [r.first_name, r.last_name].filter(Boolean).join(' ') || r.email;
+      const fn   = r.first_name || '';
+      const safe = (s) => (s||'').replace(/'/g, '&#39;');
+      return `<div onclick="selectUser('${safe(r.email)}','${safe(name)}','${safe(fn)}')"
+                   style="padding:10px 14px;cursor:pointer;${i>0?'border-top:1px solid var(--border)':''}">
+        <div style="font-size:.8125rem;font-weight:600;color:var(--text-primary)">${name}</div>
+        <div style="font-size:.72rem;color:var(--text-muted)">${r.email}</div>
+      </div>`;
+    }).join('');
+    ac.style.display = 'block';
+  }, 220);
+}
+
+function onSearchKey(e) {
+  if (e.key === 'Escape') {
+    document.getElementById('send-ac').style.display = 'none';
+  }
+}
+
+function selectUser(email, name, firstName) {
+  _sendSelEmail = email;
+  _sendSelName  = name;
+  _sendSelFirst = firstName;
+  document.getElementById('send-search').value     = '';
+  document.getElementById('send-ac').style.display = 'none';
+  document.getElementById('send-chip').style.display       = 'flex';
+  document.getElementById('send-chip-label').textContent   = name + (name !== email ? ' · ' + email : '');
+  document.getElementById('btn-send-to').disabled = false;
+}
+
+function clearSendSelection() {
+  _sendSelEmail = _sendSelName = _sendSelFirst = null;
+  document.getElementById('send-chip').style.display = 'none';
+  document.getElementById('btn-send-to').disabled = true;
+  document.getElementById('send-search').value = '';
+  document.getElementById('send-search').focus();
+}
+
+async function sendToSelected() {
+  if (!_sendSelEmail || !_sendTargetId) return;
+  const btn = document.getElementById('btn-send-to');
+  btn.disabled = true; btn.textContent = 'Envoi…';
   try {
     const { data, error } = await _supa.functions.invoke('send-email', {
-      body: { type: id, payload: { force: true } }
+      body: { type: _sendTargetId, payload: { to: _sendSelEmail, firstName: _sendSelFirst || '', force: true } }
     });
     if (error) throw error;
-    showToast(`Email de test envoyé à ${_session.user.email}`, 'success');
+    showToast('Email envoyé à ' + _sendSelEmail, 'success');
+    closeSendModal();
   } catch(e) {
-    showToast('Erreur : ' + (e.message || 'Échec de l\'envoi'), 'error');
+    showToast('Erreur : ' + (e.message || String(e)), 'error');
   } finally {
-    if (btn) btn.disabled = false;
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Envoyer';
+  }
+}
+
+async function sendDiffusion() {
+  if (!_sendTargetId) return;
+  const t = _templates.find(x => x.id === _sendTargetId) || HARDCODED_TEMPLATES.find(x => x.id === _sendTargetId);
+  if (!confirm('Envoyer "' + (t?.name || _sendTargetId) + '" à tous les médecins Docline ?')) return;
+  const btn = document.getElementById('btn-diffusion');
+  btn.disabled = true; btn.textContent = 'Envoi en cours…';
+  try {
+    const { data, error } = await _supa.functions.invoke('send-email', {
+      body: { type: _sendTargetId, payload: { broadcast: true } }
+    });
+    if (error) throw error;
+    const d = data || {};
+    showToast((d.sent || 0) + ' médecin(s) notifié(s)', 'success');
+    closeSendModal();
+  } catch(e) {
+    showToast('Erreur : ' + (e.message || String(e)), 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Diffusion — tous les médecins';
   }
 }
 
@@ -808,10 +973,19 @@ function showToast(msg, type = 'success') {
   _toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// Close modals on overlay click
+// Close modals on overlay click / Escape
 document.getElementById('edit-modal').addEventListener('click', e => { if (e.target.id === 'edit-modal') closeEdit(); });
 document.getElementById('preview-modal').addEventListener('click', e => { if (e.target.id === 'preview-modal') closePreview(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeEdit(); closePreview(); } });
+document.getElementById('send-modal').addEventListener('click', e => { if (e.target.id === 'send-modal') closeSendModal(); });
+// Close autocomplete on outside click
+document.addEventListener('click', e => {
+  if (!document.getElementById('send-search')?.contains(e.target) &&
+      !document.getElementById('send-ac')?.contains(e.target)) {
+    const ac = document.getElementById('send-ac');
+    if (ac) ac.style.display = 'none';
+  }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeEdit(); closePreview(); closeSendModal(); } });
 
 // ── EMAIL LOG ──────────────────────────────────────────────────
 const LOG_PAGE_SIZE = 50;
