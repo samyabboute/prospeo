@@ -332,7 +332,7 @@ body{
   <!-- Form -->
   <div class="divider">Être notifié au retour</div>
 
-  <form class="form" id="frm" onsubmit="submit(event)" autocomplete="off">
+  <form class="form" id="frm" onsubmit="handleNotify(event)" autocomplete="off">
     <div class="row">
       <div class="field">
         <label class="label" for="f-p">Prénom</label>
@@ -426,7 +426,7 @@ body{
   }
 })();
 
-async function submit(e) {
+async function handleNotify(e) {
   e.preventDefault();
   var btn    = document.getElementById('btn');
   var errEl  = document.getElementById('err');
