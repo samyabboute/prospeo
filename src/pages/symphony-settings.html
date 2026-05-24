@@ -667,6 +667,17 @@ function renderBanner() {
 async function setSetting(key, value) {
   const wasOn = _settings['maintenance_mode'] === true || _settings['maintenance_mode'] === 'true';
   _settings[key] = value;
+
+  // Horodatage de début de maintenance pour calcul de durée dans l'email
+  if (key === 'maintenance_mode' && value && !wasOn) {
+    await _supa.from('app_settings').upsert({
+      key: 'maintenance_started_at',
+      value: JSON.stringify(new Date().toISOString()),
+      updated_at: new Date().toISOString(),
+      updated_by: _session?.user?.email
+    }, { onConflict: 'key' });
+  }
+
   const { error } = await _supa.from('app_settings').upsert({
     key, value: JSON.stringify(value), updated_at: new Date().toISOString(), updated_by: _session?.user?.email
   }, { onConflict: 'key' });
