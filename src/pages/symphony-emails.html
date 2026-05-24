@@ -616,6 +616,10 @@ function tmplCard(t, isHardcoded) {
       <button class="btn btn-success btn-sm" onclick="sendTestFor('${t.id}')">
         <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         Test</button>
+      ${['eid_alfitr','eid_aladha','ramadan','newsletter','maintenance_activated','maintenance_resume'].includes(t.id) ? `
+      <button class="btn btn-primary btn-sm" onclick="confirmDiffusion('${t.id}')">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Diffusion</button>` : ''}
     </div>
   </div>`;
 }
@@ -930,23 +934,24 @@ async function sendToSelected() {
 
 async function sendDiffusion() {
   if (!_sendTargetId) return;
-  const t = _templates.find(x => x.id === _sendTargetId) || HARDCODED_TEMPLATES.find(x => x.id === _sendTargetId);
-  if (!confirm('Envoyer "' + (t?.name || _sendTargetId) + '" à tous les médecins Docline ?')) return;
-  const btn = document.getElementById('btn-diffusion');
-  btn.disabled = true; btn.textContent = 'Envoi en cours…';
+  await confirmDiffusion(_sendTargetId);
+  closeSendModal();
+}
+
+async function confirmDiffusion(id) {
+  const t = _templates.find(x => x.id === id) || HARDCODED_TEMPLATES.find(x => x.id === id);
+  if (!confirm('Envoyer "' + (t?.name || id) + '" à tous les médecins Docline ?\n\nCette action est irréversible.')) return;
+
+  showToast('Diffusion en cours…', 'success');
   try {
     const { data, error } = await _supa.functions.invoke('send-email', {
-      body: { type: _sendTargetId, payload: { broadcast: true } }
+      body: { type: id, payload: { broadcast: true } }
     });
     if (error) throw error;
     const d = data || {};
-    showToast((d.sent || 0) + ' médecin(s) notifié(s)', 'success');
-    closeSendModal();
+    showToast((d.sent || 0) + ' médecin(s) notifié(s) · ' + (d.failed || 0) + ' échec(s)', 'success');
   } catch(e) {
-    showToast('Erreur : ' + (e.message || String(e)), 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Diffusion — tous les médecins';
+    showToast('Erreur diffusion : ' + (e.message || String(e)), 'error');
   }
 }
 
