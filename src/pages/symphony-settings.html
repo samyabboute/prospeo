@@ -681,10 +681,17 @@ async function setSetting(key, value) {
   }
 }
 
+async function _getFreshJwt() {
+  const { data: { session } } = await _supa.auth.getSession();
+  return session?.access_token ?? null;
+}
+
 async function _sendMaintenanceResumeNotifs() {
+  const tid = Toast.info('Envoi en cours…', 'Notification des inscrits à la reprise');
   try {
-    const jwt = _session?.access_token;
-    if (!jwt) return;
+    const jwt = await _getFreshJwt();
+    if (!jwt) { Toast.error('Session expirée', 'Reconnectez-vous et réessayez.'); return; }
+
     const res = await fetch(EDGE_BASE + '/send-email', {
       method: 'POST',
       headers: {
@@ -695,25 +702,32 @@ async function _sendMaintenanceResumeNotifs() {
       body: JSON.stringify({ type: 'maintenance_resume' })
     });
     const json = await res.json().catch(() => ({}));
-    if (res.ok) {
-      if (json.total > 0) {
-        Toast.success(
-          'Notifications envoyées',
-          json.sent + ' abonné' + (json.sent > 1 ? 's' : '') + ' notifié' + (json.sent > 1 ? 's' : '') + ' · liste purgée'
-        );
-      }
-    } else {
-      console.warn('maintenance_resume:', json.error || res.status);
+
+    if (!res.ok) {
+      Toast.error('Erreur Edge Function', json.error || 'HTTP ' + res.status);
+      return;
     }
+
+    if (json.total === 0) {
+      Toast.info('Aucun inscrit', 'Personne ne s\'est inscrit sur la page maintenance.');
+    } else {
+      Toast.success(
+        'Notifications envoyées',
+        json.sent + ' abonné' + (json.sent > 1 ? 's' : '') + ' notifié' + (json.sent > 1 ? 's' : '') +
+        (json.failed ? ' · ' + json.failed + ' échec(s)' : '') + ' · liste purgée'
+      );
+    }
+    await loadNotifyList(); // Rafraîchir la liste après envoi
   } catch (e) {
-    console.warn('maintenance_resume error', e);
+    Toast.error('Erreur réseau', e.message || 'Impossible de joindre l\'Edge Function.');
   }
 }
 
 async function _sendMaintenanceActivatedNotifs() {
   try {
-    const jwt = _session?.access_token;
-    if (!jwt) return;
+    const jwt = await _getFreshJwt();
+    if (!jwt) { Toast.error('Session expirée', 'Reconnectez-vous et réessayez.'); return; }
+
     const res = await fetch(EDGE_BASE + '/send-email', {
       method: 'POST',
       headers: {
@@ -724,16 +738,19 @@ async function _sendMaintenanceActivatedNotifs() {
       body: JSON.stringify({ type: 'maintenance_activated' })
     });
     const json = await res.json().catch(() => ({}));
-    if (res.ok) {
-      Toast.success(
-        'Médecins notifiés',
-        json.sent + ' médecin' + (json.sent > 1 ? 's informés' : ' informé') + ' de la maintenance'
-      );
-    } else {
-      console.warn('maintenance_activated:', json.error || res.status);
+
+    if (!res.ok) {
+      Toast.error('Erreur Edge Function', json.error || 'HTTP ' + res.status);
+      return;
     }
+
+    Toast.success(
+      'Médecins notifiés',
+      json.sent + ' médecin' + (json.sent > 1 ? 's informés' : ' informé') + ' de la maintenance'
+      + (json.failed ? ' · ' + json.failed + ' échec(s)' : '')
+    );
   } catch (e) {
-    console.warn('maintenance_activated error', e);
+    Toast.error('Erreur réseau', e.message || 'Impossible de joindre l\'Edge Function.');
   }
 }
 
